@@ -4,4 +4,10 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MyLab.Log.Dsl" Version="3.1.2" />
+    <PackageReference Include="MyLab.Mq" Version="1.8.19" />
+    <PackageReference Include="MyLab.TaskApp" Version="1.2.3" />
+  </ItemGroup>
+
 </Project>
