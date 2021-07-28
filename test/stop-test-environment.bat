@@ -1,0 +1,1 @@
+docker-compose -p mylab-async-proc-test down
