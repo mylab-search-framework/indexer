@@ -1,10 +1,9 @@
-using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqToDB;
-using LinqToDB.Data;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.Db;
+using MyLab.Log.Dsl;
 using MyLab.TaskApp;
 
 namespace MyLab.Search.Indexer
@@ -12,40 +11,67 @@ namespace MyLab.Search.Indexer
     public class IndexerTaskLogic : ITaskLogic
     {
         private readonly IndexerOptions _options;
-        private readonly IDbManager _dbManager;
+        private readonly IDataSourceService _dataSourceService;
         private readonly ISeedService _seedService;
+        private readonly IDataIndexer _indexer;
+        private readonly IDslLogger _log;
 
-        public IndexerTaskLogic(IOptions<IndexerOptions> options, IDbManager dbManager, ISeedService seedService)
-            :this(options.Value, dbManager, seedService)
+        public IndexerTaskLogic(
+            IOptions<IndexerOptions> options, 
+            IDataSourceService dataSourceService, 
+            ISeedService seedService,
+            IDataIndexer indexer,
+            ILogger<IndexerTaskLogic> logger = null)
+            : this(options.Value, dataSourceService, seedService, indexer, logger)
         {
             
         }
 
-        public IndexerTaskLogic(IndexerOptions options, IDbManager dbManager, ISeedService seedService)
+        public IndexerTaskLogic(
+            IndexerOptions options, 
+            IDataSourceService dataSourceService, 
+            ISeedService seedService,
+            IDataIndexer indexer,
+            ILogger<IndexerTaskLogic> logger = null)
         {
             _options = options;
-            _dbManager = dbManager;
+            _dataSourceService = dataSourceService;
             _seedService = seedService;
+            _indexer = indexer;
+            _log = logger?.Dsl();
         }
 
         public async Task Perform(CancellationToken cancellationToken)
         {
-            await using var connection = _dbManager.Use();
-
             var sql = await ProvideSql();
-            int pageIndex = 0;
-            DataSourceEntity[] found;
 
-            do
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            _log.Action("Indexing started")
+                .AndFactIs("query", sql)
+                .Write();
+
+            int counter = 0;
+
+            await foreach (var batch in _dataSourceService.Read(sql).WithCancellation(cancellationToken))
             {
+                _log.Debug("Next batch of source data loaded")
+                    .AndFactIs("query", batch.Query)
+                    .AndFactIs("count", batch.Entities.Length)
+                    .Write();
 
-                found = await connection.FromSql<DataSourceEntity>(sql)
-                    .Skip(() => pageIndex * _options.PageSize)
-                    .Take(() => _options.PageSize)
-                    .ToArrayAsync(cancellationToken);
-                
+                counter += batch.Entities.Length;
 
-            } while (found.Length < _options.PageSize);
+                await _indexer.IndexAsync(batch.Entities);
+            }
+
+            stopwatch.Stop();
+
+            _log.Action("Indexing completed")
+                .AndFactIs("count", counter)
+                .AndFactIs("elapsed", stopwatch.Elapsed)
+                .Write();
         }
 
         private async Task<string> ProvideSql()

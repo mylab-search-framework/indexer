@@ -9,9 +9,15 @@ using MyLab.Db;
 
 namespace MyLab.Search.Indexer
 {
-    interface IDataSourceService
+    public interface IDataSourceService
     {
-        IAsyncEnumerable<DataSourceEntity[]> Read(string query);
+        IAsyncEnumerable<DataSourceBatch> Read(string query);
+    }
+
+    public class DataSourceBatch
+    {
+        public string Query { get; set; }
+        public DataSourceEntity[] Entities { get; set; }
     }
 
     class DbDataSourceService : IDataSourceService
@@ -30,13 +36,13 @@ namespace MyLab.Search.Indexer
             _options = options;
         }
 
-        public IAsyncEnumerable<DataSourceEntity[]> Read(string query)
+        public IAsyncEnumerable<DataSourceBatch> Read(string query)
         {
             return new DataSourceEnumerable(query, _dbManager.Use(), _options.PageSize);
         }
     }
 
-    class DataSourceEnumerable : IAsyncEnumerable<DataSourceEntity[]>
+    class DataSourceEnumerable : IAsyncEnumerable<DataSourceBatch>
     {
         private readonly string _sql;
         private readonly DataConnection _connection;
@@ -49,13 +55,13 @@ namespace MyLab.Search.Indexer
             _pageSize = pageSize;
         }
 
-        public IAsyncEnumerator<DataSourceEntity[]> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
+        public IAsyncEnumerator<DataSourceBatch> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
             return new DataSourceEnumerator(_sql, _connection, _pageSize, cancellationToken);
         }
     }
 
-    class DataSourceEnumerator : IAsyncEnumerator<DataSourceEntity[]>
+    class DataSourceEnumerator : IAsyncEnumerator<DataSourceBatch>
     {
         private const string OffsetKey = "{offset}";
         private const string LimitKey = "{limit}";
@@ -67,7 +73,7 @@ namespace MyLab.Search.Indexer
         private readonly CancellationToken _cancellationToken;
         private readonly bool _hasPaging;
 
-        public DataSourceEntity[] Current { get; set; }
+        public DataSourceBatch Current { get; set; }
 
         public DataSourceEnumerator(string sql, DataConnection connection, int pageSize, CancellationToken cancellationToken)
         {
@@ -90,7 +96,7 @@ namespace MyLab.Search.Indexer
                 .Replace(OffsetKey, (_pageIndex * _pageSize).ToString())
                 .Replace(LimitKey, _pageSize.ToString());
 
-            Current = _connection.Query(reader =>
+            var entities = _connection.Query(reader =>
             {
                 var resEnt = new DataSourceEntity
                 {
@@ -106,8 +112,14 @@ namespace MyLab.Search.Indexer
 
             }, pagedSql).ToArray();
 
+            Current = new DataSourceBatch
+            {
+                Entities = entities,
+                Query = pagedSql
+            };
+
             var res = _hasPaging
-                ? Current.Length != 0
+                ? Current.Entities.Length != 0
                 : _pageIndex == 0;
 
             _pageIndex += 1;

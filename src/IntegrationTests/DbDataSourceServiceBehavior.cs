@@ -38,7 +38,7 @@ namespace IntegrationTests
             //Act
             await foreach(var batch in  service.Read("select * from foo_table where Id > 0 limit {limit} offset {offset}"))
             {
-                accum.Add(batch);
+                accum.Add(batch.Entities);
             }
 
             //Assert
