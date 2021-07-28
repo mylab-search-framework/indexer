@@ -3,13 +3,11 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using MyLab.Db;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
 
@@ -36,7 +34,10 @@ namespace MyLab.Search.Indexer
             services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
-                .AddLogging(l => l.AddConsole());
+                .AddDbTools<DataProviderSource>(_configuration)
+                .AddLogging(l => l.AddConsole())
+                .AddSingleton<ISeedService, FileSeedService>()
+                .AddSingleton<IDataSourceService, DbDataSourceService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -56,14 +57,6 @@ namespace MyLab.Search.Indexer
                     await context.Response.WriteAsync("Hello World!");
                 });
             });
-        }
-    }
-
-    public class IndexerTaskLogic : ITaskLogic
-    {
-        public Task Perform(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
         }
     }
 }
