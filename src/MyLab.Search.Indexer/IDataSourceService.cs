@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,7 +13,7 @@ namespace MyLab.Search.Indexer
 {
     public interface IDataSourceService
     {
-        IAsyncEnumerable<DataSourceBatch> Read(string query);
+        Task<IAsyncEnumerable<DataSourceBatch>> Read(string query);
     }
 
     public class DataSourceBatch
@@ -23,22 +25,34 @@ namespace MyLab.Search.Indexer
     class DbDataSourceService : IDataSourceService
     {
         private readonly IDbManager _dbManager;
+        private readonly ISeedService _seedService;
         private readonly IndexerOptions _options;
 
-        public DbDataSourceService(IDbManager dbManager, IOptions<IndexerOptions> options)
-            : this(dbManager, options.Value)
+        public DbDataSourceService(
+            IDbManager dbManager, 
+            ISeedService seedService,
+            IOptions<IndexerOptions> options)
+            : this(dbManager, seedService, options.Value)
         {
         }
 
-        public DbDataSourceService(IDbManager dbManager, IndexerOptions options)
+        public DbDataSourceService(
+            IDbManager dbManager, 
+            ISeedService seedService,
+            IndexerOptions options)
         {
             _dbManager = dbManager;
+            _seedService = seedService;
             _options = options;
         }
 
-        public IAsyncEnumerable<DataSourceBatch> Read(string query)
+        public async Task<IAsyncEnumerable<DataSourceBatch>> Read(string query)
         {
-            return new DataSourceEnumerable(query, _dbManager.Use(), _options.PageSize);
+            return new DataSourceEnumerable(query, _dbManager.Use(), _options.PageSize)
+            {
+                Seed = await _seedService.ReadAsync(),
+                EnablePaging = _options.EnablePaging
+            };
         }
     }
 
@@ -47,6 +61,9 @@ namespace MyLab.Search.Indexer
         private readonly string _sql;
         private readonly DataConnection _connection;
         private readonly int _pageSize;
+
+        public DateTime Seed { get; set; }
+        public bool EnablePaging { get; set; }
 
         public DataSourceEnumerable(string sql, DataConnection connection, int pageSize)
         {
@@ -57,28 +74,35 @@ namespace MyLab.Search.Indexer
 
         public IAsyncEnumerator<DataSourceBatch> GetAsyncEnumerator(CancellationToken cancellationToken = new CancellationToken())
         {
-            return new DataSourceEnumerator(_sql, _connection, _pageSize, cancellationToken);
+            return new DataSourceEnumerator(_sql, _connection, _pageSize, cancellationToken)
+            {
+                Seed = Seed,
+                EnablePaging = EnablePaging
+            };
         }
     }
 
     class DataSourceEnumerator : IAsyncEnumerator<DataSourceBatch>
     {
-        private const string OffsetKey = "{offset}";
-        private const string LimitKey = "{limit}";
+        private const string OffsetParamName = "offset";
+        private const string LimitParamName = "limit";
+        private const string SeedParamName = "seed";
 
         private readonly string _sql;
         private readonly DataConnection _connection;
         private readonly int _pageSize;
         private int _pageIndex;
         private readonly CancellationToken _cancellationToken;
-        private readonly bool _hasPaging;
-
+        
         public DataSourceBatch Current { get; set; }
+
+        public DateTime Seed { get; set; }
+
+        public bool EnablePaging { get; set; }
 
         public DataSourceEnumerator(string sql, DataConnection connection, int pageSize, CancellationToken cancellationToken)
         {
             _sql = sql;
-            _hasPaging = sql.Contains(OffsetKey);
             _connection = connection;
             _pageSize = pageSize;
             _cancellationToken = cancellationToken;
@@ -92,39 +116,43 @@ namespace MyLab.Search.Indexer
 
         public ValueTask<bool> MoveNextAsync()
         {
-            var pagedSql = _sql
-                .Replace(OffsetKey, (_pageIndex * _pageSize).ToString())
-                .Replace(LimitKey, _pageSize.ToString());
-
-            var entities = _connection.Query(reader =>
+            var queryParams = new []
             {
-                var resEnt = new DataSourceEntity
-                {
-                    Properties = new Dictionary<string, string>()
-                };
+                new DataParameter(OffsetParamName, _pageIndex * _pageSize, DataType.Int32),
+                new DataParameter(LimitParamName, _pageSize, DataType.Int32),
+                new DataParameter(SeedParamName, Seed, DataType.DateTime) 
+            };
 
-                for (var index = 0; index < reader.FieldCount; index++)
-                {
-                    resEnt.Properties.Add(reader.GetName(index), reader.GetString(index));
-                }
-
-                return resEnt;
-
-            }, pagedSql).ToArray();
+            var entities = _connection.Query(ReadEntity, _sql, queryParams).ToArray();
 
             Current = new DataSourceBatch
             {
                 Entities = entities,
-                Query = pagedSql
+                Query = _connection.LastQuery
             };
 
-            var res = _hasPaging
+            var res = EnablePaging
                 ? Current.Entities.Length != 0
                 : _pageIndex == 0;
 
             _pageIndex += 1;
 
             return new ValueTask<bool>(res);
+        }
+
+        private static DataSourceEntity ReadEntity(IDataReader reader)
+        {
+            var resEnt = new DataSourceEntity
+            {
+                Properties = new Dictionary<string, string>()
+            };
+
+            for (var index = 0; index < reader.FieldCount; index++)
+            {
+                resEnt.Properties.Add(reader.GetName(index), reader.GetString(index));
+            }
+
+            return resEnt;
         }
     }
 }

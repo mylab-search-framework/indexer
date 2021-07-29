@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -43,46 +45,77 @@ namespace MyLab.Search.Indexer
 
         public async Task Perform(CancellationToken cancellationToken)
         {
-            var sql = await ProvideSql();
-
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             _log.Action("Indexing started")
-                .AndFactIs("query", sql)
+                .AndFactIs("query", _options.Query)
                 .Write();
 
             int counter = 0;
+            var theLatestModified = await _seedService.ReadAsync();
 
-            await foreach (var batch in _dataSourceService.Read(sql).WithCancellation(cancellationToken))
+            var iterator = await _dataSourceService.Read(_options.Query);
+
+            await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
                 _log.Debug("Next batch of source data loaded")
-                    .AndFactIs("query", batch.Query)
                     .AndFactIs("count", batch.Entities.Length)
+                    .AndFactIs("options", _options)
                     .Write();
 
                 counter += batch.Entities.Length;
 
                 await _indexer.IndexAsync(batch.Entities);
+
+                var maxLastModifiedFromBatch = batch.Entities
+                    .Select(ExtractLastModified)
+                    .Max();
+
+                theLatestModified = maxLastModifiedFromBatch > theLatestModified
+                    ? maxLastModifiedFromBatch
+                    : theLatestModified;
             }
+
+            await _seedService.WriteAsync(theLatestModified);
 
             stopwatch.Stop();
 
             _log.Action("Indexing completed")
                 .AndFactIs("count", counter)
                 .AndFactIs("elapsed", stopwatch.Elapsed)
+                .AndFactIs("new-seed", theLatestModified)
                 .Write();
         }
 
-        private async Task<string> ProvideSql()
+        DateTime ExtractLastModified(DataSourceEntity e)
         {
-            const string seedKey = "{seed}";
+            if(_options.LastModifiedFieldName == null)
+                return DateTime.MinValue;
 
-            if (!_options.Query.Contains(seedKey)) return _options.Query;
+            if (e.Properties.TryGetValue(_options.LastModifiedFieldName, out var lastModifiedFieldValue))
+            {
+                if (DateTime.TryParse(lastModifiedFieldValue, out var lastModified))
+                {
+                    return lastModified;
+                }
+                else
+                {
+                    _log.Error("Can't parse lastModified date time value")
+                        .AndFactIs("actual", lastModifiedFieldValue)
+                        .Write();
 
-            var seed = await _seedService.ReadAsync();
+                    return DateTime.MinValue;
+                }
+            }
+            else
+            {
+                _log.Error("LastModified field not found")
+                    .AndFactIs("Expected field name", _options.LastModifiedFieldName)
+                    .Write();
 
-            return _options.Query.Replace(seedKey, seed.ToString());
+                return DateTime.MinValue;
+            }
         }
     }
 }

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -28,15 +29,20 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                PageSize = 2
+                PageSize = 2,
+                EnablePaging = true
             };
 
-            var service = new DbDataSourceService(dbManager, options);
+            var seedService = new TestSeedService();
+
+            var service = new DbDataSourceService(dbManager,seedService, options);
 
             var accum = new List<DataSourceEntity[]>();
 
+            var iterator = await service.Read("select * from foo_table where Id > 0 limit @limit offset @offset");
+
             //Act
-            await foreach(var batch in  service.Read("select * from foo_table where Id > 0 limit {limit} offset {offset}"))
+            await foreach(var batch in  iterator)
             {
                 accum.Add(batch.Entities);
             }
@@ -76,6 +82,19 @@ namespace IntegrationTests
             {
                 var t = await dataConnection.CreateTableAsync<TestEntity>("foo_table");
                 await t.BulkCopyAsync(Enumerable.Repeat<TestEntity>(null, 5).Select((entity, i) => new TestEntity{ Id = i, Value = i.ToString()}));
+            }
+        }
+
+        class TestSeedService : ISeedService
+        {
+            public Task WriteAsync(DateTime seed)
+            {
+                return Task.CompletedTask;
+            }
+
+            public Task<DateTime> ReadAsync()
+            {
+                return Task.FromResult(DateTime.Now);
             }
         }
     }
