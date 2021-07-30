@@ -1,22 +1,25 @@
 version: '3.2'
 
 services:
-  redis:
-    container_name: mylab-async-rpoc-redis
-    image: redis:6
-    ports: 
-    - 10201:6379
-    networks:
-    - mylab-async-rpoc
-
-  rabbit:
-    container_name: mylab-async-rpoc-rabbit
-    image: rabbitmq:3.8.3-management
+  mylab-search-test-es:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
+    container_name: mylab-search-test-es
+    environment:
+      - node.name=es01
+      - cluster.name=es-docker-cluster
+      - discovery.seed_hosts=es02,es03
+      - cluster.initial_master_nodes=es01,es02,es03
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
     ports:
-      - "10202:5672"
-      - "10203:15672"
-    networks:
-    - mylab-async-rpoc
-      
-networks:
-  mylab-async-rpoc:
+      - 9200:9200
+
+volumes:
+  es_data:
+    driver: local

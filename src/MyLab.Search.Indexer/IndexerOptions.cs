@@ -9,6 +9,8 @@
         public string IdFieldName { get; set; }
         public bool EnablePaging { get; set; } = false;
         public IndexerMode Mode { get; set; }
+
+        public string IndexName { get; set; }
     }
 
     public enum IndexerMode
