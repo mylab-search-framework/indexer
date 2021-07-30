@@ -9,7 +9,7 @@ using MyLab.Search.Indexer;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests
+namespace UnitTests
 {
     public class DbDataSourceServiceBehavior : IClassFixture<TmpDbFixture>
     {

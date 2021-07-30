@@ -10,17 +10,17 @@ using MyLab.Log;
 
 namespace MyLab.Search.Indexer
 {
-    class DataProviderSource : IDbProviderSource
+    class ConfiguredDataProviderSource : IDbProviderSource
     {
         private readonly IndexerOptions _options;
 
-        public DataProviderSource(IOptions<IndexerOptions> options)
+        public ConfiguredDataProviderSource(IOptions<IndexerOptions> options)
             :this(options.Value)
         {
             
         }
 
-        public DataProviderSource(IndexerOptions options)
+        public ConfiguredDataProviderSource(IndexerOptions options)
         {
             _options = options;
         }

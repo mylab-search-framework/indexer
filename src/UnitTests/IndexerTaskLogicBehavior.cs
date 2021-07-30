@@ -15,7 +15,7 @@ using MyLab.TaskApp;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests
+namespace UnitTests
 {
     public class IndexerTaskLogicBehavior : IClassFixture<TmpDbFixture>
     {

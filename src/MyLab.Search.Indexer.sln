@@ -5,7 +5,9 @@ VisualStudioVersion = 16.0.31424.327
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.Search.Indexer", "MyLab.Search.Indexer\MyLab.Search.Indexer.csproj", "{A7D0383C-3FF0-4756-9B3F-263E0D001335}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{FF6B1BCC-0722-4AB7-A21D-E8233B474DA9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{FF6B1BCC-0722-4AB7-A21D-E8233B474DA9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{EECB9CD2-07CD-4F39-8D35-A8F65DDAE734}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{FF6B1BCC-0722-4AB7-A21D-E8233B474DA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FF6B1BCC-0722-4AB7-A21D-E8233B474DA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FF6B1BCC-0722-4AB7-A21D-E8233B474DA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EECB9CD2-07CD-4F39-8D35-A8F65DDAE734}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EECB9CD2-07CD-4F39-8D35-A8F65DDAE734}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EECB9CD2-07CD-4F39-8D35-A8F65DDAE734}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EECB9CD2-07CD-4F39-8D35-A8F65DDAE734}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

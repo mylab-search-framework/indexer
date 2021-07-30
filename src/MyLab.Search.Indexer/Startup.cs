@@ -34,7 +34,7 @@ namespace MyLab.Search.Indexer
             services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
-                .AddDbTools<DataProviderSource>(_configuration)
+                .AddDbTools<ConfiguredDataProviderSource>(_configuration)
                 .AddLogging(l => l.AddConsole())
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>();
