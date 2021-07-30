@@ -8,7 +8,7 @@ using Microsoft.Extensions.Options;
 using MyLab.Db;
 using MyLab.Log;
 
-namespace MyLab.Search.Indexer
+namespace MyLab.Search.Indexer.Services
 {
     class ConfiguredDataProviderSource : IDbProviderSource
     {

@@ -9,7 +9,7 @@ using LinqToDB.Data;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
 
-namespace MyLab.Search.Indexer
+namespace MyLab.Search.Indexer.Services
 {
     public interface IDataSourceService
     {
@@ -50,7 +50,7 @@ namespace MyLab.Search.Indexer
         {
             return new DataSourceEnumerable(query, _dbManager.Use(), _options.PageSize)
             {
-                Seed = await _seedService.ReadAsync(),
+                Seed = await _seedService.ReadDateTimeAsync(),
                 EnablePaging = _options.EnablePaging
             };
         }

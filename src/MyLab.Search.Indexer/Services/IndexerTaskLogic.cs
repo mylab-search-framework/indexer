@@ -1,14 +1,15 @@
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyLab.Log;
 using MyLab.Log.Dsl;
+using MyLab.Search.Indexer.LogicStrategy;
 using MyLab.TaskApp;
 
-namespace MyLab.Search.Indexer
+namespace MyLab.Search.Indexer.Services
 {
     public class IndexerTaskLogic : ITaskLogic
     {
@@ -53,7 +54,11 @@ namespace MyLab.Search.Indexer
                 .Write();
 
             int counter = 0;
-            var theLatestModified = await _seedService.ReadAsync();
+
+            var strategy = CreateStrategy();
+            var seedCalc = strategy.CreateSeedCalc();
+
+            await seedCalc.StartAsync(); 
 
             var iterator = await _dataSourceService.Read(_options.Query);
 
@@ -68,24 +73,34 @@ namespace MyLab.Search.Indexer
 
                 await _indexer.IndexAsync(batch.Entities);
 
-                var maxLastModifiedFromBatch = batch.Entities
-                    .Select(ExtractLastModified)
-                    .Max();
-
-                theLatestModified = maxLastModifiedFromBatch > theLatestModified
-                    ? maxLastModifiedFromBatch
-                    : theLatestModified;
+                seedCalc.Update(batch.Entities);
             }
 
-            await _seedService.WriteAsync(theLatestModified);
+            await seedCalc.SaveAsync();
 
             stopwatch.Stop();
 
             _log.Action("Indexing completed")
                 .AndFactIs("count", counter)
                 .AndFactIs("elapsed", stopwatch.Elapsed)
-                .AndFactIs("new-seed", theLatestModified)
+                .AndFactIs("new-seed", seedCalc.GetLogValue())
                 .Write();
+        }
+
+        private IIndexerLogicStrategy CreateStrategy()
+        {
+            switch (_options.Mode)
+            {
+                case IndexerMode.Update:
+                    return new UpdateModeIndexerLogicStrategy(_options.LastModifiedFieldName, _seedService);
+                case IndexerMode.Add:
+                    return new AddModeIndexerLogicStrategy(_options.IdFieldName, _seedService);
+                case IndexerMode.Undefined:
+                    throw new InvalidOperationException("Indexer mode not defined");
+                default:
+                    throw new InvalidOperationException("Unsupported Indexer mode")
+                        .AndFactIs("mode", _options.Mode);
+            }
         }
 
         DateTime ExtractLastModified(DataSourceEntity e)

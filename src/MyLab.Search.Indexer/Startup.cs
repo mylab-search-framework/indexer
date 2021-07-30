@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
+using MyLab.Search.Indexer.Services;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
 

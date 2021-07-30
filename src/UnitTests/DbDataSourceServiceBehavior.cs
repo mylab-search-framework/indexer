@@ -4,8 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
+using Microsoft.AspNetCore.Mvc.Routing;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Services;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -87,14 +89,14 @@ namespace UnitTests
 
         class TestSeedService : ISeedService
         {
-            public Task WriteAsync(DateTime seed)
+            public Task WriteAsync(string seed)
             {
                 return Task.CompletedTask;
             }
 
-            public Task<DateTime> ReadAsync()
+            public Task<string> ReadAsync()
             {
-                return Task.FromResult(DateTime.Now);
+                return Task.FromResult(string.Empty);
             }
         }
     }

@@ -1,49 +1,18 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using LinqToDB;
-using LinqToDB.Data;
-using LinqToDB.Mapping;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Services;
 using MyLab.TaskApp;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace UnitTests
 {
-    public class IndexerTaskLogicBehavior : IClassFixture<TmpDbFixture>
+    public partial class IndexerTaskLogicBehavior : IClassFixture<TmpDbFixture>
     {
-        private readonly TmpDbFixture _dvFxt;
-        private readonly ITestOutputHelper _output;
-
-        public IndexerTaskLogicBehavior(TmpDbFixture dvFxt, ITestOutputHelper output)
-        {
-            dvFxt.Output = output;
-            _dvFxt = dvFxt;
-            _output = output;
-        }
-
-        async Task<IServiceProvider> InitServices(Action<IndexerOptions> configureOptions)
-        {
-            var testDb = await _dvFxt.CreateDbAsync(new FiveInserter());
-
-            return new ServiceCollection()
-                .AddSingleton<IDbManager>(testDb)
-                .AddSingleton<IDataSourceService, DbDataSourceService>()
-                .AddSingleton<ISeedService, TestSeedService>()
-                .AddSingleton<IDataIndexer, TestIndexer>()
-                .AddSingleton<ITaskLogic, IndexerTaskLogic>()
-                .Configure(configureOptions)
-                .AddLogging(l => l.AddXUnit(_output).SetMinimumLevel(LogLevel.Debug))
-                .BuildServiceProvider();
-        }
-
         [Fact]
         public async Task ShouldIndexFullWhenNoSeed()
         {
@@ -53,6 +22,7 @@ namespace UnitTests
                     o.PageSize = 2;
                     o.EnablePaging = true;
                     o.Query = "select * from foo_table limit @limit offset @offset";
+                    o.Mode = IndexerMode.Update;
                 });
             
             var logic = sp.GetService<ITaskLogic>();
@@ -76,7 +46,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldUpdateSeed()
+        public async Task ShouldUpdateLastModifiedSeed()
         {
             //Arrange
             var lastModified = DateTime.Now;
@@ -87,27 +57,49 @@ namespace UnitTests
                     o.Query = "select * from foo_table limit @limit offset @offset";
                     o.EnablePaging = true;
                     o.LastModifiedFieldName = nameof(TestEntity.LastModified);
+                    o.Mode = IndexerMode.Update;
                 });
 
             var logic = sp.GetService<ITaskLogic>();
             var dbManager = sp.GetService<IDbManager>();
             var seedService= sp.GetService<ISeedService>();
 
-            var updatedCount = await dbManager.DoOnce()
-                .GetTable<TestEntity>()
-                .Where(e => e.Id == 2)
-                .Set(e => e.LastModified, lastModified)
-                .UpdateAsync();
+            var updatedCount = await UpdateLastModified(dbManager, 2, lastModified);
 
             _output.WriteLine("Updated count: {0}", updatedCount);
 
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadAsync();
+            var actualSeed = await seedService.ReadDateTimeAsync();
 
             //Assert
             Assert.Equal(lastModified, actualSeed);
+        }
+
+        [Fact]
+        public async Task ShouldUpdateIdSeed()
+        {
+            //Arrange
+            var sp = await InitServices(o =>
+            {
+                o.PageSize = 2;
+                o.Query = "select * from foo_table limit @limit offset @offset";
+                o.EnablePaging = true;
+                o.IdFieldName = nameof(TestEntity.Id);
+                o.Mode = IndexerMode.Add;
+            });
+
+            var logic = sp.GetService<ITaskLogic>();
+            var seedService = sp.GetService<ISeedService>();
+            
+            //Act
+            await logic.Perform(CancellationToken.None);
+
+            var actualSeed = await seedService.ReadIdAsync();
+
+            //Assert
+            Assert.Equal(4, actualSeed);
         }
 
         [Fact]
@@ -119,6 +111,7 @@ namespace UnitTests
             var sp = await InitServices(o =>
             {
                 o.Query = "select * from foo_table where LastModified > @seed";
+                o.Mode = IndexerMode.Update;
             });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -126,16 +119,12 @@ namespace UnitTests
             var seedService = sp.GetService<ISeedService>();
             var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
 
-            var updatedCount = await dbManager.DoOnce()
-                .GetTable<TestEntity>()
-                .Where(e => e.Id == 2)
-                .Set(e => e.LastModified, lastModified)
-                .UpdateAsync();
+            var updatedCount = await UpdateLastModified(dbManager, 2, lastModified);
 
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteAsync(lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync(lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -143,70 +132,6 @@ namespace UnitTests
             //Assert
             Assert.Single(indexer.IndexedEntities);
             Assert.True(indexer.IndexedEntities.ContainsKey("2"));
-        }
-
-        [Table("foo_table")]
-        class TestEntity
-        {
-            [Column]
-
-            public int Id { get; set; }
-            [Column]
-
-            public string Value { get; set; }
-            [Column]
-            public DateTime LastModified { get; set; } = DateTime.MinValue;
-        }
-
-        class FiveInserter : ITestDbInitializer
-        {
-            public async Task InitializeAsync(DataConnection dataConnection)
-            {
-                var t = await dataConnection.CreateTableAsync<TestEntity>();
-                await t.BulkCopyAsync(Enumerable.Repeat<TestEntity>(null, 5).Select((entity, i) => new TestEntity { Id = i, Value = i.ToString() }));
-            }
-        }
-
-        class TestSeedService : ISeedService
-        {
-            private DateTime _seed;
-
-            public TestSeedService()
-                : this(DateTime.MinValue)
-            {
-                
-            }
-
-            public TestSeedService(DateTime seed)
-            {
-                _seed = seed;
-            }
-
-            public Task WriteAsync(DateTime seed)
-            {
-                _seed = seed;
-
-                return Task.CompletedTask;
-            }
-
-            public Task<DateTime> ReadAsync()
-            {
-                return Task.FromResult(_seed);
-            }
-        }
-
-        class TestIndexer : IDataIndexer
-        {
-            public Dictionary<string, DataSourceEntity> IndexedEntities { get; } = new Dictionary<string, DataSourceEntity>();
-
-            public Task IndexAsync(DataSourceEntity[] dataSourceEntities)
-            {
-                foreach (var entity in dataSourceEntities)
-                {
-                    IndexedEntities.Add(entity.Properties[nameof(TestEntity.Id)], entity);
-                }
-                return Task.CompletedTask;
-            }
         }
     }
 }
