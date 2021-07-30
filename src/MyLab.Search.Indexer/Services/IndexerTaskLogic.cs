@@ -58,9 +58,10 @@ namespace MyLab.Search.Indexer.Services
             var strategy = CreateStrategy();
             var seedCalc = strategy.CreateSeedCalc();
 
-            await seedCalc.StartAsync(); 
+            await seedCalc.StartAsync();
+            var seedParameter = await strategy.CreateSeedDataParameterAsync();
 
-            var iterator = await _dataSourceService.Read(_options.Query);
+            var iterator = _dataSourceService.Read(_options.Query, seedParameter);
 
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {

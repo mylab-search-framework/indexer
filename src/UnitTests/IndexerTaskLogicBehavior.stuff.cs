@@ -11,6 +11,7 @@ using MyLab.Db;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using MyLab.TaskApp;
 using Xunit.Abstractions;
 

@@ -1,3 +1,6 @@
+using System.Threading.Tasks;
+using LinqToDB;
+using LinqToDB.Data;
 using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.Services;
 
@@ -22,6 +25,12 @@ namespace MyLab.Search.Indexer.LogicStrategy
             {
                 Log = Log
             };
+        }
+
+        public async Task<DataParameter> CreateSeedDataParameterAsync()
+        {
+            var seed = await _seedService.ReadDateTimeAsync();
+            return new DataParameter(QueryParameterNames.Seed, seed, DataType.DateTime);
         }
     }
 }

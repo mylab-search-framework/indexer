@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -35,13 +36,11 @@ namespace UnitTests
                 EnablePaging = true
             };
 
-            var seedService = new TestSeedService();
-
-            var service = new DbDataSourceService(dbManager,seedService, options);
+            var service = new DbDataSourceService(dbManager, options);
 
             var accum = new List<DataSourceEntity[]>();
 
-            var iterator = await service.Read("select * from foo_table where Id > 0 limit @limit offset @offset");
+            var iterator = service.Read("select * from foo_table where Id > 0 limit @limit offset @offset");
 
             //Act
             await foreach(var batch in  iterator)

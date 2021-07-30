@@ -133,5 +133,28 @@ namespace UnitTests
             Assert.Single(indexer.IndexedEntities);
             Assert.True(indexer.IndexedEntities.ContainsKey("2"));
         }
+
+        [Fact]
+        public async Task ShouldIndexNew()
+        {
+            //Arrange
+            var sp = await InitServices(o =>
+            {
+                o.Query = "select * from foo_table where Id > @seed";
+                o.Mode = IndexerMode.Add;
+            });
+
+            var logic = sp.GetService<ITaskLogic>();
+            var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
+
+            await SaveSeed(sp, ss => ss.WriteIdAsync(3));
+
+            //Act
+            await logic.Perform(CancellationToken.None);
+
+            //Assert
+            Assert.Single(indexer.IndexedEntities);
+            Assert.True(indexer.IndexedEntities.ContainsKey("4"));
+        }
     }
 }

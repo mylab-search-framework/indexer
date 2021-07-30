@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
 
