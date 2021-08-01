@@ -22,7 +22,7 @@ namespace UnitTests
                     o.PageSize = 2;
                     o.EnablePaging = true;
                     o.Query = "select * from foo_table limit @limit offset @offset";
-                    o.Mode = IndexerMode.Update;
+                    o.ScanMode = IndexerScanMode.Update;
                 });
             
             var logic = sp.GetService<ITaskLogic>();
@@ -41,7 +41,7 @@ namespace UnitTests
 
             void CheckIndexedEntity(string id, string expectedValue)
             {
-                Assert.Equal(expectedValue, indexer.IndexedEntities[id].Properties[nameof(TestEntity.Value)]);
+                Assert.Equal(expectedValue, indexer.IndexedEntities[id].Properties[nameof(TestEntity.Value)].Value);
             }
         }
 
@@ -57,7 +57,7 @@ namespace UnitTests
                     o.Query = "select * from foo_table limit @limit offset @offset";
                     o.EnablePaging = true;
                     o.LastModifiedFieldName = nameof(TestEntity.LastModified);
-                    o.Mode = IndexerMode.Update;
+                    o.ScanMode = IndexerScanMode.Update;
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -87,7 +87,7 @@ namespace UnitTests
                 o.Query = "select * from foo_table limit @limit offset @offset";
                 o.EnablePaging = true;
                 o.IdFieldName = nameof(TestEntity.Id);
-                o.Mode = IndexerMode.Add;
+                o.ScanMode = IndexerScanMode.Add;
             });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -111,7 +111,7 @@ namespace UnitTests
             var sp = await InitServices(o =>
             {
                 o.Query = "select * from foo_table where LastModified > @seed";
-                o.Mode = IndexerMode.Update;
+                o.ScanMode = IndexerScanMode.Update;
             });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -141,7 +141,7 @@ namespace UnitTests
             var sp = await InitServices(o =>
             {
                 o.Query = "select * from foo_table where Id > @seed";
-                o.Mode = IndexerMode.Add;
+                o.ScanMode = IndexerScanMode.Add;
             });
 
             var logic = sp.GetService<ITaskLogic>();

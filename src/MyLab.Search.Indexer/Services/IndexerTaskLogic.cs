@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
 using MyLab.Log.Dsl;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.LogicStrategy;
 using MyLab.TaskApp;
 
@@ -72,7 +73,7 @@ namespace MyLab.Search.Indexer.Services
 
                 counter += batch.Entities.Length;
 
-                await _indexer.IndexAsync(batch.Entities);
+                await _indexer.IndexAsync(batch.Entities, cancellationToken);
 
                 seedCalc.Update(batch.Entities);
             }
@@ -90,47 +91,17 @@ namespace MyLab.Search.Indexer.Services
 
         private IIndexerLogicStrategy CreateStrategy()
         {
-            switch (_options.Mode)
+            switch (_options.ScanMode)
             {
-                case IndexerMode.Update:
+                case IndexerScanMode.Update:
                     return new UpdateModeIndexerLogicStrategy(_options.LastModifiedFieldName, _seedService);
-                case IndexerMode.Add:
+                case IndexerScanMode.Add:
                     return new AddModeIndexerLogicStrategy(_options.IdFieldName, _seedService);
-                case IndexerMode.Undefined:
+                case IndexerScanMode.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:
                     throw new InvalidOperationException("Unsupported Indexer mode")
-                        .AndFactIs("mode", _options.Mode);
-            }
-        }
-
-        DateTime ExtractLastModified(DataSourceEntity e)
-        {
-            if(_options.LastModifiedFieldName == null)
-                return DateTime.MinValue;
-
-            if (e.Properties.TryGetValue(_options.LastModifiedFieldName, out var lastModifiedFieldValue))
-            {
-                if (DateTime.TryParse(lastModifiedFieldValue, out var lastModified))
-                {
-                    return lastModified;
-                }
-                else
-                {
-                    _log.Error("Can't parse lastModified date time value")
-                        .AndFactIs("actual", lastModifiedFieldValue)
-                        .Write();
-
-                    return DateTime.MinValue;
-                }
-            }
-            else
-            {
-                _log.Error("LastModified field not found")
-                    .AndFactIs("Expected field name", _options.LastModifiedFieldName)
-                    .Write();
-
-                return DateTime.MinValue;
+                        .AndFactIs("mode", _options.ScanMode);
             }
         }
     }

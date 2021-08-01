@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -6,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -75,12 +75,17 @@ namespace MyLab.Search.Indexer.Tools
         {
             var resEnt = new DataSourceEntity
             {
-                Properties = new Dictionary<string, string>()
+                Properties = new Dictionary<string, DataSourcePropertyValue>()
             };
 
             for (var index = 0; index < reader.FieldCount; index++)
             {
-                resEnt.Properties.Add(reader.GetName(index), reader.GetString(index));
+                var typeName = reader.GetDataTypeName(index);
+                var value = new DataSourcePropertyValue
+                {
+                    Type = DataSourcePropertyTypeConverter.Convert(typeName),
+                    Value = reader.GetString(index)
+                };
             }
 
             return resEnt;

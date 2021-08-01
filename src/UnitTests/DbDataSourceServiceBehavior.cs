@@ -7,6 +7,7 @@ using LinqToDB.Data;
 using Microsoft.AspNetCore.Mvc.Routing;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using Xunit;
@@ -55,20 +56,20 @@ namespace UnitTests
             Assert.NotNull(accum[0][1].Properties);
             Assert.Equal(2, accum[0][0].Properties.Count);
             Assert.Equal(2, accum[0][1].Properties.Count);
-            Assert.Equal("1", accum[0][0].Properties[nameof(TestEntity.Id)]);
-            Assert.Equal("1", accum[0][0].Properties[nameof(TestEntity.Value)]);
-            Assert.Equal("2", accum[0][1].Properties[nameof(TestEntity.Id)]);
-            Assert.Equal("2", accum[0][1].Properties[nameof(TestEntity.Value)]);
+            Assert.Equal("1", accum[0][0].Properties[nameof(TestEntity.Id)].Value);
+            Assert.Equal("1", accum[0][0].Properties[nameof(TestEntity.Value)].Value);
+            Assert.Equal("2", accum[0][1].Properties[nameof(TestEntity.Id)].Value);
+            Assert.Equal("2", accum[0][1].Properties[nameof(TestEntity.Value)].Value);
 
             Assert.Equal(2, accum[1].Length);
             Assert.NotNull(accum[1][0].Properties);
             Assert.NotNull(accum[1][1].Properties);
             Assert.Equal(2, accum[1][0].Properties.Count);
             Assert.Equal(2, accum[1][1].Properties.Count);
-            Assert.Equal("3", accum[1][0].Properties[nameof(TestEntity.Id)]);
-            Assert.Equal("3", accum[1][0].Properties[nameof(TestEntity.Value)]);
-            Assert.Equal("4", accum[1][1].Properties[nameof(TestEntity.Id)]);
-            Assert.Equal("4", accum[1][1].Properties[nameof(TestEntity.Value)]);
+            Assert.Equal("3", accum[1][0].Properties[nameof(TestEntity.Id)].Value);
+            Assert.Equal("3", accum[1][0].Properties[nameof(TestEntity.Value)].Value);
+            Assert.Equal("4", accum[1][1].Properties[nameof(TestEntity.Id)].Value);
+            Assert.Equal("4", accum[1][1].Properties[nameof(TestEntity.Value)].Value);
         }
 
         class TestEntity

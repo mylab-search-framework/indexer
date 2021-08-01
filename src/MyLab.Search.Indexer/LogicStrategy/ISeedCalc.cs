@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using MyLab.Search.Indexer.DataContract;
 
 namespace MyLab.Search.Indexer.LogicStrategy
 {

@@ -1,6 +1,6 @@
 ﻿using System;
 using Elasticsearch.Net;
-using MyLab.Elastic.Test;
+using MyLab.Search.EsTest;
 
 namespace IntegrationTests
 {

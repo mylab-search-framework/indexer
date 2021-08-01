@@ -1,6 +1,6 @@
 ﻿namespace MyLab.Search.Indexer.Services
 {
-    class IndexEntity
+    public class IndexEntity
     {
         public string Id { get; set; }
     }

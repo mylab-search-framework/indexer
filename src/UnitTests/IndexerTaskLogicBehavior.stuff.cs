@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
@@ -10,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.TaskApp;
@@ -88,11 +90,11 @@ namespace UnitTests
             public Dictionary<string, DataSourceEntity> IndexedEntities { get; } =
                 new Dictionary<string, DataSourceEntity>();
 
-            public Task IndexAsync(DataSourceEntity[] dataSourceEntities)
+            public Task IndexAsync(DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
                 foreach (var entity in dataSourceEntities)
                 {
-                    IndexedEntities.Add(entity.Properties[nameof(TestEntity.Id)], entity);
+                    IndexedEntities.Add(entity.Properties[nameof(TestEntity.Id)].Value, entity);
                 }
 
                 return Task.CompletedTask;

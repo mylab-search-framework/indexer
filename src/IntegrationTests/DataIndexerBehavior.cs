@@ -1,4 +1,4 @@
-﻿using MyLab.Elastic.Test;
+﻿using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Services;
 using Xunit;
 

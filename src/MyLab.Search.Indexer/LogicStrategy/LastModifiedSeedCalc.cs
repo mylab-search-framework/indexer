@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using MyLab.Log.Dsl;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.LogicStrategy
@@ -53,7 +54,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
 
             if (e.Properties.TryGetValue(_lastModifiedFieldName, out var lastModifiedFieldValue))
             {
-                if (DateTime.TryParse(lastModifiedFieldValue, out var lastModified))
+                if (DateTime.TryParse(lastModifiedFieldValue.Value, out var lastModified))
                 {
                     return lastModified;
                 }
