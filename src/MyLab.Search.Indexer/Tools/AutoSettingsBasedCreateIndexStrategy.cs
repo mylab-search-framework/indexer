@@ -28,7 +28,7 @@ namespace MyLab.Search.Indexer.Tools
         private ITypeMapping CreateMapping(TypeMappingDescriptor<object> typeMappingDescriptor, DataSourceEntity entityExample)
         {
             var md = typeMappingDescriptor;
-
+            
             md.Properties(pd => CreatePropertiesDescriptions(pd, entityExample));
 
             return md;

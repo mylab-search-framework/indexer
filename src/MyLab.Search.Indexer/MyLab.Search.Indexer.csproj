@@ -9,7 +9,7 @@
     <PackageReference Include="MyLab.Log" Version="3.1.5" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.1.2" />
     <PackageReference Include="MyLab.Mq" Version="1.8.19" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="1.5.14" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="1.5.17" />
     <PackageReference Include="MyLab.TaskApp" Version="1.2.3" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="7.13.2" />
   </ItemGroup>
