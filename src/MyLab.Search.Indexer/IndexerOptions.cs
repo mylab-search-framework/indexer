@@ -12,7 +12,9 @@
         public string IndexName { get; set; }
         public string IndexSettingsPath { get; set; } = "/etc/mylab-indexer/index-settings.json";
 
-        public IndexCreationMode IndexCreationMode { get; set; }
+        public EntityMappingMode EntityMappingMode { get; set; }
+
+        public string MqQueue { get; set; }
     }
 
     public enum IndexerScanMode
@@ -22,7 +24,7 @@
         Add
     }
 
-    public enum IndexCreationMode
+    public enum EntityMappingMode
     {
         Undefined,
         Auto,

@@ -8,6 +8,7 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
+using MyLab.Mq.PubSub;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
@@ -31,12 +32,17 @@ namespace MyLab.Search.Indexer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<IndexerOptions>(_configuration.GetSection("Indexer"));
+            services
+                .AddSingleton(_configuration)
+                .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
+                .ConfigureMq(_configuration);
 
             services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
+                .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerOptions>(
+                        opt => new MqConsumer<string,IndexerMqConsumerLogic>(opt.MqQueue)))
                 .AddLogging(l => l.AddConsole())
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>();

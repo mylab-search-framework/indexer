@@ -32,7 +32,7 @@ namespace IntegrationTests
             var options = new IndexerOptions
             {
                 IndexName = indexName,
-                IndexCreationMode = IndexCreationMode.Auto,
+                EntityMappingMode = EntityMappingMode.Auto,
                 IdFieldName = "Id"
             };
 
@@ -100,7 +100,7 @@ namespace IntegrationTests
             var options = new IndexerOptions
             {
                 IndexName = indexName,
-                IndexCreationMode = IndexCreationMode.Auto,
+                EntityMappingMode = EntityMappingMode.Auto,
                 IdFieldName = "Id"
             };
 
