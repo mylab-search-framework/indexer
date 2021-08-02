@@ -15,6 +15,19 @@ services:
     ports:
       - 9200:9200
 
+  mylab-search-test-mq:
+    container_name: mylab-search-test-mq
+    image: triasoft/rabbit-ex:1.0.0
+    hostname: mylab-es-tests-mq
+    volumes:
+      - mylab_search_test_mq_data:/var/lib/rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - mylab-es-tests
+
 volumes:
-  es_data:
+  mylab_search_test_es_data:
     driver: local
+  mylab_search_test_mq_data:
