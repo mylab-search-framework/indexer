@@ -9,6 +9,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.Mq.PubSub;
+using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
@@ -42,10 +43,15 @@ namespace MyLab.Search.Indexer
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
                 .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerOptions>(
-                        opt => new MqConsumer<string,IndexerMqConsumerLogic>(opt.MqQueue)))
+                        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.MqQueue))
+                , optional: true)
+                .AddEsTools(_configuration)
+                
                 .AddLogging(l => l.AddConsole())
                 .AddSingleton<ISeedService, FileSeedService>()
+                .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

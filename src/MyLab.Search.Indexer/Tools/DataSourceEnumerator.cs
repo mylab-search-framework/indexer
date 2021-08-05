@@ -45,11 +45,13 @@ namespace MyLab.Search.Indexer.Tools
 
         public ValueTask<bool> MoveNextAsync()
         {
-            var queryParams = new List<DataParameter>
+            var queryParams = new List<DataParameter>();
+
+            if (EnablePaging)
             {
-                new DataParameter(QueryParameterNames.Offset, _pageIndex * _pageSize, DataType.Int32),
-                new DataParameter(QueryParameterNames.Limit, _pageSize, DataType.Int32)
-            };
+                queryParams.Add(new DataParameter(QueryParameterNames.Offset, _pageIndex * _pageSize, DataType.Int32));
+                queryParams.Add(new DataParameter(QueryParameterNames.Limit, _pageSize, DataType.Int32));
+            }
 
             if(_seedParameter != null)
                 queryParams.Add(_seedParameter);
@@ -80,12 +82,15 @@ namespace MyLab.Search.Indexer.Tools
 
             for (var index = 0; index < reader.FieldCount; index++)
             {
+                var name = reader.GetName(index);
                 var typeName = reader.GetDataTypeName(index);
                 var value = new DataSourcePropertyValue
                 {
                     Type = DataSourcePropertyTypeConverter.Convert(typeName),
                     Value = reader.GetString(index)
                 };
+
+                resEnt.Properties.Add(name, value);
             }
 
             return resEnt;

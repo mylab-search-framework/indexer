@@ -11,23 +11,33 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - mylab_search_test_es_data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
 
   mylab-search-test-mq:
     container_name: mylab-search-test-mq
-    image: triasoft/rabbit-ex:1.0.0
-    hostname: mylab-es-tests-mq
+    image: rabbitmq:3.8.3-management
     volumes:
       - mylab_search_test_mq_data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
-    networks:
-      - mylab-es-tests
+
+  mylab-search-test-db:
+    container_name: mylab-search-test-db
+    image: mysql:8.0.19
+    environment:
+      - MYSQL_ROOT_PASSWORD=root-pass
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+      - MYSQL_DATABASE=test
+    volumes:
+      - mylab_search_test_db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
 
 volumes:
   mylab_search_test_es_data:
-    driver: local
   mylab_search_test_mq_data:
+  mylab_search_test_db_data:

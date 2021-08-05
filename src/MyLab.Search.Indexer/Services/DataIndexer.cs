@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -60,7 +61,15 @@ namespace MyLab.Search.Indexer.Services
 
                 var createIndexStrategy = await factory.CreateAsync(cancellationToken);
 
+                _log?.Warning("Index not found and will be created")
+                    .AndFactIs("index-name", _options.IndexName)
+                    .Write();
+
                 await createIndexStrategy.CreateIndexAsync(_esManager, _options.IndexName, cancellationToken);
+
+                _log?.Action("Index created")
+                    .AndFactIs("index-name", _options.IndexName)
+                    .Write();
             }
 
             var indexEntities = dataSourceEntities.Select(EntityToDynamic).ToArray();
@@ -82,8 +91,22 @@ namespace MyLab.Search.Indexer.Services
             return new IndexEntity(
                 arg.Properties.ToDictionary(
                     v => v.Key, 
-                    v => (object)v.Value.Value
+                    v => ValueToObject(v.Value)
             ));
+
+            object ValueToObject(DataSourcePropertyValue val)
+            {
+                switch (val.Type)
+                {
+                    case DataSourcePropertyType.Numeric:
+                        return long.Parse(val.Value);
+                    case DataSourcePropertyType.Double:
+                        return double.Parse(val.Value, CultureInfo.InvariantCulture);
+                    default:
+                        return val.Value;
+
+                }
+            }
         }
     }
 
