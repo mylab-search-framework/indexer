@@ -4,4 +4,17 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="MyLab.Db" Version="1.3.5" />
+    <PackageReference Include="MyLab.Log" Version="3.1.5" />
+    <PackageReference Include="MyLab.Log.Dsl" Version="3.1.2" />
+    <PackageReference Include="MyLab.Mq" Version="1.9.26" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="1.5.21" />
+    <PackageReference Include="MyLab.Search.EsTest" Version="1.4.11" />
+    <PackageReference Include="MyLab.TaskApp" Version="1.3.5" />
+    <PackageReference Include="MyLab.WebErrors" Version="1.0.3" />
+    <PackageReference Include="MySql.Data" Version="8.0.26" />
+    <PackageReference Include="NEST.JsonNetSerializer" Version="7.13.2" />
+  </ItemGroup>
+
 </Project>
