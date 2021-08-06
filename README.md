@@ -131,7 +131,9 @@ select * from foo_table where LastModified > @seed
 
 По этой стратегии, `Indexer` в настройках указывает только сопоставление сущности (`mapping`). Сопосталвение вычисляется атоматически на основании информации о первой сущности из полученной выборки или о сущности из сообшения очереди. 
 
-Для вычилсения сопоставления применяется следующий алгоритм:
+#### Сопоставление сущности из очереди
+
+Для вычилсения сопоставления на основе сущности, полученной из очереди, применяется следующий алгоритм:
 
 * сопоставляются все поля сущности;
 * используется оригинальное имя поля;
@@ -141,6 +143,19 @@ select * from foo_table where LastModified > @seed
   * `double` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.double.tryparse?view=net-5.0) [double](https://docs.microsoft.com/ru-ru/dotnet/api/system.double?view=net-5.0)  для [инвариантной культуры](https://docs.microsoft.com/ru-ru/dotnet/api/system.globalization.cultureinfo.invariantculture?view=net-5.0);
   * `date` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.datetime.tryparse?view=net-5.0#System_DateTime_TryParse_System_String_System_DateTime__) [DateTime](https://docs.microsoft.com/ru-ru/dotnet/api/system.datetime?view=net-5.0);
   * `text` - в остальных случаях.
+
+#### Сопостовление сущности из БД
+
+Для вычилсения сопоставления на основе сущности, полученной из БД, применяется следующий алгоритм:
+
+* сопоставляются все поля сущности;
+* используется оригинальное имя поля;
+* тип поля определяется следующим образом:
+  * `boolean` - если имя типа поля содержит `bool` или равно `bit`;
+  * `long` - если имя типа поля содержит `int`;
+  * `double` - если имя типа поля равно одному из значений: `decimal`, `double`, `float`, `single`, `real`;
+  * `date` - если имя типа поля содержит `date`;
+  * `text` - если имя типа поля содержит `char` и в остальных случаях;
 
  ### Стратегия `File`
 
@@ -181,7 +196,7 @@ select * from foo_table where LastModified > @seed
     "Provider": "sqlite",
     "Query": "select * from test_tb where Id > @seed limit @limit offset @offset",
     "Strategy": "Add",
-    "Paging": "true",
+    "EnablePaging": "true",
     "PageSize": "100"
   }
 }
@@ -228,7 +243,7 @@ select * from foo_table where LastModified > @seed
 * `IdProperty` - имя свойства, идентифицирующее сущность;
 * `LastChangeProperty` - имя свойства, содержащее дату и время актуализации данных сущности (создания или изменения). Обязательно, если `Db.Strategy == 'Update'`;
 * `NewIndexStrategy` - стратегия создания индекса: `Auto`/`File`;
-*  `NewIndexRequestFile` - путь к файлу запроса создания индекса. По умолчанию `/etc/mylab-indexer/new-index.json`.
+*  `NewIndexRequestFile` - путь к файлу запроса создания индекса. По умолчанию `/etc/mylab-indexer/new-index-request.json`.
 
 Пример узла конфигурации `Indexer`:
 
@@ -243,6 +258,22 @@ select * from foo_table where LastModified > @seed
 ```
 
 ## Развёртывание
+
+Развёртывание сервиса предусмотрено в виде `docker`-контейнера.
+
+Пример `docker-compose.yml` файла:
+
+```yaml
+version: '3.2'
+
+services:
+  mylab-search-indexer:
+    container_name: mylab-search-indexer
+    image: ghcr.io/mylab-search-fx/indexer:latest
+    volumes:
+    - ./appsettings.json:/app/appsettings.json
+    - ./new-index-request.json:/etc/mylab-indexer/new-index-request.json
+```
 
 ## Рекомендации
 
@@ -259,3 +290,39 @@ select * from foo_table where LastModified > @seed
 ### 3. Обеспечте соответствие MQ и БД сущностей
 
 При разработке обратите пристальноевнимание на состав сущностей, выбираемых из БД и сущностей, передаваемых через очередь. Набор полей должен точно соответствовать по перечню полей, их именам (с учётом регистра) и типам. В противном случае могут быть проблемы с поиском потерей данных.
+
+## Диагностика
+
+### Не найдено поле последней модификации
+
+Симптом:
+
+```yaml
+fail: MyLab.Search.Indexer.Services.IndexerTaskLogic[0]
+      Message: Last change property not found
+      Time: 2021-08-06T16:28:08.069
+      Labels:
+        log_level: error
+      Facts:
+        Expected field name: LastChangeDt
+        Actual fields: Id, GivenName, LastName
+```
+
+Прична:
+
+Запрос не выбирает поле последнего изменения записи, поэтому индексатор не может его найти, чтобы вычислить максимальное значение и записать в `seed`.
+
+Пример такого запроса:
+
+```sql
+select Id, GivenName, LastName from user where LastChangeDt > @seed
+```
+
+Решение:
+
+Добавить поле последнего именения сущности в список получаемых полей:
+
+```sql
+select Id, GivenName, LastName, LastChangeDt from user where LastChangeDt > @seed
+```
+
