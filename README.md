@@ -123,6 +123,139 @@ select * from foo_table where LastModified > @seed
 * самостоятельно реализовать удаление идексируемых сущностей;
 * не удалять сущности, а помечать их как удалённые, что с точки зрения `Indexer` является изменением сущности.
 
+## Создание индекса
+
+Если в процессе индексирования, `Indexer` обнаружит, что целевой индекс в `ElasticSearch` отсутствует, то он попытается его сздать. При этом, будут использованы настройки в соответствии со стратегией определения настроек инлекса из параметра конфигурации приложения `Indexer.NewIndexStrategy`, который может принимать значения: `Auto`/`File`.
+
+### Cтратегия  `Auto`
+
+По этой стратегии, `Indexer` в настройках указывает только сопоставление сущности (`mapping`). Сопосталвение вычисляется атоматически на основании информации о первой сущности из полученной выборки или о сущности из сообшения очереди. 
+
+Для вычилсения сопоставления применяется следующий алгоритм:
+
+* сопоставляются все поля сущности;
+* используется оригинальное имя поля;
+* тип поля определяется следующим образом:
+  * `boolean` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.boolean.tryparse?view=net-5.0) [bool](https://docs.microsoft.com/ru-ru/dotnet/api/system.boolean?view=net-5.0);
+  * `long` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.int64.tryparse?view=net-5.0#System_Int64_TryParse_System_String_System_Globalization_NumberStyles_System_IFormatProvider_System_Int64__) [long](https://docs.microsoft.com/ru-ru/dotnet/api/system.int64?view=net-5.0) для [инвариантной культуры](https://docs.microsoft.com/ru-ru/dotnet/api/system.globalization.cultureinfo.invariantculture?view=net-5.0);
+  * `double` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.double.tryparse?view=net-5.0) [double](https://docs.microsoft.com/ru-ru/dotnet/api/system.double?view=net-5.0)  для [инвариантной культуры](https://docs.microsoft.com/ru-ru/dotnet/api/system.globalization.cultureinfo.invariantculture?view=net-5.0);
+  * `date` - если [валидное значение](https://docs.microsoft.com/ru-ru/dotnet/api/system.datetime.tryparse?view=net-5.0#System_DateTime_TryParse_System_String_System_DateTime__) [DateTime](https://docs.microsoft.com/ru-ru/dotnet/api/system.datetime?view=net-5.0);
+  * `text` - в остальных случаях.
+
+ ### Стратегия `File`
+
+По этой стратегии запрос создания индекса загружаются из файла, путь к которому задаётся параметром конфигурации `Indexer.NewIndexRequestFile`.
+
+Содержимое файла должно быть в формате `JSON` и соответствовать [документации от ElasticSearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
+
 ## Конфигурирование
 
+Настроки конфигурации делятся на следующие группы, представленные узлами конфигурации:
+
+* `DB` - настройки работы с БД;
+* `MQ` - настройки работы с `RabbitMQ`;
+* `ES` - настройки работы с `ElasticSearch`;
+* `Indexer` - настройки логики индексирования. 
+
+### `DB` настроойки
+
+Формат узла конфигурации должен соответствовать формату [MyLab.Db со строкой подключения по умолчанию](https://github.com/mylab-tools/db#%D0%B4%D0%B5%D1%82%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B5-%D0%BE%D0%BF%D1%80%D0%B5%D0%B4%D0%B5%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5). Кроме того, в узле должны быть указаны дополнительные параметры:
+
+* `Query` - запрос выборки данных для индексации;
+* `EnablePaging` - флаг включения постраничной загрузки данных:`true`/`false`. `false` - по умолчанию;
+* `PageSize` - размер страницы. Обязателен если устанолен `EnablePaging`;
+* `Strategy` - стратегия определения записей для индексации: `Add`/`Update`; 
+* `Provider` - имя поставщика данных (характеризует субд):
+  * `sqlite`
+  * `mysql`
+  * `oracel`
+
+Пример узла конфигурации `DB`:
+
+```json
+{
+  "DB": {
+    "User": "foo",
+    "Password": "bar",
+    "ConnectionString": "Server=myServerAddress;Database=myDataBase;Uid={User};Pwd={Password};",
+    "Provider": "sqlite",
+    "Query": "select * from test_tb where Id > @seed limit @limit offset @offset",
+    "Strategy": "Add",
+    "Paging": "true",
+    "PageSize": "100"
+  }
+}
+```
+
+### `MQ` настройки
+
+Формат узла конфигурации должен соответствовать формату [MyLab.Mq](https://github.com/mylab-tools/mq#%D0%BA%D0%BE%D0%BD%D1%84%D0%B8%D0%B3%D1%83%D1%80%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5). Кроме того, в узле должно быть указано имя очереди - параметр `Queue`.
+
+```json
+{
+  "MQ": {
+    "Host" : "myhost.com",
+    "VHost" : "test-host",
+    "User" : "foo",
+    "Password" : "foo-pass",
+    "Queue": "my-queue"
+  }
+}
+```
+
+### `ES` настройки
+
+Данный узел должен содержать следущие параметры:
+
+* `Url` - адрес подключения к `ElasticSearch` ;
+* `Defaultindex` - целевой индекс.
+
+Пример узла конфигурации `ES`:
+
+```json
+{
+  "ES": {
+    "Url" : "http://localhost:9200",
+    "Defaultindex" : "entities"
+  }
+}
+```
+
+### `Indexer` настройки логики индексирования
+
+Данный узел должен содержать следущие параметры:
+
+* `IdProperty` - имя свойства, идентифицирующее сущность;
+* `LastChangeProperty` - имя свойства, содержащее дату и время актуализации данных сущности (создания или изменения). Обязательно, если `Db.Strategy == 'Update'`;
+* `NewIndexStrategy` - стратегия создания индекса: `Auto`/`File`;
+*  `NewIndexRequestFile` - путь к файлу запроса создания индекса. По умолчанию `/etc/mylab-indexer/new-index.json`.
+
+Пример узла конфигурации `Indexer`:
+
+```json
+{
+  "Indexer": {
+    "IdProperty" : "Id",
+    "LastChangeProperty" : "LastChangeDt",
+    "NewIndexStrategy": "Auto"
+  }
+}
+```
+
 ## Развёртывание
+
+## Рекомендации
+
+### 1. Используйте очередь только при необходиомости
+
+Используйте очередь совместно с БД только если требуется оперативная индексация. Например, для сущностей, которые создают и редактируют пользователи через интерфейс после этого переходят в список, который запрашивается в поисковике. 
+
+Использовании очереди с БД добавляет связанности и сложности решению.
+
+### 2. Не используйте звёздочку `*` в SQL запросах
+
+Не используйте хвёхдочку в запросах `sql` для выборки данных для индексируемых сущностей. Использование звёздочки `*` для указания выборки всех полей приведёт к бесконтрольному изменению состава индексируемых сущностей в случае изменения состава полей в БД. Это может привести к значительному увеличению размера индекса, замедлению индексации и поиска, а также к индексации секретной информации.
+
+### 3. Обеспечте соответствие MQ и БД сущностей
+
+При разработке обратите пристальноевнимание на состав сущностей, выбираемых из БД и сущностей, передаваемых через очередь. Набор полей должен точно соответствовать по перечню полей, их именам (с учётом регистра) и типам. В противном случае могут быть проблемы с поиском потерей данных.
