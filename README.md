@@ -1,6 +1,6 @@
 # MyLab.Search.Indexer
 
-[![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=v1.x.x&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
+[![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=v1.0.1&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
 
 Индексирует данные из базы данных и/или `RabbitMQ` в `ElasticSearch`.
 
