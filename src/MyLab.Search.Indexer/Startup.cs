@@ -36,14 +36,16 @@ namespace MyLab.Search.Indexer
             services
                 .AddSingleton(_configuration)
                 .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
+                .Configure<IndexerMqOptions>(_configuration.GetSection("Mq"))
+                .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
                 .ConfigureMq(_configuration);
 
             services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
-                .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerOptions>(
-                        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.MqQueue))
+                .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerMqOptions>(
+                        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.Queue))
                 , optional: true)
                 .AddEsTools(_configuration)
                 

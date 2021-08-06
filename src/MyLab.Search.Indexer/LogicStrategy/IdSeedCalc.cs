@@ -58,7 +58,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
                 }
                 else
                 {
-                    Log.Error("Can't parse Id value")
+                    Log?.Error("Can't parse Id value")
                         .AndFactIs("actual", id)
                         .Write();
 
@@ -67,7 +67,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
             }
             else
             {
-                Log.Error("Id field not found")
+                Log?.Error("Id field not found")
                     .AndFactIs("Expected field name", _idFieldName)
                     .Write();
 

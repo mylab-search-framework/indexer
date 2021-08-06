@@ -66,20 +66,25 @@ namespace FunctionTests
 
             var client = _api.StartWithProxy(srv =>
                 {
+                    srv.Configure<IndexerDbOptions>(o =>
+                        {
+                            o.Provider = "mysql";
+                            o.Query = "select * from test";
+                            o.Strategy = IndexerDbStrategy.Add;
+                        }
+                    );
+
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.IndexName = indexName;
-                            o.ScanMode = IndexerScanMode.Add;
-                            o.IdFieldName = nameof(TestEntity.Id);
-                            o.DbProvider = "mysql";
                             o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.Query = "select * from test";
+                            o.IdFieldName = nameof(TestEntity.Id);
                         }
                     );
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
+                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -123,19 +128,23 @@ namespace FunctionTests
 
             _api.StartWithProxy(srv =>
                 {
+                    srv.Configure<IndexerMqOptions>(o =>
+                        {
+                            o.Queue = queue.Name;
+                        }
+                    );
+
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.IndexName = indexName;
-                            o.ScanMode = IndexerScanMode.Add;
-                            o.IdFieldName = nameof(TestEntity.Id);
                             o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.MqQueue = queue.Name;
+                            o.IdFieldName = nameof(TestEntity.Id);
                         }
                     );
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
+                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -190,21 +199,31 @@ namespace FunctionTests
 
             var client = _api.StartWithProxy(srv =>
                 {
+                    srv.Configure<IndexerDbOptions>(o =>
+                        {
+                            o.Provider = "mysql";
+                            o.Query = "select * from test";
+                            o.Strategy = IndexerDbStrategy.Add;
+                        }
+                    );
+
+                    srv.Configure<IndexerMqOptions>(o =>
+                        {
+                            o.Queue = queue.Name;
+                        }
+                    );
+
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.IndexName = indexName;
-                            o.ScanMode = IndexerScanMode.Add;
-                            o.IdFieldName = nameof(TestEntity.Id);
-                            o.DbProvider = "mysql";
                             o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.Query = "select * from test";
-                            o.MqQueue = queue.Name;
+                            o.IdFieldName = nameof(TestEntity.Id);
                         }
                     );
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
+                            o.DefaultIndex = indexName;
                         }
                     );
 

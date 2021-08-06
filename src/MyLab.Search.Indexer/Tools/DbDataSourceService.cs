@@ -10,18 +10,18 @@ namespace MyLab.Search.Indexer.Tools
     class DbDataSourceService : IDataSourceService
     {
         private readonly IDbManager _dbManager;
-        private readonly IndexerOptions _options;
+        private readonly IndexerDbOptions _options;
 
         public DbDataSourceService(
             IDbManager dbManager, 
-            IOptions<IndexerOptions> options)
+            IOptions<IndexerDbOptions> options)
             : this(dbManager, options.Value)
         {
         }
 
         public DbDataSourceService(
-            IDbManager dbManager, 
-            IndexerOptions options)
+            IDbManager dbManager,
+            IndexerDbOptions options)
         {
             _dbManager = dbManager;
             _options = options;

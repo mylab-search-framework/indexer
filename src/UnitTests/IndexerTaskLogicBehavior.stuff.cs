@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.DbTest;
+using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
@@ -31,19 +32,39 @@ namespace UnitTests
             _output = output;
         }
 
-        private async Task<IServiceProvider> InitServices(Action<IndexerOptions> configureOptions)
+        private async Task<IServiceProvider> InitServices(Action<IndexerDbOptions> configureDbOptions, Action<IndexerOptions> configureIndexerOptions = null)
         {
             var testDb = await _dvFxt.CreateDbAsync(new FiveInserter());
 
-            return new ServiceCollection()
+            var srvs = new ServiceCollection()
                 .AddSingleton<IDbManager>(testDb)
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, TestSeedService>()
                 .AddSingleton<IDataIndexer, TestIndexer>()
                 .AddSingleton<ITaskLogic, IndexerTaskLogic>()
-                .Configure(configureOptions)
-                .AddLogging(l => l.AddXUnit(_output).SetMinimumLevel(LogLevel.Debug))
-                .BuildServiceProvider();
+                .Configure(configureDbOptions)
+                .Configure<ElasticsearchOptions>(o =>
+                {
+                    o.DefaultIndex = "[for validation]";
+                    o.Url = "[for validation]";
+                })
+                .Configure<IndexerDbOptions>(o =>
+                {
+                    o.Provider = "[for validation]";
+                })
+                .AddLogging(l => l.AddXUnit(_output).SetMinimumLevel(LogLevel.Debug));
+
+            if(configureIndexerOptions != null)
+                srvs = srvs.Configure(configureIndexerOptions);
+            else
+            {
+                srvs = srvs.Configure<IndexerOptions>(o =>
+                {
+                    o.IdFieldName = "[for validation]";
+                });
+            }
+            
+            return srvs.BuildServiceProvider();
         }
 
         [Table("foo_table")]

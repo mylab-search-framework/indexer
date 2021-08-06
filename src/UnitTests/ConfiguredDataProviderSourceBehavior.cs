@@ -41,14 +41,14 @@ namespace UnitTests
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new[]
                 {
-                    new KeyValuePair<string, string>("DB", "foo-connection-string"),
-                    new KeyValuePair<string, string>("Indexer:DbProvider", providerName),
+                    new KeyValuePair<string, string>("DB:ConnectionString", "foo-connection-string"),
+                    new KeyValuePair<string, string>("DB:Provider", providerName),
                 })
                 .Build();
 
             var serviceProvider = new ServiceCollection()
                 .AddDbTools<ConfiguredDataProviderSource>(config)
-                .Configure<IndexerOptions>(config.GetSection("Indexer"))
+                .Configure<IndexerDbOptions>(config.GetSection("DB"))
                 .BuildServiceProvider();
 
             var dbProviderSource = serviceProvider.GetService<IDbProviderSource>();

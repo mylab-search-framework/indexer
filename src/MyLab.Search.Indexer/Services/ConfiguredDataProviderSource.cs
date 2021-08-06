@@ -12,29 +12,29 @@ namespace MyLab.Search.Indexer.Services
 {
     class ConfiguredDataProviderSource : IDbProviderSource
     {
-        private readonly IndexerOptions _options;
+        private readonly IndexerDbOptions _options;
 
-        public ConfiguredDataProviderSource(IOptions<IndexerOptions> options)
+        public ConfiguredDataProviderSource(IOptions<IndexerDbOptions> options)
             :this(options.Value)
         {
             
         }
 
-        public ConfiguredDataProviderSource(IndexerOptions options)
+        public ConfiguredDataProviderSource(IndexerDbOptions options)
         {
             _options = options;
         }
 
         public IDataProvider Provide(string connectionStringName)
         {
-            switch (_options.DbProvider)
+            switch (_options.Provider)
             {
                 case "sqlite": return new SQLiteDataProvider(ProviderName.SQLite);
                 case "mysql": return new MySqlDataProvider(ProviderName.MySql);
                 case "oracle": return new OracleDataProvider(ProviderName.Oracle);
                 default:
-                    throw new NotSupportedException("Data provider not supported")
-                        .AndFactIs("provider", _options.DbProvider);
+                    throw new NotSupportedException("Data Provider not supported")
+                        .AndFactIs("Provider", _options.Provider);
             }
         }
     }

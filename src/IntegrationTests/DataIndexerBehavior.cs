@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MyLab.Mq;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
@@ -31,13 +32,14 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                IndexName = indexName,
                 EntityMappingMode = EntityMappingMode.Auto,
                 IdFieldName = "Id"
             };
 
+            var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
+
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null);
+            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -99,13 +101,13 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                IndexName = indexName,
                 EntityMappingMode = EntityMappingMode.Auto,
                 IdFieldName = "Id"
             };
+            var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
 
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null);
+            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()

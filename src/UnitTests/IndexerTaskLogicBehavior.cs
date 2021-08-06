@@ -5,6 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using MyLab.Db;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 using MyLab.TaskApp;
 using Xunit;
@@ -22,9 +23,15 @@ namespace UnitTests
                     o.PageSize = 2;
                     o.EnablePaging = true;
                     o.Query = "select * from foo_table limit @limit offset @offset";
-                    o.ScanMode = IndexerScanMode.Update;
+                    o.Strategy = IndexerDbStrategy.Update;
+                },
+                o =>
+                {
+                    o.LastModifiedFieldName = nameof(TestEntity.LastModified);
+                    o.IdFieldName = nameof(TestEntity.Id);
                 });
-            
+
+
             var logic = sp.GetService<ITaskLogic>();
             var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
 
@@ -56,8 +63,12 @@ namespace UnitTests
                     o.PageSize = 2;
                     o.Query = "select * from foo_table limit @limit offset @offset";
                     o.EnablePaging = true;
+                    o.Strategy = IndexerDbStrategy.Update;
+                },
+                o =>
+                {
                     o.LastModifiedFieldName = nameof(TestEntity.LastModified);
-                    o.ScanMode = IndexerScanMode.Update;
+                    o.IdFieldName = nameof(TestEntity.Id);
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -82,13 +93,16 @@ namespace UnitTests
         {
             //Arrange
             var sp = await InitServices(o =>
-            {
-                o.PageSize = 2;
-                o.Query = "select * from foo_table limit @limit offset @offset";
-                o.EnablePaging = true;
-                o.IdFieldName = nameof(TestEntity.Id);
-                o.ScanMode = IndexerScanMode.Add;
-            });
+                {
+                    o.PageSize = 2;
+                    o.Query = "select * from foo_table limit @limit offset @offset";
+                    o.EnablePaging = true;
+                    o.Strategy = IndexerDbStrategy.Add;
+                },
+                o =>
+                {
+                    o.IdFieldName = nameof(TestEntity.Id);
+                });
 
             var logic = sp.GetService<ITaskLogic>();
             var seedService = sp.GetService<ISeedService>();
@@ -111,7 +125,12 @@ namespace UnitTests
             var sp = await InitServices(o =>
             {
                 o.Query = "select * from foo_table where LastModified > @seed";
-                o.ScanMode = IndexerScanMode.Update;
+                o.Strategy = IndexerDbStrategy.Update;
+            },
+                o =>
+            {
+                o.LastModifiedFieldName = nameof(TestEntity.LastModified);
+                o.IdFieldName = nameof(TestEntity.Id);
             });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -141,7 +160,7 @@ namespace UnitTests
             var sp = await InitServices(o =>
             {
                 o.Query = "select * from foo_table where Id > @seed";
-                o.ScanMode = IndexerScanMode.Add;
+                o.Strategy = IndexerDbStrategy.Add;
             });
 
             var logic = sp.GetService<ITaskLogic>();

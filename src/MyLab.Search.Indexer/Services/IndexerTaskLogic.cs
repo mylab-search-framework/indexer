@@ -6,52 +6,62 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
 using MyLab.Log.Dsl;
-using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.LogicStrategy;
+using MyLab.Search.Indexer.Tools;
 using MyLab.TaskApp;
 
 namespace MyLab.Search.Indexer.Services
 {
     public class IndexerTaskLogic : ITaskLogic
     {
-        private readonly IndexerOptions _options;
+        private readonly IndexerOptions _indexerOptions;
+        private readonly IndexerDbOptions _dbOptions;
         private readonly IDataSourceService _dataSourceService;
         private readonly ISeedService _seedService;
         private readonly IDataIndexer _indexer;
         private readonly IDslLogger _log;
+        private DbCaseOptionsValidator _optionsValidator;
 
         public IndexerTaskLogic(
-            IOptions<IndexerOptions> options, 
+            IOptions<IndexerOptions> indexerOptions, 
+            IOptions<IndexerDbOptions> dbOptions,
+            IOptions<ElasticsearchOptions> esOptions,
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
             ILogger<IndexerTaskLogic> logger = null)
-            : this(options.Value, dataSourceService, seedService, indexer, logger)
+            : this(indexerOptions.Value, dbOptions.Value, esOptions.Value, dataSourceService, seedService, indexer, logger)
         {
             
         }
 
         public IndexerTaskLogic(
-            IndexerOptions options, 
+            IndexerOptions indexerOptions,
+            IndexerDbOptions dbOptions,
+            ElasticsearchOptions esOptions,
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
             ILogger<IndexerTaskLogic> logger = null)
         {
-            _options = options;
+            _indexerOptions = indexerOptions;
+            _dbOptions = dbOptions;
             _dataSourceService = dataSourceService;
             _seedService = seedService;
             _indexer = indexer;
             _log = logger?.Dsl();
+            _optionsValidator = new DbCaseOptionsValidator(indexerOptions, dbOptions, esOptions);
         }
 
         public async Task Perform(CancellationToken cancellationToken)
         {
+            _optionsValidator.Validate();
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
             _log.Action("Indexing started")
-                .AndFactIs("query", _options.Query)
                 .Write();
 
             int counter = 0;
@@ -62,13 +72,12 @@ namespace MyLab.Search.Indexer.Services
             await seedCalc.StartAsync();
             var seedParameter = await strategy.CreateSeedDataParameterAsync();
 
-            var iterator = _dataSourceService.Read(_options.Query, seedParameter);
+            var iterator = _dataSourceService.Read(_dbOptions.Query, seedParameter);
 
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
                 _log.Debug("Next batch of source data loaded")
                     .AndFactIs("count", batch.Entities.Length)
-                    .AndFactIs("options", _options)
                     .Write();
 
                 counter += batch.Entities.Length;
@@ -91,17 +100,17 @@ namespace MyLab.Search.Indexer.Services
 
         private IIndexerLogicStrategy CreateStrategy()
         {
-            switch (_options.ScanMode)
+            switch (_dbOptions.Strategy)
             {
-                case IndexerScanMode.Update:
-                    return new UpdateModeIndexerLogicStrategy(_options.LastModifiedFieldName, _seedService);
-                case IndexerScanMode.Add:
-                    return new AddModeIndexerLogicStrategy(_options.IdFieldName, _seedService);
-                case IndexerScanMode.Undefined:
+                case IndexerDbStrategy.Update:
+                    return new UpdateModeIndexerLogicStrategy(_indexerOptions.LastModifiedFieldName, _seedService){ Log = _log};
+                case IndexerDbStrategy.Add:
+                    return new AddModeIndexerLogicStrategy(_indexerOptions.IdFieldName, _seedService) { Log = _log };
+                case IndexerDbStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:
                     throw new InvalidOperationException("Unsupported Indexer mode")
-                        .AndFactIs("mode", _options.ScanMode);
+                        .AndFactIs("mode", _dbOptions.Strategy);
             }
         }
     }

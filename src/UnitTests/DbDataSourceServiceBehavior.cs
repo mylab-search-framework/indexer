@@ -31,7 +31,7 @@ namespace UnitTests
             //Arrange
             var dbManager = await _dvFxt.CreateDbAsync(new FiveInserter());
 
-            var options = new IndexerOptions
+            var options = new IndexerDbOptions
             {
                 PageSize = 2,
                 EnablePaging = true

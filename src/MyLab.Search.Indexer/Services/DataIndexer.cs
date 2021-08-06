@@ -20,26 +20,30 @@ namespace MyLab.Search.Indexer.Services
     class DataIndexer : IDataIndexer
     {
         private readonly IndexerOptions _options;
+        private readonly ElasticsearchOptions _esOptions;
         private readonly IEsIndexer<IndexEntity> _esIndexer;
         private readonly IEsManager _esManager;
         private readonly IDslLogger _log;
 
         public DataIndexer(
             IOptions<IndexerOptions> options,
+            IOptions<ElasticsearchOptions> esOptions,
             IEsIndexer<IndexEntity> esIndexer,
             IEsManager esManager,
             ILogger<DataIndexer> logger)
-        :this(options.Value, esIndexer, esManager, logger)
+        :this(options.Value, esOptions.Value, esIndexer, esManager, logger)
         {
         }
 
         public DataIndexer(
             IndexerOptions options,
+            ElasticsearchOptions esOptions,
             IEsIndexer<IndexEntity> esIndexer, 
             IEsManager esManager,
             ILogger<DataIndexer> logger)
         {
             _options = options;
+            _esOptions = esOptions;
             _esIndexer = esIndexer;
             _esManager = esManager;
             _log = logger?.Dsl();
@@ -50,7 +54,7 @@ namespace MyLab.Search.Indexer.Services
             if (dataSourceEntities.Length == 0)
                 return;
 
-            bool indexExists = await _esManager.IsIndexExistsAsync(_options.IndexName, cancellationToken);
+            bool indexExists = await _esManager.IsIndexExistsAsync(_esOptions.DefaultIndex, cancellationToken);
             
             if (!indexExists)
             {
@@ -62,13 +66,13 @@ namespace MyLab.Search.Indexer.Services
                 var createIndexStrategy = await factory.CreateAsync(cancellationToken);
 
                 _log?.Warning("Index not found and will be created")
-                    .AndFactIs("index-name", _options.IndexName)
+                    .AndFactIs("index-name", _esOptions.DefaultIndex)
                     .Write();
 
-                await createIndexStrategy.CreateIndexAsync(_esManager, _options.IndexName, cancellationToken);
+                await createIndexStrategy.CreateIndexAsync(_esManager, _esOptions.DefaultIndex, cancellationToken);
 
                 _log?.Action("Index created")
-                    .AndFactIs("index-name", _options.IndexName)
+                    .AndFactIs("index-name", _esOptions.DefaultIndex)
                     .Write();
             }
 
@@ -76,7 +80,7 @@ namespace MyLab.Search.Indexer.Services
 
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
-                    .Index(_options.IndexName)
+                    .Index(_esOptions.DefaultIndex)
                     .Id(ExtractId(doc))
                 , cancellationToken);
         }
