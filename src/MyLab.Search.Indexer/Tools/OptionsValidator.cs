@@ -44,7 +44,7 @@ namespace MyLab.Search.Indexer.Tools
             OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.Provider);
 
             if(_dbOptions.Strategy == IndexerDbStrategy.Update)
-                OptionsValidatorTools.ThrowNotDefined(_options, o => o.LastModifiedFieldName);
+                OptionsValidatorTools.ThrowNotDefined(_options, o => o.LastChangeProperty);
 
             if (_dbOptions.EnablePaging)
                 OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.PageSize);

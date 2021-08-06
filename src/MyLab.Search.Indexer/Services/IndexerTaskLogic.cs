@@ -103,9 +103,9 @@ namespace MyLab.Search.Indexer.Services
             switch (_dbOptions.Strategy)
             {
                 case IndexerDbStrategy.Update:
-                    return new UpdateModeIndexerLogicStrategy(_indexerOptions.LastModifiedFieldName, _seedService){ Log = _log};
+                    return new UpdateModeIndexerLogicStrategy(_indexerOptions.LastChangeProperty, _seedService){ Log = _log};
                 case IndexerDbStrategy.Add:
-                    return new AddModeIndexerLogicStrategy(_indexerOptions.IdFieldName, _seedService) { Log = _log };
+                    return new AddModeIndexerLogicStrategy(_indexerOptions.IdProperty, _seedService) { Log = _log };
                 case IndexerDbStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:

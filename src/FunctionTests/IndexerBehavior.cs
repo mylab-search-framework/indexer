@@ -76,8 +76,8 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.IdFieldName = nameof(TestEntity.Id);
+                            o.NewIndexStrategy = NewIndexStrategy.Auto;
+                            o.IdProperty = nameof(TestEntity.Id);
                         }
                     );
 
@@ -136,8 +136,8 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.IdFieldName = nameof(TestEntity.Id);
+                            o.NewIndexStrategy = NewIndexStrategy.Auto;
+                            o.IdProperty = nameof(TestEntity.Id);
                         }
                     );
 
@@ -215,8 +215,8 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.EntityMappingMode = EntityMappingMode.Auto;
-                            o.IdFieldName = nameof(TestEntity.Id);
+                            o.NewIndexStrategy = NewIndexStrategy.Auto;
+                            o.IdProperty = nameof(TestEntity.Id);
                         }
                     );
 

@@ -32,8 +32,8 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                EntityMappingMode = EntityMappingMode.Auto,
-                IdFieldName = "Id"
+                NewIndexStrategy = NewIndexStrategy.Auto,
+                IdProperty = "Id"
             };
 
             var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
@@ -101,8 +101,8 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                EntityMappingMode = EntityMappingMode.Auto,
-                IdFieldName = "Id"
+                NewIndexStrategy = NewIndexStrategy.Auto,
+                IdProperty = "Id"
             };
             var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
 

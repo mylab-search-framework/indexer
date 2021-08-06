@@ -16,10 +16,10 @@
 
     public class IndexerOptions
     {
-        public string IndexSettingsPath { get; set; } = "/etc/mylab-indexer/index-settings.json";
-        public EntityMappingMode EntityMappingMode { get; set; }
-        public string LastModifiedFieldName { get; set; }
-        public string IdFieldName { get; set; }
+        public string NewIndexRequestFile { get; set; } = "/etc/mylab-indexer/new-index-request.json";
+        public NewIndexStrategy NewIndexStrategy { get; set; }
+        public string LastChangeProperty { get; set; }
+        public string IdProperty { get; set; }
     }
 
     public enum IndexerDbStrategy
@@ -29,10 +29,10 @@
         Add
     }
 
-    public enum EntityMappingMode
+    public enum NewIndexStrategy
     {
         Undefined,
         Auto,
-        SettingsFile
+        File
     }
 }

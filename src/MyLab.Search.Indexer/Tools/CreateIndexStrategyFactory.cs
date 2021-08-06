@@ -22,25 +22,25 @@ namespace MyLab.Search.Indexer.Tools
 
         public async Task<ICreateIndexStrategy> CreateAsync(CancellationToken cancellationToken)
         {
-            switch (_options.EntityMappingMode)
+            switch (_options.NewIndexStrategy)
             {
-                case EntityMappingMode.Undefined:
+                case NewIndexStrategy.Undefined:
                     throw new InvalidOperationException("Index creation mode not defined");
-                case EntityMappingMode.Auto:
+                case NewIndexStrategy.Auto:
                 {
                     var autoStrategy = new AutoSettingsBasedCreateIndexStrategy(_exampleEntity) { Log = Log };
                     return autoStrategy;
                 }
-                case EntityMappingMode.SettingsFile:
+                case NewIndexStrategy.File:
                 {
-                    var jsonStrategy = await JsonSettingsBasedCreateIndexStrategy.LoadFormFileAsync(_options.IndexSettingsPath, cancellationToken);
+                    var jsonStrategy = await JsonSettingsBasedCreateIndexStrategy.LoadFormFileAsync(_options.NewIndexRequestFile, cancellationToken);
                     jsonStrategy.Log = Log;
 
                     return jsonStrategy;
                 }
                 default:
                     throw new ArgumentOutOfRangeException("Unexpected creation mode", (Exception)null)
-                        .AndFactIs("actual", _options.EntityMappingMode);
+                        .AndFactIs("actual", _options.NewIndexStrategy);
             }
 
             

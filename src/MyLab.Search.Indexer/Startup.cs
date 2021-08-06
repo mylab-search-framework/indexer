@@ -36,9 +36,9 @@ namespace MyLab.Search.Indexer
             services
                 .AddSingleton(_configuration)
                 .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
-                .Configure<IndexerMqOptions>(_configuration.GetSection("Mq"))
+                .Configure<IndexerMqOptions>(_configuration.GetSection("MQ"))
                 .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
-                .ConfigureMq(_configuration);
+                .ConfigureMq(_configuration, "MQ");
 
             services
                 .AddTaskLogic<IndexerTaskLogic>()

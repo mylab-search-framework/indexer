@@ -36,7 +36,7 @@ namespace MyLab.Search.Indexer.Services
         {
             _options = options;
             _indexer = indexer;
-            _sourceEntityDeserializer = new SourceEntityDeserializer(options.EntityMappingMode == EntityMappingMode.Auto);
+            _sourceEntityDeserializer = new SourceEntityDeserializer(options.NewIndexStrategy == NewIndexStrategy.Auto);
             _optionsValidator = new MqCaseOptionsValidator(options, esOptions);
         }
 
@@ -63,7 +63,7 @@ namespace MyLab.Search.Indexer.Services
                 throw new InvalidOperationException("Cant detect properties in message object")
                     .AndFactIs("dump", TrimDump(message.Payload));
 
-            if (entity.Properties.Keys.All(k => k != _options.IdFieldName))
+            if (entity.Properties.Keys.All(k => k != _options.IdProperty))
                 throw new InvalidOperationException("Cant find ID property in message object")
                     .AndFactIs("dump", TrimDump(message.Payload));
 

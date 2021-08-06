@@ -27,8 +27,8 @@ namespace UnitTests
                 },
                 o =>
                 {
-                    o.LastModifiedFieldName = nameof(TestEntity.LastModified);
-                    o.IdFieldName = nameof(TestEntity.Id);
+                    o.LastChangeProperty = nameof(TestEntity.LastModified);
+                    o.IdProperty = nameof(TestEntity.Id);
                 });
 
 
@@ -67,8 +67,8 @@ namespace UnitTests
                 },
                 o =>
                 {
-                    o.LastModifiedFieldName = nameof(TestEntity.LastModified);
-                    o.IdFieldName = nameof(TestEntity.Id);
+                    o.LastChangeProperty = nameof(TestEntity.LastModified);
+                    o.IdProperty = nameof(TestEntity.Id);
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -101,7 +101,7 @@ namespace UnitTests
                 },
                 o =>
                 {
-                    o.IdFieldName = nameof(TestEntity.Id);
+                    o.IdProperty = nameof(TestEntity.Id);
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -129,8 +129,8 @@ namespace UnitTests
             },
                 o =>
             {
-                o.LastModifiedFieldName = nameof(TestEntity.LastModified);
-                o.IdFieldName = nameof(TestEntity.Id);
+                o.LastChangeProperty = nameof(TestEntity.LastModified);
+                o.IdProperty = nameof(TestEntity.Id);
             });
 
             var logic = sp.GetService<ITaskLogic>();

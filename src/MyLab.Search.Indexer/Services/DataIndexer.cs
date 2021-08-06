@@ -87,7 +87,7 @@ namespace MyLab.Search.Indexer.Services
 
         private Id ExtractId(IndexEntity doc)
         {
-            return doc[_options.IdFieldName].ToString();
+            return doc[_options.IdProperty].ToString();
         }
 
         private IndexEntity EntityToDynamic(DataSourceEntity arg)

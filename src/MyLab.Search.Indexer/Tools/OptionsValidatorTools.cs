@@ -9,7 +9,7 @@ namespace MyLab.Search.Indexer.Tools
     {
         public static void CheckId(IndexerOptions options)
         {
-            ThrowNotDefined(options, o => o.IdFieldName);
+            ThrowNotDefined(options, o => o.IdProperty);
         }
 
         public static void CheckEs(ElasticsearchOptions options)
