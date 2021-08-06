@@ -35,9 +35,7 @@ namespace MyLab.Search.Indexer.Tools
             {
                 var res = CreatePropertiesDescriptions(pd, entityExample);
 
-                var s = MappingToString(res.Value);
-
-                Log?.Debug("Index mapping created")
+                Log?.Action("Index mapping created")
                     .AndFactIs("mapping", res.Value.Count != 0 ? MappingToString(res.Value) : (object)"[empty]")
                     .AndFactIs("example", entityExample)
                     .Write();

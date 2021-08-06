@@ -47,7 +47,7 @@ namespace MyLab.Search.Indexer
                 .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerMqOptions>(
                         opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.Queue))
                 , optional: true)
-                .AddEsTools(_configuration)
+                .AddEsTools(_configuration, "ES")
                 
                 .AddLogging(l => l.AddConsole())
                 .AddSingleton<ISeedService, FileSeedService>()

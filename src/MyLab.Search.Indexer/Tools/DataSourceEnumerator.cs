@@ -87,7 +87,8 @@ namespace MyLab.Search.Indexer.Tools
                 var value = new DataSourcePropertyValue
                 {
                     Type = DataSourcePropertyTypeConverter.Convert(typeName),
-                    Value = reader.GetString(index)
+                    Value = reader.GetString(index),
+                    PropertyTypeReason = typeName
                 };
 
                 resEnt.Properties.Add(name, value);

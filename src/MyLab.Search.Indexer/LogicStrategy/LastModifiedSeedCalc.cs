@@ -9,15 +9,15 @@ namespace MyLab.Search.Indexer.LogicStrategy
 {
     class LastModifiedSeedCalc : ISeedCalc
     {
-        private readonly string _lastModifiedFieldName;
+        private readonly string _lastChangeProperty;
         private readonly ISeedService _seedService;
         private DateTime _lastModified;
 
         public IDslLogger Log { get; set; }
 
-        public LastModifiedSeedCalc(string lastModifiedFieldName, ISeedService seedService)
+        public LastModifiedSeedCalc(string lastChangeProperty, ISeedService seedService)
         {
-            _lastModifiedFieldName = lastModifiedFieldName;
+            _lastChangeProperty = lastChangeProperty;
             _seedService = seedService;
         }
 
@@ -49,10 +49,10 @@ namespace MyLab.Search.Indexer.LogicStrategy
 
         DateTime ExtractLastModified(DataSourceEntity e)
         {
-            if (_lastModifiedFieldName == null)
+            if (_lastChangeProperty == null)
                 return DateTime.MinValue;
 
-            if (e.Properties.TryGetValue(_lastModifiedFieldName, out var lastModifiedFieldValue))
+            if (e.Properties.TryGetValue(_lastChangeProperty, out var lastModifiedFieldValue))
             {
                 if (DateTime.TryParse(lastModifiedFieldValue.Value, out var lastModified))
                 {
@@ -69,8 +69,9 @@ namespace MyLab.Search.Indexer.LogicStrategy
             }
             else
             {
-                Log.Error("LastModified field not found")
-                    .AndFactIs("Expected field name", _lastModifiedFieldName)
+                Log.Error("Last change property not found")
+                    .AndFactIs("Expected field name", _lastChangeProperty)
+                    .AndFactIs("Actual fields", string.Join(", ", e.Properties.Keys))
                     .Write();
 
                 return DateTime.MinValue;

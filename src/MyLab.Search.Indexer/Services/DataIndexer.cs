@@ -25,6 +25,8 @@ namespace MyLab.Search.Indexer.Services
         private readonly IEsManager _esManager;
         private readonly IDslLogger _log;
 
+        static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0 ,0);
+
         public DataIndexer(
             IOptions<IndexerOptions> options,
             IOptions<ElasticsearchOptions> esOptions,
@@ -106,6 +108,8 @@ namespace MyLab.Search.Indexer.Services
                         return long.Parse(val.Value);
                     case DataSourcePropertyType.Double:
                         return double.Parse(val.Value, CultureInfo.InvariantCulture);
+                    case DataSourcePropertyType.DateTime:
+                        return (DateTime.Parse(val.Value) - Epoch).TotalMilliseconds;
                     default:
                         return val.Value;
 
