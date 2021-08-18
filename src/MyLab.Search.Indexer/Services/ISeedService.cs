@@ -4,8 +4,8 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface ISeedService
     {
-        Task WriteAsync(string seed);
+        Task WriteAsync(string jobId, string seed);
 
-        Task<string> ReadAsync();
+        Task<string> ReadAsync(string jobId);
     }
 }

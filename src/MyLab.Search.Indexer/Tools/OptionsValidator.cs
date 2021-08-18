@@ -1,5 +1,4 @@
-﻿using LinqToDB.Reflection;
-using MyLab.Search.EsAdapter;
+﻿using MyLab.Search.EsAdapter;
 
 namespace MyLab.Search.Indexer.Tools
 {
@@ -16,8 +15,22 @@ namespace MyLab.Search.Indexer.Tools
 
         public void Validate()
         {
-            OptionsValidatorTools.CheckId(_options);
             OptionsValidatorTools.CheckEs(_esOptions);
+
+            if (_options.Jobs != null)
+            {
+                foreach (var jobOptions in _options.Jobs)
+                {
+                    OptionsValidatorTools.CheckId(jobOptions);
+                    OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.NewUpdatesStrategy);
+
+                    if (jobOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)
+                        OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.LastChangeProperty);
+
+                    if (jobOptions.EnablePaging)
+                        OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.PageSize);
+                }
+            }
         }
     }
 
@@ -36,18 +49,23 @@ namespace MyLab.Search.Indexer.Tools
 
         public void Validate()
         {
-            OptionsValidatorTools.CheckId(_options);
             OptionsValidatorTools.CheckEs(_esOptions);
-
-            OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.Strategy);
-            OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.Query);
             OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.Provider);
 
-            if(_dbOptions.Strategy == IndexerDbStrategy.Update)
-                OptionsValidatorTools.ThrowNotDefined(_options, o => o.LastChangeProperty);
+            if (_options.Jobs != null)
+            {
+                foreach (var jobOptions in _options.Jobs)
+                {
+                    OptionsValidatorTools.CheckId(jobOptions);
+                    OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.NewUpdatesStrategy);
 
-            if (_dbOptions.EnablePaging)
-                OptionsValidatorTools.ThrowNotDefined(_dbOptions, o => o.PageSize);
+                    if (jobOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)
+                        OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.LastChangeProperty);
+
+                    if (jobOptions.EnablePaging)
+                        OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.PageSize);
+                }
+            }
 
         }
     }

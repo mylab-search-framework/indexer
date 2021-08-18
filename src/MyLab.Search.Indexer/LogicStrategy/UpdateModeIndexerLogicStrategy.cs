@@ -8,20 +8,22 @@ namespace MyLab.Search.Indexer.LogicStrategy
 {
     class UpdateModeIndexerLogicStrategy : IIndexerLogicStrategy
     {
+        private readonly string _jobId;
         private readonly string _lastModifiedFiledName;
         private readonly ISeedService _seedService;
 
         public IDslLogger Log { get; set; }
 
-        public UpdateModeIndexerLogicStrategy(string lastModifiedFiledName, ISeedService seedService)
+        public UpdateModeIndexerLogicStrategy(string jobId, string lastModifiedFiledName, ISeedService seedService)
         {
+            _jobId = jobId;
             _lastModifiedFiledName = lastModifiedFiledName;
             _seedService = seedService;
         }
 
         public ISeedCalc CreateSeedCalc()
         {
-            return new LastModifiedSeedCalc(_lastModifiedFiledName, _seedService)
+            return new LastModifiedSeedCalc(_jobId, _lastModifiedFiledName, _seedService)
             {
                 Log = Log
             };
@@ -29,7 +31,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
 
         public async Task<DataParameter> CreateSeedDataParameterAsync()
         {
-            var seed = await _seedService.ReadDateTimeAsync();
+            var seed = await _seedService.ReadDateTimeAsync(_jobId);
             return new DataParameter(QueryParameterNames.Seed, seed, DataType.DateTime);
         }
     }

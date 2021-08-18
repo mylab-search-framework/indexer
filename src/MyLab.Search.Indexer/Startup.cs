@@ -36,7 +36,6 @@ namespace MyLab.Search.Indexer
             services
                 .AddSingleton(_configuration)
                 .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
-                .Configure<IndexerMqOptions>(_configuration.GetSection("MQ"))
                 .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
                 .ConfigureMq(_configuration, "MQ");
 
@@ -44,12 +43,17 @@ namespace MyLab.Search.Indexer
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
-                .AddMqConsuming(cReg => cReg.RegisterConsumerByOptions<IndexerMqOptions>(
-                        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.Queue))
-                , optional: true)
+                //.AddMqConsuming(cReg =>
+                //{
+
+
+                //    cReg.RegisterConsumerByOptions<IndexerMqOptions>(
+                //        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.Queue));
+                //}, optional: true)
                 .AddEsTools(_configuration, "ES")
                 
                 .AddLogging(l => l.AddConsole())
+                .AddSingleton<IJobResourceProvider, JobResourceProvider>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>();

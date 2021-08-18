@@ -34,40 +34,42 @@ namespace MyLab.Search.Indexer.Services
             ElasticsearchOptions esOptions,
             IDataIndexer indexer)
         {
-            _options = options;
-            _indexer = indexer;
-            _sourceEntityDeserializer = new SourceEntityDeserializer(options.NewIndexStrategy == NewIndexStrategy.Auto);
-            _optionsValidator = new MqCaseOptionsValidator(options, esOptions);
+            //_options = options;
+            //_indexer = indexer;
+            //_sourceEntityDeserializer = new SourceEntityDeserializer(options.NewIndexStrategy == NewIndexStrategy.Auto);
+            //_optionsValidator = new MqCaseOptionsValidator(options, esOptions);
         }
 
         public Task Consume(MqMessage<string> message)
         {
-            _optionsValidator.Validate();
+            //_optionsValidator.Validate();
 
-            if(message.Payload == null)
-                throw new InvalidOperationException("Empty message payload detected");
+            //if(message.Payload == null)
+            //    throw new InvalidOperationException("Empty message payload detected");
 
-            DataSourceEntity entity;
+            //DataSourceEntity entity;
 
-            try
-            {
-                entity= _sourceEntityDeserializer.Deserialize(message.Payload);
-            }
-            catch (Exception e)
-            {
-                throw new InvalidOperationException("Input MQ message parsing error", e)
-                    .AndFactIs("dump", TrimDump(message.Payload));
-            }
+            //try
+            //{
+            //    entity= _sourceEntityDeserializer.Deserialize(message.Payload);
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new InvalidOperationException("Input MQ message parsing error", e)
+            //        .AndFactIs("dump", TrimDump(message.Payload));
+            //}
 
-            if (entity.Properties == null || entity.Properties.Count == 0)
-                throw new InvalidOperationException("Cant detect properties in message object")
-                    .AndFactIs("dump", TrimDump(message.Payload));
+            //if (entity.Properties == null || entity.Properties.Count == 0)
+            //    throw new InvalidOperationException("Cant detect properties in message object")
+            //        .AndFactIs("dump", TrimDump(message.Payload));
 
-            if (entity.Properties.Keys.All(k => k != _options.IdProperty))
-                throw new InvalidOperationException("Cant find ID property in message object")
-                    .AndFactIs("dump", TrimDump(message.Payload));
+            //if (entity.Properties.Keys.All(k => k != _options.IdProperty))
+            //    throw new InvalidOperationException("Cant find ID property in message object")
+            //        .AndFactIs("dump", TrimDump(message.Payload));
 
-            return _indexer.IndexAsync(new[] {entity}, CancellationToken.None);
+            //return _indexer.IndexAsync(new[] {entity}, CancellationToken.None);
+
+            throw new NotImplementedException();
         }
 
         string TrimDump(string dump)

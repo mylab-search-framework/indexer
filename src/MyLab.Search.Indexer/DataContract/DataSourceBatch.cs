@@ -1,6 +1,4 @@
-using MyLab.Search.Indexer.DataContract;
-
-namespace MyLab.Search.Indexer.Services
+namespace MyLab.Search.Indexer.DataContract
 {
     public class DataSourceBatch
     {

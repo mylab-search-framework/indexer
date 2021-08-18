@@ -7,7 +7,7 @@ namespace MyLab.Search.Indexer.Tools
 {
     static class OptionsValidatorTools
     {
-        public static void CheckId(IndexerOptions options)
+        public static void CheckId(JobOptions options)
         {
             ThrowNotDefined(options, o => o.IdProperty);
         }

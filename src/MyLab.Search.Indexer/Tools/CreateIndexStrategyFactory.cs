@@ -4,19 +4,22 @@ using System.Threading.Tasks;
 using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
 {
     class CreateIndexStrategyFactory
     {
-        private readonly IndexerOptions _options;
+        private readonly JobOptions _options;
+        private readonly IJobResourceProvider _jobResourceProvider;
         private readonly DataSourceEntity _exampleEntity;
 
         public IDslLogger Log { get; set; }
 
-        public CreateIndexStrategyFactory(IndexerOptions options, DataSourceEntity exampleEntity)
+        public CreateIndexStrategyFactory(JobOptions options, IJobResourceProvider jobResourceProvider, DataSourceEntity exampleEntity)
         {
             _options = options;
+            _jobResourceProvider = jobResourceProvider;
             _exampleEntity = exampleEntity;
         }
 
@@ -33,8 +36,12 @@ namespace MyLab.Search.Indexer.Tools
                 }
                 case NewIndexStrategy.File:
                 {
-                    var jsonStrategy = await JsonSettingsBasedCreateIndexStrategy.LoadFormFileAsync(_options.NewIndexRequestFile, cancellationToken);
-                    jsonStrategy.Log = Log;
+                    var request = await _jobResourceProvider.ReadFileAsync(_options.JobId, "new-index.json");
+
+                    var jsonStrategy = new JsonSettingsBasedCreateIndexStrategy(request)
+                    {
+                        Log = Log
+                    };
 
                     return jsonStrategy;
                 }

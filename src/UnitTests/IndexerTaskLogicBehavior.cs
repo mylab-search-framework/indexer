@@ -18,17 +18,22 @@ namespace UnitTests
         public async Task ShouldIndexFullWhenNoSeed()
         {
             //Arrange
-            var sp = await InitServices(o =>
-                {
-                    o.PageSize = 2;
-                    o.EnablePaging = true;
-                    o.Query = "select * from foo_table limit @limit offset @offset";
-                    o.Strategy = IndexerDbStrategy.Update;
-                },
+            var sp = await InitServices(
                 o =>
                 {
-                    o.LastChangeProperty = nameof(TestEntity.LastModified);
-                    o.IdProperty = nameof(TestEntity.Id);
+                    o.Jobs = new[]
+                    {
+                        new JobOptions
+                        {
+                            JobId = "foojob",
+                            LastChangeProperty = nameof(TestEntity.LastModified),
+                            IdProperty = nameof(TestEntity.Id),
+                            PageSize = 2,
+                            EnablePaging = true,
+                            Query = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update
+                        }
+                    };
                 });
 
 
@@ -60,15 +65,19 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
                 {
-                    o.PageSize = 2;
-                    o.Query = "select * from foo_table limit @limit offset @offset";
-                    o.EnablePaging = true;
-                    o.Strategy = IndexerDbStrategy.Update;
-                },
-                o =>
-                {
-                    o.LastChangeProperty = nameof(TestEntity.LastModified);
-                    o.IdProperty = nameof(TestEntity.Id);
+                    o.Jobs = new[]
+                    {
+                        new JobOptions
+                        {
+                            JobId = "foojob",
+                            LastChangeProperty = nameof(TestEntity.LastModified),
+                            IdProperty = nameof(TestEntity.Id),
+                            PageSize = 2,
+                            EnablePaging = true,
+                            Query = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update
+                        }
+                    };
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -82,7 +91,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadDateTimeAsync();
+            var actualSeed = await seedService.ReadDateTimeAsync("foojob");
 
             //Assert
             Assert.Equal(lastModified, actualSeed);
@@ -94,14 +103,18 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.PageSize = 2;
-                    o.Query = "select * from foo_table limit @limit offset @offset";
-                    o.EnablePaging = true;
-                    o.Strategy = IndexerDbStrategy.Add;
-                },
-                o =>
-                {
-                    o.IdProperty = nameof(TestEntity.Id);
+                    o.Jobs = new[]
+                    {
+                        new JobOptions
+                        {
+                            JobId = "foojob",
+                            IdProperty = nameof(TestEntity.Id),
+                            PageSize = 2,
+                            EnablePaging = true,
+                            Query = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Add
+                        }
+                    };
                 });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -110,7 +123,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadIdAsync();
+            var actualSeed = await seedService.ReadIdAsync("foojob");
 
             //Assert
             Assert.Equal(4, actualSeed);
@@ -124,13 +137,17 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Query = "select * from foo_table where LastModified > @seed";
-                o.Strategy = IndexerDbStrategy.Update;
-            },
-                o =>
-            {
-                o.LastChangeProperty = nameof(TestEntity.LastModified);
-                o.IdProperty = nameof(TestEntity.Id);
+                o.Jobs = new[]
+                {
+                    new JobOptions
+                    {
+                        JobId = "foojob",
+                        LastChangeProperty = nameof(TestEntity.LastModified),
+                        IdProperty = nameof(TestEntity.Id),
+                        Query = "select * from foo_table where LastModified > @seed",
+                        NewUpdatesStrategy = NewUpdatesStrategy.Update
+                    }
+                };
             });
 
             var logic = sp.GetService<ITaskLogic>();
@@ -143,7 +160,7 @@ namespace UnitTests
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteDateTimeAsync(lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync("foojob", lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -158,15 +175,23 @@ namespace UnitTests
         {
             //Arrange
             var sp = await InitServices(o =>
-            {
-                o.Query = "select * from foo_table where Id > @seed";
-                o.Strategy = IndexerDbStrategy.Add;
-            });
+                {
+                    o.Jobs = new[]
+                    {
+                        new JobOptions
+                        {
+                            JobId = "foojob",
+                            Query =  "select * from foo_table where Id > @seed",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                            IdProperty = nameof(TestEntity.Id)
+                        }
+                    };
+                });
 
             var logic = sp.GetService<ITaskLogic>();
             var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
 
-            await SaveSeed(sp, ss => ss.WriteIdAsync(3));
+            await SaveSeed(sp, ss => ss.WriteIdAsync("foojob", 3));
 
             //Act
             await logic.Perform(CancellationToken.None);

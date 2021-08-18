@@ -32,7 +32,7 @@ namespace UnitTests
             _output = output;
         }
 
-        private async Task<IServiceProvider> InitServices(Action<IndexerDbOptions> configureDbOptions, Action<IndexerOptions> configureIndexerOptions = null)
+        private async Task<IServiceProvider> InitServices(Action<IndexerOptions> configureIndexerOptions = null)
         {
             var testDb = await _dvFxt.CreateDbAsync(new FiveInserter());
 
@@ -42,7 +42,8 @@ namespace UnitTests
                 .AddSingleton<ISeedService, TestSeedService>()
                 .AddSingleton<IDataIndexer, TestIndexer>()
                 .AddSingleton<ITaskLogic, IndexerTaskLogic>()
-                .Configure(configureDbOptions)
+                .AddSingleton<IJobResourceProvider, JobResourceProvider>()
+                //.Configure(configureDbOptions)
                 .Configure<ElasticsearchOptions>(o =>
                 {
                     o.DefaultIndex = "[for validation]";
@@ -60,7 +61,7 @@ namespace UnitTests
             {
                 srvs = srvs.Configure<IndexerOptions>(o =>
                 {
-                    o.IdProperty = "[for validation]";
+                    //o.IdProperty = "[for validation]";
                 });
             }
             
@@ -93,14 +94,14 @@ namespace UnitTests
             {
             }
 
-            public Task WriteAsync(string seed)
+            public Task WriteAsync(string jobId, string seed)
             {
                 _seed = seed;
 
                 return Task.CompletedTask;
             }
 
-            public Task<string> ReadAsync()
+            public Task<string> ReadAsync(string jobId)
             {
                 return Task.FromResult(_seed);
             }
@@ -111,7 +112,7 @@ namespace UnitTests
             public Dictionary<string, DataSourceEntity> IndexedEntities { get; } =
                 new Dictionary<string, DataSourceEntity>();
 
-            public Task IndexAsync(DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+            public Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
                 foreach (var entity in dataSourceEntities)
                 {

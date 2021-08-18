@@ -32,14 +32,21 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                NewIndexStrategy = NewIndexStrategy.Auto,
-                IdProperty = "Id"
+                Jobs = new []
+                {
+                    new JobOptions
+                    {
+                        JobId = "foojob",
+                        NewIndexStrategy = NewIndexStrategy.Auto,
+                        IdProperty = "Id"
+                    }
+                }
             };
 
             var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
 
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null);
+            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -77,7 +84,7 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync(new []{ testEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foojob", new []{ testEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 
@@ -101,13 +108,20 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                NewIndexStrategy = NewIndexStrategy.Auto,
-                IdProperty = "Id"
+                Jobs = new[]
+                {
+                    new JobOptions
+                    {
+                        JobId = "foojob",
+                        NewIndexStrategy = NewIndexStrategy.Auto,
+                        IdProperty = "Id"
+                    }
+                }
             };
             var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
 
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null);
+            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -168,8 +182,8 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync(new[] { initialTestEntity }, CancellationToken.None);
-                await indexer.IndexAsync(new[] { lateTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foojob", new[] { initialTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foojob", new[] { lateTestEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 

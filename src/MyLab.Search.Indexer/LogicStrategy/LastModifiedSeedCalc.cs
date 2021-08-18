@@ -9,21 +9,23 @@ namespace MyLab.Search.Indexer.LogicStrategy
 {
     class LastModifiedSeedCalc : ISeedCalc
     {
+        private readonly string _jobId;
         private readonly string _lastChangeProperty;
         private readonly ISeedService _seedService;
         private DateTime _lastModified;
 
         public IDslLogger Log { get; set; }
 
-        public LastModifiedSeedCalc(string lastChangeProperty, ISeedService seedService)
+        public LastModifiedSeedCalc(string jobId, string lastChangeProperty, ISeedService seedService)
         {
+            _jobId = jobId;
             _lastChangeProperty = lastChangeProperty;
             _seedService = seedService;
         }
 
         public async Task StartAsync()
         {
-            _lastModified = await _seedService.ReadDateTimeAsync();
+            _lastModified = await _seedService.ReadDateTimeAsync(_jobId);
         }
 
         public void Update(DataSourceEntity[] entities)
@@ -39,7 +41,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
 
         public Task SaveAsync()
         {
-            return _seedService.WriteDateTimeAsync(_lastModified);
+            return _seedService.WriteDateTimeAsync(_jobId,_lastModified);
         }
 
         public string GetLogValue()

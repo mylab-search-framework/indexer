@@ -69,17 +69,25 @@ namespace FunctionTests
                     srv.Configure<IndexerDbOptions>(o =>
                         {
                             o.Provider = "mysql";
-                            o.Query = "select * from test";
-                            o.Strategy = IndexerDbStrategy.Add;
+                            
                         }
                     );
 
                     srv.Configure<IndexerOptions>(o =>
+                    {
+                        o.Jobs = new[]
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
-                        }
-                    );
+                            new JobOptions
+                            {
+                                JobId = "foojob",
+
+                                Query = "select * from test",
+                                NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                NewIndexStrategy = NewIndexStrategy.Auto,
+                                IdProperty = nameof(TestEntity.Id)
+                            }
+                        };
+                    });
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
@@ -128,16 +136,20 @@ namespace FunctionTests
 
             _api.StartWithProxy(srv =>
                 {
-                    srv.Configure<IndexerMqOptions>(o =>
-                        {
-                            o.Queue = queue.Name;
-                        }
-                    );
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
+                            o.Jobs = new JobOptions[]
+                            {
+                                new JobOptions
+                                {
+                                    JobId = "foojob",
+                                    MqQueue = queue.Name,
+                                    NewIndexStrategy = NewIndexStrategy.Auto,
+                                    IdProperty = nameof(TestEntity.Id)
+                                },
+
+                            };
                         }
                     );
 
@@ -202,21 +214,24 @@ namespace FunctionTests
                     srv.Configure<IndexerDbOptions>(o =>
                         {
                             o.Provider = "mysql";
-                            o.Query = "select * from test";
-                            o.Strategy = IndexerDbStrategy.Add;
-                        }
-                    );
-
-                    srv.Configure<IndexerMqOptions>(o =>
-                        {
-                            o.Queue = queue.Name;
                         }
                     );
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
+                            o.Jobs = new[]
+                            {
+                                new JobOptions
+                                {
+                                    JobId = "foojob",
+                                    NewIndexStrategy = NewIndexStrategy.Auto,
+                                    IdProperty = nameof(TestEntity.Id),
+                                    MqQueue = queue.Name,
+                                    Query = "select * from test",
+                                    NewUpdatesStrategy = NewUpdatesStrategy.Add
+
+                                }
+                            };
                         }
                     );
 

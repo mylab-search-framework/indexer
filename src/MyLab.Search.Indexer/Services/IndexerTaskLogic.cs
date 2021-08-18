@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -16,40 +17,42 @@ namespace MyLab.Search.Indexer.Services
     public class IndexerTaskLogic : ITaskLogic
     {
         private readonly IndexerOptions _indexerOptions;
-        private readonly IndexerDbOptions _dbOptions;
         private readonly IDataSourceService _dataSourceService;
         private readonly ISeedService _seedService;
         private readonly IDataIndexer _indexer;
+        private readonly IJobResourceProvider _jobResourceProvider;
         private readonly IDslLogger _log;
-        private DbCaseOptionsValidator _optionsValidator;
+        private readonly DbCaseOptionsValidator _optionsValidator;
 
         public IndexerTaskLogic(
             IOptions<IndexerOptions> indexerOptions, 
-            IOptions<IndexerDbOptions> dbOptions,
             IOptions<ElasticsearchOptions> esOptions,
+            IOptions<IndexerDbOptions> dbOptions,
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
+            IJobResourceProvider jobResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
-            : this(indexerOptions.Value, dbOptions.Value, esOptions.Value, dataSourceService, seedService, indexer, logger)
+            : this(indexerOptions.Value, esOptions.Value, dbOptions.Value, dataSourceService, seedService, indexer, jobResourceProvider, logger)
         {
             
         }
 
         public IndexerTaskLogic(
             IndexerOptions indexerOptions,
-            IndexerDbOptions dbOptions,
             ElasticsearchOptions esOptions,
+            IndexerDbOptions dbOptions,
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
+            IJobResourceProvider jobResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
         {
             _indexerOptions = indexerOptions;
-            _dbOptions = dbOptions;
             _dataSourceService = dataSourceService;
             _seedService = seedService;
             _indexer = indexer;
+            _jobResourceProvider = jobResourceProvider;
             _log = logger?.Dsl();
             _optionsValidator = new DbCaseOptionsValidator(indexerOptions, dbOptions, esOptions);
         }
@@ -58,6 +61,32 @@ namespace MyLab.Search.Indexer.Services
         {
             _optionsValidator.Validate();
 
+            if (_indexerOptions.Jobs != null)
+            {
+                foreach (var indexerOptionsJob in _indexerOptions.Jobs)
+                {
+                    try
+                    {
+                        await PerformJob(indexerOptionsJob, cancellationToken);
+                    }
+                    catch (Exception e)
+                    {
+                        _log?.Error("Indexer job performing failed", e)
+                            .AndFactIs("job", indexerOptionsJob)
+                            .Write();
+                    }
+                }
+            }
+            else
+            {
+                _log?
+                    .Warning("No indexing job found")
+                    .Write();
+            }
+        }
+
+        private async Task PerformJob(JobOptions indexerOptionsJob, CancellationToken cancellationToken)
+        {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -66,13 +95,24 @@ namespace MyLab.Search.Indexer.Services
 
             int counter = 0;
 
-            var strategy = CreateStrategy();
+            var strategy = CreateStrategy(indexerOptionsJob);
             var seedCalc = strategy.CreateSeedCalc();
 
             await seedCalc.StartAsync();
             var seedParameter = await strategy.CreateSeedDataParameterAsync();
 
-            var iterator = _dataSourceService.Read(_dbOptions.Query, seedParameter);
+            string query;
+
+            if (indexerOptionsJob.Query != null)
+            {
+                query = indexerOptionsJob.Query;
+            }
+            else
+            {
+                query = await _jobResourceProvider.ReadFileAsync(indexerOptionsJob.JobId, "query.sql");
+            }
+
+            var iterator = _dataSourceService.Read(indexerOptionsJob.JobId, query, seedParameter);
 
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
@@ -82,7 +122,7 @@ namespace MyLab.Search.Indexer.Services
 
                 counter += batch.Entities.Length;
 
-                await _indexer.IndexAsync(batch.Entities, cancellationToken);
+                await _indexer.IndexAsync(indexerOptionsJob.JobId, batch.Entities, cancellationToken);
 
                 seedCalc.Update(batch.Entities);
             }
@@ -98,19 +138,19 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private IIndexerLogicStrategy CreateStrategy()
+        private IIndexerLogicStrategy CreateStrategy(JobOptions jobOptions)
         {
-            switch (_dbOptions.Strategy)
+            switch (jobOptions.NewUpdatesStrategy)
             {
-                case IndexerDbStrategy.Update:
-                    return new UpdateModeIndexerLogicStrategy(_indexerOptions.LastChangeProperty, _seedService){ Log = _log};
-                case IndexerDbStrategy.Add:
-                    return new AddModeIndexerLogicStrategy(_indexerOptions.IdProperty, _seedService) { Log = _log };
-                case IndexerDbStrategy.Undefined:
+                case NewUpdatesStrategy.Update:
+                    return new UpdateModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.LastChangeProperty, _seedService){ Log = _log};
+                case NewUpdatesStrategy.Add:
+                    return new AddModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.IdProperty, _seedService) { Log = _log };
+                case NewUpdatesStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:
                     throw new InvalidOperationException("Unsupported Indexer mode")
-                        .AndFactIs("mode", _dbOptions.Strategy);
+                        .AndFactIs("mode", jobOptions.NewUpdatesStrategy);
             }
         }
     }
