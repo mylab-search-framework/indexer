@@ -69,22 +69,30 @@ namespace FunctionTests
                     srv.Configure<IndexerDbOptions>(o =>
                         {
                             o.Provider = "mysql";
-                            o.Query = "select * from test";
-                            o.Strategy = IndexerDbStrategy.Add;
+                            
                         }
                     );
 
                     srv.Configure<IndexerOptions>(o =>
+                    {
+                        o.Jobs = new[]
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
-                        }
-                    );
+                            new JobOptions
+                            {
+                                JobId = "foojob",
+
+                                DbQuery = "select * from test",
+                                NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                NewIndexStrategy = NewIndexStrategy.Auto,
+                                IdProperty = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            }
+                        };
+                    });
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -114,7 +122,7 @@ namespace FunctionTests
         {
             //Arrange
             var queue = _mqFxt.CreateWithRandomId();
-            _output.WriteLine("Queue created: " + queue.Name);
+            _output.WriteLine("MqQueue created: " + queue.Name);
 
             string indexName = "test-" + Guid.NewGuid().ToString("N");
 
@@ -128,23 +136,27 @@ namespace FunctionTests
 
             _api.StartWithProxy(srv =>
                 {
-                    srv.Configure<IndexerMqOptions>(o =>
-                        {
-                            o.Queue = queue.Name;
-                        }
-                    );
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
+                            o.Jobs = new JobOptions[]
+                            {
+                                new JobOptions
+                                {
+                                    JobId = "foojob",
+                                    MqQueue = queue.Name,
+                                    NewIndexStrategy = NewIndexStrategy.Auto,
+                                    IdProperty = nameof(TestEntity.Id),
+                                    EsIndex = indexName
+                                },
+
+                            };
                         }
                     );
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -181,7 +193,7 @@ namespace FunctionTests
             string indexName = "test-" + Guid.NewGuid().ToString("N");
 
             var queue = _mqFxt.CreateWithRandomId();
-            _output.WriteLine("Queue created: " + queue.Name);
+            _output.WriteLine("MqQueue created: " + queue.Name);
 
             var initialTestEntity = new TestEntity
             {
@@ -202,28 +214,30 @@ namespace FunctionTests
                     srv.Configure<IndexerDbOptions>(o =>
                         {
                             o.Provider = "mysql";
-                            o.Query = "select * from test";
-                            o.Strategy = IndexerDbStrategy.Add;
-                        }
-                    );
-
-                    srv.Configure<IndexerMqOptions>(o =>
-                        {
-                            o.Queue = queue.Name;
                         }
                     );
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.NewIndexStrategy = NewIndexStrategy.Auto;
-                            o.IdProperty = nameof(TestEntity.Id);
+                            o.Jobs = new[]
+                            {
+                                new JobOptions
+                                {
+                                    JobId = "foojob",
+                                    NewIndexStrategy = NewIndexStrategy.Auto,
+                                    IdProperty = nameof(TestEntity.Id),
+                                    MqQueue = queue.Name,
+                                    DbQuery = "select * from test",
+                                    NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                    EsIndex = indexName
+                                }
+                            };
                         }
                     );
 
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 

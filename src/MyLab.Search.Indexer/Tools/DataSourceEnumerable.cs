@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using LinqToDB.Data;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools

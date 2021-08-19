@@ -1,9 +1,5 @@
-﻿using MyLab.Log;
-using System;
-using System.Collections.Generic;
-using System.Dynamic;
+﻿using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,54 +9,56 @@ using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Tools;
-using Nest;
 
 namespace MyLab.Search.Indexer.Services
 {
     class DataIndexer : IDataIndexer
     {
         private readonly IndexerOptions _options;
-        private readonly ElasticsearchOptions _esOptions;
         private readonly IEsIndexer<IndexEntity> _esIndexer;
         private readonly IEsManager _esManager;
+        private readonly IJobResourceProvider _jobResourceProvider;
         private readonly IDslLogger _log;
 
         static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0 ,0);
 
         public DataIndexer(
             IOptions<IndexerOptions> options,
-            IOptions<ElasticsearchOptions> esOptions,
             IEsIndexer<IndexEntity> esIndexer,
             IEsManager esManager,
+            IJobResourceProvider jobResourceProvider,
             ILogger<DataIndexer> logger)
-        :this(options.Value, esOptions.Value, esIndexer, esManager, logger)
+        :this(options.Value, esIndexer, esManager, jobResourceProvider, logger)
         {
         }
 
         public DataIndexer(
             IndexerOptions options,
-            ElasticsearchOptions esOptions,
             IEsIndexer<IndexEntity> esIndexer, 
             IEsManager esManager,
+            IJobResourceProvider jobResourceProvider,
             ILogger<DataIndexer> logger)
         {
             _options = options;
-            _esOptions = esOptions;
             _esIndexer = esIndexer;
             _esManager = esManager;
+            _jobResourceProvider = jobResourceProvider;
             _log = logger?.Dsl();
         }
 
-        public async Task IndexAsync(DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+        public async Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
         {
+            var curJob = _options.Jobs?.FirstOrDefault(j => j.JobId == jobId) 
+                         ?? throw new InvalidOperationException("Job not found");
+
             if (dataSourceEntities.Length == 0)
                 return;
 
-            bool indexExists = await _esManager.IsIndexExistsAsync(_esOptions.DefaultIndex, cancellationToken);
+            bool indexExists = await _esManager.IsIndexExistsAsync(curJob.EsIndex, cancellationToken);
             
             if (!indexExists)
             {
-                var factory = new CreateIndexStrategyFactory(_options, dataSourceEntities.First())
+                var factory = new CreateIndexStrategyFactory(curJob, _jobResourceProvider, dataSourceEntities.First())
                 {
                     Log = _log
                 };
@@ -68,13 +66,13 @@ namespace MyLab.Search.Indexer.Services
                 var createIndexStrategy = await factory.CreateAsync(cancellationToken);
 
                 _log?.Warning("Index not found and will be created")
-                    .AndFactIs("index-name", _esOptions.DefaultIndex)
+                    .AndFactIs("index-name", curJob.EsIndex)
                     .Write();
 
-                await createIndexStrategy.CreateIndexAsync(_esManager, _esOptions.DefaultIndex, cancellationToken);
+                await createIndexStrategy.CreateIndexAsync(_esManager, curJob.EsIndex, cancellationToken);
 
                 _log?.Action("Index created")
-                    .AndFactIs("index-name", _esOptions.DefaultIndex)
+                    .AndFactIs("index-name", curJob.EsIndex)
                     .Write();
             }
 
@@ -82,14 +80,9 @@ namespace MyLab.Search.Indexer.Services
 
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
-                    .Index(_esOptions.DefaultIndex)
-                    .Id(ExtractId(doc))
+                    .Index(curJob.EsIndex)
+                    .Id(doc[curJob.IdProperty].ToString())
                 , cancellationToken);
-        }
-
-        private Id ExtractId(IndexEntity doc)
-        {
-            return doc[_options.IdProperty].ToString();
         }
 
         private IndexEntity EntityToDynamic(DataSourceEntity arg)

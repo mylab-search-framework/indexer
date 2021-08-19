@@ -7,14 +7,13 @@ namespace MyLab.Search.Indexer.Tools
 {
     static class OptionsValidatorTools
     {
-        public static void CheckId(IndexerOptions options)
+        public static void CheckId(JobOptions options)
         {
             ThrowNotDefined(options, o => o.IdProperty);
         }
 
         public static void CheckEs(ElasticsearchOptions options)
         {
-            ThrowNotDefined(options, o => o.DefaultIndex);
             ThrowNotDefined(options, o => o.Url);
         }
 

@@ -1,8 +1,12 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LinqToDB.Data;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
+using MyLab.Log;
+using MyLab.Search.Indexer.DataContract;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -10,28 +14,31 @@ namespace MyLab.Search.Indexer.Tools
     class DbDataSourceService : IDataSourceService
     {
         private readonly IDbManager _dbManager;
-        private readonly IndexerDbOptions _options;
+        private readonly IndexerOptions _options;
 
         public DbDataSourceService(
             IDbManager dbManager, 
-            IOptions<IndexerDbOptions> options)
+            IOptions<IndexerOptions> options)
             : this(dbManager, options.Value)
         {
         }
 
         public DbDataSourceService(
             IDbManager dbManager,
-            IndexerDbOptions options)
+            IndexerOptions options)
         {
             _dbManager = dbManager;
             _options = options;
         }
 
-        public IAsyncEnumerable<DataSourceBatch> Read(string query, DataParameter seedParameter = null)
+        public IAsyncEnumerable<DataSourceBatch> Read(string jobId, string query, DataParameter seedParameter = null)
         {
-            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), _options.PageSize)
+            var foundJob = _options.Jobs?.FirstOrDefault(j => j.JobId == jobId) 
+                           ?? throw new InvalidOperationException("Job not found");
+
+            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundJob.PageSize)
             {
-                EnablePaging = _options.EnablePaging
+                EnablePaging = foundJob.EnablePaging
             };
         }
     }

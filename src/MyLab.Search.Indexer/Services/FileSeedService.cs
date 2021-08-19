@@ -1,21 +1,39 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 
 namespace MyLab.Search.Indexer.Services
 {
     class FileSeedService : ISeedService
     {
-        private const string Filename = "data-seed";
-        public Task WriteAsync(string seed)
+        private readonly IndexerOptions _options;
+
+        public FileSeedService(IOptions<IndexerOptions> options)
+            : this(options.Value)
         {
-            return File.WriteAllTextAsync(Filename, seed);
+
+        }
+        public FileSeedService(IndexerOptions options)
+        {
+            _options = options;
         }
 
-        public async Task<string> ReadAsync()
+        public Task WriteAsync(string jobId, string seed)
         {
-            return File.Exists(Filename)
-                ? await File.ReadAllTextAsync(Filename)
+            return File.WriteAllTextAsync(JobIdToFilename(jobId), seed);
+        }
+
+        public async Task<string> ReadAsync(string jobId)
+        {
+            var fn = JobIdToFilename(jobId);
+            return File.Exists(fn)
+                ? await File.ReadAllTextAsync(fn)
                 : null;
+        }
+
+        string JobIdToFilename(string jobId)
+        {
+            return Path.Combine(_options.SeedPath, jobId);
         }
     }
 }

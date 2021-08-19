@@ -31,17 +31,24 @@ namespace UnitTests
             //Arrange
             var dbManager = await _dvFxt.CreateDbAsync(new FiveInserter());
 
-            var options = new IndexerDbOptions
+            var options = new IndexerOptions
             {
-                PageSize = 2,
-                EnablePaging = true
+                Jobs = new []
+                {
+                    new JobOptions
+                    {
+                        JobId = "foojob",
+                        PageSize = 2,
+                        EnablePaging = true
+                    }
+                }
             };
 
             var service = new DbDataSourceService(dbManager, options);
 
             var accum = new List<DataSourceEntity[]>();
 
-            var iterator = service.Read("select * from foo_table where Id > 0 limit @limit offset @offset");
+            var iterator = service.Read("foojob", "select * from foo_table where Id > 0 limit @limit offset @offset");
 
             //Act
             await foreach(var batch in  iterator)
@@ -89,12 +96,12 @@ namespace UnitTests
 
         class TestSeedService : ISeedService
         {
-            public Task WriteAsync(string seed)
+            public Task WriteAsync(string jobId, string seed)
             {
                 return Task.CompletedTask;
             }
 
-            public Task<string> ReadAsync()
+            public Task<string> ReadAsync(string jobId)
             {
                 return Task.FromResult(string.Empty);
             }

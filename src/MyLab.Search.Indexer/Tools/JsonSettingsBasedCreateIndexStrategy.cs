@@ -29,16 +29,5 @@ namespace MyLab.Search.Indexer.Tools
 
             await esMgr.CreateIndexAsync(name, _settingsJson, cancellationToken);
         }
-
-        public static async Task<JsonSettingsBasedCreateIndexStrategy> LoadFormFileAsync(string filename, CancellationToken cancellationToken = default)
-        {
-            if (!File.Exists(filename))
-                throw new InvalidOperationException("Index settings file not found")
-                    .AndFactIs("File path", filename);
-
-            var settings = await File.ReadAllTextAsync(filename, cancellationToken);
-
-            return new JsonSettingsBasedCreateIndexStrategy(settings);
-        }
     }
 }
