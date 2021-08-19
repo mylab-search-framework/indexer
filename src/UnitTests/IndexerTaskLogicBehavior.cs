@@ -30,8 +30,9 @@ namespace UnitTests
                             IdProperty = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            Query = "select * from foo_table limit @limit offset @offset",
-                            NewUpdatesStrategy = NewUpdatesStrategy.Update
+                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                            EsIndex = "[no mater in this test]"
                         }
                     };
                 });
@@ -74,8 +75,9 @@ namespace UnitTests
                             IdProperty = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            Query = "select * from foo_table limit @limit offset @offset",
-                            NewUpdatesStrategy = NewUpdatesStrategy.Update
+                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                            EsIndex = "[no mater in this test]"
                         }
                     };
                 });
@@ -111,8 +113,9 @@ namespace UnitTests
                             IdProperty = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            Query = "select * from foo_table limit @limit offset @offset",
-                            NewUpdatesStrategy = NewUpdatesStrategy.Add
+                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                            EsIndex = "[no mater in this test]"
                         }
                     };
                 });
@@ -144,8 +147,9 @@ namespace UnitTests
                         JobId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdProperty = nameof(TestEntity.Id),
-                        Query = "select * from foo_table where LastModified > @seed",
-                        NewUpdatesStrategy = NewUpdatesStrategy.Update
+                        DbQuery = "select * from foo_table where LastModified > @seed",
+                        NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                        EsIndex = "[no mater in this test]"
                     }
                 };
             });
@@ -181,9 +185,10 @@ namespace UnitTests
                         new JobOptions
                         {
                             JobId = "foojob",
-                            Query =  "select * from foo_table where Id > @seed",
+                            DbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
-                            IdProperty = nameof(TestEntity.Id)
+                            IdProperty = nameof(TestEntity.Id),
+                            EsIndex = "[no mater in this test]"
                         }
                     };
                 });

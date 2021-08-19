@@ -48,7 +48,7 @@ namespace MyLab.Search.Indexer
 
 
                 //    cReg.RegisterConsumerByOptions<IndexerMqOptions>(
-                //        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.Queue));
+                //        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.MqQueue));
                 //}, optional: true)
                 .AddEsTools(_configuration, "ES")
                 

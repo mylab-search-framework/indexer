@@ -103,9 +103,9 @@ namespace MyLab.Search.Indexer.Services
 
             string query;
 
-            if (indexerOptionsJob.Query != null)
+            if (indexerOptionsJob.DbQuery != null)
             {
-                query = indexerOptionsJob.Query;
+                query = indexerOptionsJob.DbQuery;
             }
             else
             {

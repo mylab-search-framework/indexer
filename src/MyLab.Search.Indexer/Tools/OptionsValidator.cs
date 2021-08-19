@@ -22,6 +22,7 @@ namespace MyLab.Search.Indexer.Tools
                 foreach (var jobOptions in _options.Jobs)
                 {
                     OptionsValidatorTools.CheckId(jobOptions);
+                    OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.EsIndex);
                     OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.NewUpdatesStrategy);
 
                     if (jobOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)
@@ -57,6 +58,7 @@ namespace MyLab.Search.Indexer.Tools
                 foreach (var jobOptions in _options.Jobs)
                 {
                     OptionsValidatorTools.CheckId(jobOptions);
+                    OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.EsIndex);
                     OptionsValidatorTools.ThrowNotDefined(jobOptions, o => o.NewUpdatesStrategy);
 
                     if (jobOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)

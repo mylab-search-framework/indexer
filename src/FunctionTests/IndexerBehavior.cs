@@ -81,10 +81,11 @@ namespace FunctionTests
                             {
                                 JobId = "foojob",
 
-                                Query = "select * from test",
+                                DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
-                                IdProperty = nameof(TestEntity.Id)
+                                IdProperty = nameof(TestEntity.Id),
+                                EsIndex = indexName
                             }
                         };
                     });
@@ -92,7 +93,6 @@ namespace FunctionTests
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -122,7 +122,7 @@ namespace FunctionTests
         {
             //Arrange
             var queue = _mqFxt.CreateWithRandomId();
-            _output.WriteLine("Queue created: " + queue.Name);
+            _output.WriteLine("MqQueue created: " + queue.Name);
 
             string indexName = "test-" + Guid.NewGuid().ToString("N");
 
@@ -146,7 +146,8 @@ namespace FunctionTests
                                     JobId = "foojob",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
-                                    IdProperty = nameof(TestEntity.Id)
+                                    IdProperty = nameof(TestEntity.Id),
+                                    EsIndex = indexName
                                 },
 
                             };
@@ -156,7 +157,6 @@ namespace FunctionTests
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 
@@ -193,7 +193,7 @@ namespace FunctionTests
             string indexName = "test-" + Guid.NewGuid().ToString("N");
 
             var queue = _mqFxt.CreateWithRandomId();
-            _output.WriteLine("Queue created: " + queue.Name);
+            _output.WriteLine("MqQueue created: " + queue.Name);
 
             var initialTestEntity = new TestEntity
             {
@@ -227,9 +227,9 @@ namespace FunctionTests
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdProperty = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
-                                    Query = "select * from test",
-                                    NewUpdatesStrategy = NewUpdatesStrategy.Add
-
+                                    DbQuery = "select * from test",
+                                    NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                    EsIndex = indexName
                                 }
                             };
                         }
@@ -238,7 +238,6 @@ namespace FunctionTests
                     srv.Configure<ElasticsearchOptions>(o =>
                         {
                             o.Url = "http://localhost:9200";
-                            o.DefaultIndex = indexName;
                         }
                     );
 

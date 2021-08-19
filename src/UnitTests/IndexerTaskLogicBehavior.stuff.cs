@@ -46,7 +46,6 @@ namespace UnitTests
                 //.Configure(configureDbOptions)
                 .Configure<ElasticsearchOptions>(o =>
                 {
-                    o.DefaultIndex = "[for validation]";
                     o.Url = "[for validation]";
                 })
                 .Configure<IndexerDbOptions>(o =>

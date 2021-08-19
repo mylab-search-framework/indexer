@@ -38,15 +38,14 @@ namespace IntegrationTests
                     {
                         JobId = "foojob",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id"
+                        IdProperty = "Id",
+                        EsIndex = indexName
                     }
                 }
             };
-
-            var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
-
+            
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -114,14 +113,14 @@ namespace IntegrationTests
                     {
                         JobId = "foojob",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id"
+                        IdProperty = "Id",
+                        EsIndex = indexName
                     }
                 }
             };
-            var esOptions = new ElasticsearchOptions { DefaultIndex = indexName };
-
+            
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esOptions, esIndexer, _esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()

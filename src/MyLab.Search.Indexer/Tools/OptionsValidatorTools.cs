@@ -14,7 +14,6 @@ namespace MyLab.Search.Indexer.Tools
 
         public static void CheckEs(ElasticsearchOptions options)
         {
-            ThrowNotDefined(options, o => o.DefaultIndex);
             ThrowNotDefined(options, o => o.Url);
         }
 
