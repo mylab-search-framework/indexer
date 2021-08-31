@@ -31,4 +31,10 @@
     <ProjectReference Include="..\MyLab.Search.Indexer\MyLab.Search.Indexer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="files\test-entity-map.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

@@ -30,7 +30,7 @@ namespace MyLab.Search.Indexer.Tools
                         e => new DataSourcePropertyValue
                         {
                             Value = e.Value,
-                            Type = _detectTypes ? DetectType(e.Value) : DataSourcePropertyType.Undefined,
+                            DbType = _detectTypes ? DetectType(e.Value) : DataSourcePropertyType.Undefined,
                             PropertyTypeReason = _detectTypes ? e.Value : "[auto-detection-disabled]"
                         }
                     );

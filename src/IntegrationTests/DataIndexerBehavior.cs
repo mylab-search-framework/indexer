@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MyLab.Mq;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
@@ -45,7 +44,7 @@ namespace IntegrationTests
             };
             
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(),  null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -61,7 +60,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = idValue,
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     },
                     {
@@ -69,7 +68,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = "foo-val",
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     }
                 }
@@ -120,7 +119,7 @@ namespace IntegrationTests
             };
             
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(), null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -136,7 +135,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = idValue,
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     },
                     {
@@ -144,7 +143,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = "foo-val",
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     }
                 }
@@ -159,7 +158,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = idValue,
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     },
                     {
@@ -167,7 +166,7 @@ namespace IntegrationTests
                         new DataSourcePropertyValue
                         {
                             Value    = "bar-val",
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     }
                 }
@@ -196,6 +195,21 @@ namespace IntegrationTests
             //Assert
             Assert.Equal(1, searchResult.Total);
             Assert.Equal("bar-val", searchResult.First()["Value"]);
+        }
+    }
+
+    class TestIndexMappingService : IIndexMappingService
+    {
+        public Task<IndexMapping> GetIndexMappingAsync(string indexName)
+        {
+            return Task.FromResult(
+                new IndexMapping(
+                    new[]
+                    {
+                        new IndexMappingProperty("Id", "text"), 
+                        new IndexMappingProperty("Value", "text"), 
+                    }
+            ));
         }
     }
 }

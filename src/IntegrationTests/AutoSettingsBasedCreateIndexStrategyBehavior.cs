@@ -36,7 +36,7 @@ namespace IntegrationTests
                         "name", new DataSourcePropertyValue
                         {
                             Value = "foo",
-                            Type = DataSourcePropertyType.String
+                            DbType = DataSourcePropertyType.String
                         }
                     }
                 }
