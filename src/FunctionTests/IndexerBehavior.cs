@@ -52,6 +52,77 @@ namespace FunctionTests
         }
 
         [Fact]
+        public async Task ShouldInterpretNullAsAbsentProperty()
+        {
+            //Arrange
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var testEntity = new TestEntity
+            {
+                Id = 2,
+                Value = "foo",
+                Bool = null
+            };
+
+            var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
+
+            var client = _api.StartWithProxy(srv =>
+            {
+                srv.Configure<IndexerDbOptions>(o =>
+                {
+                    o.Provider = "mysql";
+                }
+                );
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Jobs = new[]
+                    {
+                            new JobOptions
+                            {
+                                JobId = "foojob",
+
+                                DbQuery = "select * from test",
+                                NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                NewIndexStrategy = NewIndexStrategy.File,
+                                IdProperty = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            }
+                        };
+                });
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                {
+                    o.Url = "http://localhost:9200";
+                }
+                );
+
+                srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
+                srv.AddSingleton<ISeedService, TestSeedService>();
+
+                srv.AddSingleton<IJobResourceProvider>(new TestJobResourceProvider("test-entity-map.json"));
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            }
+            );
+
+            await _db.DoOnce().InsertAsync(testEntity);
+
+            //Act
+
+            await client.PostProcessAsync();
+            await Task.Delay(2000);
+
+            var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);
+
+            //Assert
+            Assert.NotNull(searchRes);
+            Assert.Single(searchRes);
+            Assert.Equal(testEntity.Value, searchRes.First().Value);
+            Assert.Null(searchRes.First().Bool);
+        }
+
+        [Fact]
         public async Task ShouldUseBoolRight()
         {
             //Arrange
@@ -201,7 +272,8 @@ namespace FunctionTests
             var testEntity = new SearchTestEntity
             {
                 Id = 2,
-                Value = "foo"
+                Value = "foo",
+                Bool = false
             };
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
@@ -366,7 +438,7 @@ namespace FunctionTests
             public string Value { get; set; }
 
             [Boolean(Name = "Bool")]
-            public bool Bool { get; set; }
+            public bool? Bool { get; set; }
         }
 
         class TestJobResourceProvider : IJobResourceProvider

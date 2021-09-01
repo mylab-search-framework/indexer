@@ -10,7 +10,6 @@ namespace FunctionTests
         [Column]
         public string Value { get; set; }
 
-        [Column]
-        public bool Bool { get; set; }
+        [Column] public bool? Bool { get; set; } = false;
     }
 }

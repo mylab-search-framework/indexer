@@ -33,6 +33,9 @@ namespace MyLab.Search.Indexer.Tools
 
             foreach (var property in dsEntity.Properties)
             {
+                if(property.Value.Value == null)
+                    continue;
+
                 object objVal;
 
                 var mappingProperty = _mapping.Props.FirstOrDefault(p => p.Name == property.Key);
