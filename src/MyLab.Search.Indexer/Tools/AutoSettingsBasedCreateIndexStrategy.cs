@@ -109,13 +109,17 @@ namespace MyLab.Search.Indexer.Tools
 
             foreach (var property in entityExample.Properties)
             {
-                switch (property.Value.Type)
+                switch (property.Value.DbType)
                 {
                     case DataSourcePropertyType.Boolean:
                         d = d.Boolean(td => td.Name(property.Key));
                         break;
                     case DataSourcePropertyType.Numeric:
-                        d = d.Number(td => td.Name(property.Key).Type(NumberType.Long));
+                    {
+                        d = bool.TryParse(property.Value.Value, out _) 
+                            ? d.Boolean(td => td.Name(property.Key)) 
+                            : d.Number(td => td.Name(property.Key).Type(NumberType.Long));
+                    }
                         break;
                     case DataSourcePropertyType.Double:
                         d = d.Number(td => td.Name(property.Key).Type(NumberType.Double));
@@ -129,7 +133,7 @@ namespace MyLab.Search.Indexer.Tools
                         break;
                     default:
                         throw new ArgumentOutOfRangeException("Unexpected example entity property type", (Exception)null)
-                            .AndFactIs("actual", property.Value.Type);
+                            .AndFactIs("actual", property.Value.DbType);
                 }
             }
 

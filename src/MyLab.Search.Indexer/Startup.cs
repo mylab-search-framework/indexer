@@ -8,7 +8,6 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
-using MyLab.Mq.PubSub;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
@@ -37,26 +36,20 @@ namespace MyLab.Search.Indexer
                 .AddSingleton(_configuration)
                 .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
                 .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
-                .ConfigureMq(_configuration, "MQ");
+                .ConfigureRabbitClient(_configuration);
 
             services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
-                //.AddMqConsuming(cReg =>
-                //{
-
-
-                //    cReg.RegisterConsumerByOptions<IndexerMqOptions>(
-                //        opt => new MqConsumer<string, IndexerMqConsumerLogic>(opt.MqQueue));
-                //}, optional: true)
                 .AddEsTools(_configuration, "ES")
-                
                 .AddLogging(l => l.AddConsole())
                 .AddSingleton<IJobResourceProvider, JobResourceProvider>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataIndexer, DataIndexer>()
-                .AddSingleton<IDataSourceService, DbDataSourceService>();
+                .AddSingleton<IDataSourceService, DbDataSourceService>()
+                .AddSingleton<IIndexMappingService, IndexMappingService>()
+                .AddRabbitConsumers<IndexerConsumerRegistrar>();
 
         }
 

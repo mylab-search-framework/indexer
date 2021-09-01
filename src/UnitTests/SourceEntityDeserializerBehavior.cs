@@ -39,12 +39,12 @@ namespace UnitTests
             var entity = deserializer.Deserialize(input);
 
             //Assert
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["Id"].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueStr"].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueDouble"].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueInt"].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueBool"].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueDt"].Type);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["Id"].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueStr"].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueDouble"].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueInt"].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueBool"].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, entity.Properties["ValueDt"].DbType);
         }
 
         [Fact]
@@ -59,12 +59,12 @@ namespace UnitTests
             var entity = deserializer.Deserialize(input);
 
             //Assert
-            Assert.Equal(DataSourcePropertyType.String, entity.Properties["Id"].Type);
-            Assert.Equal(DataSourcePropertyType.String, entity.Properties["ValueStr"].Type);
-            Assert.Equal(DataSourcePropertyType.Double, entity.Properties["ValueDouble"].Type);
-            Assert.Equal(DataSourcePropertyType.Numeric, entity.Properties["ValueInt"].Type);
-            Assert.Equal(DataSourcePropertyType.Boolean, entity.Properties["ValueBool"].Type);
-            Assert.Equal(DataSourcePropertyType.DateTime, entity.Properties["ValueDt"].Type);
+            Assert.Equal(DataSourcePropertyType.String, entity.Properties["Id"].DbType);
+            Assert.Equal(DataSourcePropertyType.String, entity.Properties["ValueStr"].DbType);
+            Assert.Equal(DataSourcePropertyType.Double, entity.Properties["ValueDouble"].DbType);
+            Assert.Equal(DataSourcePropertyType.Numeric, entity.Properties["ValueInt"].DbType);
+            Assert.Equal(DataSourcePropertyType.Boolean, entity.Properties["ValueBool"].DbType);
+            Assert.Equal(DataSourcePropertyType.DateTime, entity.Properties["ValueDt"].DbType);
         }
     }
 }

@@ -20,7 +20,13 @@ namespace MyLab.Search.Indexer.Services
 
         public Task WriteAsync(string jobId, string seed)
         {
-            return File.WriteAllTextAsync(JobIdToFilename(jobId), seed);
+            var fn = JobIdToFilename(jobId);
+            var dir = Path.GetDirectoryName(fn);
+
+            if (dir != null && !Directory.Exists(dir))
+                Directory.CreateDirectory(dir);
+
+            return File.WriteAllTextAsync(fn, seed);
         }
 
         public async Task<string> ReadAsync(string jobId)

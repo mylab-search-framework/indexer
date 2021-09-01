@@ -83,7 +83,7 @@ namespace UnitTests
                         new DataSourcePropertyValue
                         {
                             Value = fieldValue,
-                            Type = convertedType
+                            DbType = convertedType
                         });
 
                     _output.WriteLine($"{index} ({fieldName}|{fieldStrType}): '{fieldNetType.Name}' -> '{convertedType}' = '{fieldValue}'");
@@ -94,21 +94,21 @@ namespace UnitTests
                 .First();
 
             //Assert
-            Assert.Equal(DataSourcePropertyType.Boolean, found[nameof(TestEntity.Boolean)].Type);
-            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.Date)].Type);
-            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTime)].Type);
-            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTime2)].Type);
-            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTimeOffset)].Type);
-            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int16)].Type);
-            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int32)].Type);
-            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int64)].Type);
-            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Single)].Type);
-            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Decimal)].Type);
-            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Double)].Type);
-            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.Char)].Type);
-            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.Varchar)].Type);
-            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.NVarchar)].Type);
-            Assert.Equal(DataSourcePropertyType.Undefined, found[nameof(TestEntity.Guid)].Type);
+            Assert.Equal(DataSourcePropertyType.Boolean, found[nameof(TestEntity.Boolean)].DbType);
+            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.Date)].DbType);
+            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTime)].DbType);
+            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTime2)].DbType);
+            Assert.Equal(DataSourcePropertyType.DateTime, found[nameof(TestEntity.DateTimeOffset)].DbType);
+            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int16)].DbType);
+            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int32)].DbType);
+            Assert.Equal(DataSourcePropertyType.Numeric, found[nameof(TestEntity.Int64)].DbType);
+            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Single)].DbType);
+            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Decimal)].DbType);
+            Assert.Equal(DataSourcePropertyType.Double, found[nameof(TestEntity.Double)].DbType);
+            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.Char)].DbType);
+            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.Varchar)].DbType);
+            Assert.Equal(DataSourcePropertyType.String, found[nameof(TestEntity.NVarchar)].DbType);
+            Assert.Equal(DataSourcePropertyType.Undefined, found[nameof(TestEntity.Guid)].DbType);
 
             Assert.Equal((entity.Boolean ? 1 : 0).ToString(), found[nameof(TestEntity.Boolean)].Value);
             Assert.Equal(entity.Date, DateTime.Parse(found[nameof(TestEntity.Date)].Value));

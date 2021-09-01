@@ -9,5 +9,7 @@ namespace FunctionTests
         public int Id { get; set; }
         [Column]
         public string Value { get; set; }
+
+        [Column] public bool? Bool { get; set; } = false;
     }
 }

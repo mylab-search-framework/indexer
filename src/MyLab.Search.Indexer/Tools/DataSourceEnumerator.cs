@@ -86,10 +86,12 @@ namespace MyLab.Search.Indexer.Tools
                 var typeName = reader.GetDataTypeName(index);
                 var value = new DataSourcePropertyValue
                 {
-                    Type = DataSourcePropertyTypeConverter.Convert(typeName),
-                    Value = reader.GetString(index),
+                    DbType = DataSourcePropertyTypeConverter.Convert(typeName),
                     PropertyTypeReason = typeName
                 };
+
+                if (!reader.IsDBNull(index))
+                    value.Value = reader.GetString(index);
 
                 resEnt.Properties.Add(name, value);
             }
