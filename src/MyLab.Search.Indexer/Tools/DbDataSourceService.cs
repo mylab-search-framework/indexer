@@ -33,8 +33,7 @@ namespace MyLab.Search.Indexer.Tools
 
         public IAsyncEnumerable<DataSourceBatch> Read(string jobId, string query, DataParameter seedParameter = null)
         {
-            var foundJob = _options.Jobs?.FirstOrDefault(j => j.JobId == jobId) 
-                           ?? throw new InvalidOperationException("Job not found");
+            var foundJob = _options.GetJobOptions(jobId);
 
             return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundJob.PageSize)
             {
