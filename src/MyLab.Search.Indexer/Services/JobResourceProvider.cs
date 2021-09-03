@@ -21,11 +21,6 @@ namespace MyLab.Search.Indexer.Services
         }
         public Task<string> ReadFileAsync(string jobId, string filename)
         {
-            var foundJob = _options.Jobs?.FirstOrDefault(j => j.JobId == jobId);
-            if(foundJob == null)
-                throw new InvalidOperationException("Job not found")
-                    .AndFactIs("job-id", jobId);
-
             var path = Path.Combine(_options.JobPath, jobId, filename);
 
             if(!File.Exists(path))

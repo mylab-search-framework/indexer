@@ -1,4 +1,8 @@
-﻿namespace MyLab.Search.Indexer
+﻿using System;
+using System.Linq;
+using MyLab.Logging;
+
+namespace MyLab.Search.Indexer
 {
     public class IndexerDbOptions
     {
@@ -9,7 +13,25 @@
     {
         public string JobPath { get; set; } = "/etc/mylab-indexer/jobs";
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
+        public string IndexNamePrefix { get; set; }
+        public string IndexNamePostfix { get; set; }
         public JobOptions[] Jobs { get; set; }
+
+        public JobOptions GetJobOptions(string jobId)
+        {
+            var jobOptions = Jobs?.FirstOrDefault(n => n.JobId == jobId);
+            if (jobOptions == null)
+                throw new InvalidOperationException("Job options not found")
+                    .AndFactIs("job-id", jobId);
+
+            return jobOptions;
+        }
+
+        public string GetIndexName(string jobId)
+        {
+            var jobOptions = GetJobOptions(jobId);
+            return $"{IndexNamePrefix ?? string.Empty}{jobOptions.EsIndex}{IndexNamePostfix ?? string.Empty}";
+        }
     }
 
     public class JobOptions

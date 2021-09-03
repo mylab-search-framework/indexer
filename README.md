@@ -1,6 +1,6 @@
 # MyLab.Search.Indexer
 
-[![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=v1.0.1&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
+[![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=image&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
 
 Индексирует данные из базы данных и/или `RabbitMQ` в `ElasticSearch`.
 
@@ -264,6 +264,8 @@ select * from foo_table where LastModified > @seed
 
 * `JobPath` - базовый путь к директориям ресурсов `Job`-ов. По умолчанию - `/etc/mylab-indexer/jobs`;
 * `SeedPath` - базовый путь к директории, где будут храниться `seed`-ы `Job`-ов;
+* `IndexNamePrefix` - префикс, который будет добавляться к имени индекса всех джобов;
+* `IndexNamePostfix` - постфикс, который будет добавляться к имени индекса всех джобов;
 * `Jobs` - настройки `Job`-ов:
   * `JobId` - литеральный идентификатор `Job`-а. Например, `users` при индексации информации о пользователях;
   * `IdProperty` - имя свойства, идентифицирующее сущность;

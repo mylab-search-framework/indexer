@@ -52,13 +52,13 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
         {
-            var curJob = _options.Jobs?.FirstOrDefault(j => j.JobId == jobId) 
-                         ?? throw new InvalidOperationException("Job not found");
+            var curJob = _options.GetJobOptions(jobId);
+            var indexName = _options.GetIndexName(jobId);
 
             if (dataSourceEntities.Length == 0)
                 return;
 
-            bool indexExists = await _esManager.IsIndexExistsAsync(curJob.EsIndex, cancellationToken);
+            bool indexExists = await _esManager.IsIndexExistsAsync(indexName, cancellationToken);
             
             if (!indexExists)
             {
@@ -70,17 +70,17 @@ namespace MyLab.Search.Indexer.Services
                 var createIndexStrategy = await factory.CreateAsync(cancellationToken);
 
                 _log?.Warning("Index not found and will be created")
-                    .AndFactIs("index-name", curJob.EsIndex)
+                    .AndFactIs("index-name", indexName)
                     .Write();
 
-                await createIndexStrategy.CreateIndexAsync(_esManager, curJob.EsIndex, cancellationToken);
+                await createIndexStrategy.CreateIndexAsync(_esManager, indexName, cancellationToken);
 
                 _log?.Action("Index created")
-                    .AndFactIs("index-name", curJob.EsIndex)
+                    .AndFactIs("index-name", indexName)
                     .Write();
             }
 
-            var mapping = await _indexMappingService.GetIndexMappingAsync(curJob.EsIndex);
+            var mapping = await _indexMappingService.GetIndexMappingAsync(indexName);
             var entitiesConverter = new DataSourceToIndexEntityConverter(mapping)
             {
                 Log = _log
@@ -89,7 +89,7 @@ namespace MyLab.Search.Indexer.Services
 
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
-                    .Index(curJob.EsIndex)
+                    .Index(indexName)
                     .Id(doc[curJob.IdProperty].ToString())
                 , cancellationToken);
         }
