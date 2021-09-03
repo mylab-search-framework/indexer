@@ -15,31 +15,25 @@ namespace MyLab.Search.Indexer.Services
     {
         private readonly IndexerOptions _options;
         private readonly IDataIndexer _indexer;
-        private readonly MqCaseOptionsValidator _optionsValidator;
 
         public IndexerMqConsumer(
             IOptions<IndexerOptions> options,
-            IOptions<ElasticsearchOptions> esOptions,
             IDataIndexer indexer)
-            :this(options.Value, esOptions.Value, indexer)
+            :this(options.Value, indexer)
         {
             
         }
 
         public IndexerMqConsumer(
             IndexerOptions options,
-            ElasticsearchOptions esOptions,
             IDataIndexer indexer)
         {
             _options = options;
             _indexer = indexer;
-            _optionsValidator = new MqCaseOptionsValidator(options, esOptions);
         }
 
         protected override Task ConsumeMessageAsync(ConsumedMessage<string> consumedMessage)
         {
-            _optionsValidator.Validate();
-
             string strContent = consumedMessage.Content;
 
             if (strContent == null)
@@ -72,7 +66,10 @@ namespace MyLab.Search.Indexer.Services
                 throw new InvalidOperationException("Cant find ID property in message object")
                     .AndFactIs("dump", TrimDump(strContent));
 
-            return _indexer.IndexAsync(jobOpts.JobId, new[] { entity }, CancellationToken.None);
+            var preproc = new DsEntityPreprocessor(jobOpts);
+            var entForIndex = new[] {preproc.Process(entity)};
+
+            return _indexer.IndexAsync(jobOpts.JobId, entForIndex, CancellationToken.None);
         }
 
         string TrimDump(string dump)

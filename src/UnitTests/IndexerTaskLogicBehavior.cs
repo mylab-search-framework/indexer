@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,6 +15,50 @@ namespace UnitTests
 {
     public partial class IndexerTaskLogicBehavior : IClassFixture<TmpDbFixture>
     {
+        [Fact]
+        public async Task ShouldNotIndexLastChangeProperty()
+        {
+            //Arrange
+            var lastModified = DateTime.Now;
+
+            var sp = await InitServices(o =>
+            {
+                o.Jobs = new[]
+                {
+                    new JobOptions
+                    {
+                        JobId = "foojob",
+                        LastChangeProperty = nameof(TestEntity.LastModified),
+                        IdProperty = nameof(TestEntity.Id),
+                        DbQuery = "select * from foo_table where LastModified > @seed",
+                        NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                        EsIndex = "[no mater in this test]"
+                    }
+                };
+            });
+
+            var logic = sp.GetService<ITaskLogic>();
+            var dbManager = sp.GetService<IDbManager>();
+            var seedService = sp.GetService<ISeedService>();
+            var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
+
+            var updatedCount = await UpdateLastModified(dbManager, 2, lastModified);
+
+            _output.WriteLine("Updated count: {0}", updatedCount);
+
+
+            await seedService.WriteDateTimeAsync("foojob", lastModified.AddSeconds(-1));
+
+            //Act
+            await logic.Perform(CancellationToken.None);
+
+            indexer.IndexedEntities.TryGetValue("2", out var entity);
+            
+            //Assert
+            Assert.NotNull(entity);
+            Assert.False(entity.Properties.ContainsKey(nameof(TestEntity.LastModified)));
+        }
+
         [Fact]
         public async Task ShouldIndexFullWhenNoSeed()
         {

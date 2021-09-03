@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,6 @@ namespace MyLab.Search.Indexer.Services
         private readonly IDataIndexer _indexer;
         private readonly IJobResourceProvider _jobResourceProvider;
         private readonly IDslLogger _log;
-        private readonly DbCaseOptionsValidator _optionsValidator;
 
         public IndexerTaskLogic(
             IOptions<IndexerOptions> indexerOptions, 
@@ -33,15 +33,13 @@ namespace MyLab.Search.Indexer.Services
             IDataIndexer indexer,
             IJobResourceProvider jobResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
-            : this(indexerOptions.Value, esOptions.Value, dbOptions.Value, dataSourceService, seedService, indexer, jobResourceProvider, logger)
+            : this(indexerOptions.Value, dataSourceService, seedService, indexer, jobResourceProvider, logger)
         {
             
         }
 
         public IndexerTaskLogic(
             IndexerOptions indexerOptions,
-            ElasticsearchOptions esOptions,
-            IndexerDbOptions dbOptions,
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
@@ -54,13 +52,10 @@ namespace MyLab.Search.Indexer.Services
             _indexer = indexer;
             _jobResourceProvider = jobResourceProvider;
             _log = logger?.Dsl();
-            _optionsValidator = new DbCaseOptionsValidator(indexerOptions, dbOptions, esOptions);
         }
 
         public async Task Perform(CancellationToken cancellationToken)
         {
-            _optionsValidator.Validate();
-
             if (_indexerOptions.Jobs != null)
             {
                 foreach (var indexerOptionsJob in _indexerOptions.Jobs)
@@ -114,6 +109,8 @@ namespace MyLab.Search.Indexer.Services
 
             var iterator = _dataSourceService.Read(indexerOptionsJob.JobId, query, seedParameter);
 
+            var preproc = new DsEntityPreprocessor(indexerOptionsJob);
+
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
                 _log.Debug("Next batch of source data loaded")
@@ -122,7 +119,11 @@ namespace MyLab.Search.Indexer.Services
 
                 counter += batch.Entities.Length;
 
-                await _indexer.IndexAsync(indexerOptionsJob.JobId, batch.Entities, cancellationToken);
+                var entForIndex = batch.Entities
+                    .Select(preproc.Process)
+                    .ToArray();
+
+                await _indexer.IndexAsync(indexerOptionsJob.JobId, entForIndex, cancellationToken);
 
                 seedCalc.Update(batch.Entities);
             }
