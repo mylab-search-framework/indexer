@@ -31,7 +31,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
         public async Task<DataParameter> CreateSeedDataParameterAsync()
         {
             var seed = await _seedService.ReadIdAsync(_jobId);
-            return new DataParameter(QueryParameterNames.Seed, seed, DataType.DateTime);
+            return new DataParameter(QueryParameterNames.Seed, seed, DataType.Long);
         }
     }
 }
