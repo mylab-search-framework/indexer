@@ -55,7 +55,7 @@ namespace MyLab.Search.Indexer.Tools
 
             if(_seedParameter != null)
                 queryParams.Add(_seedParameter);
-
+                
             var entities = _connection.Query(ReadEntity, _sql, queryParams.ToArray()).ToArray();
 
             Current = new DataSourceBatch
