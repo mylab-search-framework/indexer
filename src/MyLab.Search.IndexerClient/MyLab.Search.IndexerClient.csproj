@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <Authors>Andrey O.</Authors>
+    <Copyright>Copyright (c) 2021 Andrey Osintsev &lt;ozzy.ext@gmail.com&gt;</Copyright>
+    <PackageProjectUrl>https://github.com/mylab-search-fx/indexer</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/mylab-search-fx/indexer.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageIcon>analytics.png</PackageIcon>
+    <PackageIconUrl />
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="analytics.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MyLab.ApiClient" Version="3.10.22" />
+  </ItemGroup>
+
+</Project>

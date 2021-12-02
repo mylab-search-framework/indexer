@@ -28,7 +28,7 @@ namespace MyLab.Search.Indexer.Services
             if (jobOptions == null) throw new ArgumentNullException(nameof(jobOptions));
 
             if (string.IsNullOrWhiteSpace(strEntity))
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(strEntity));
+                throw new InputEntityValidationException("Entity object is empty");
             
             var sourceEntityDeserializer = new SourceEntityDeserializer(jobOptions.NewIndexStrategy == NewIndexStrategy.Auto);
 
@@ -40,18 +40,18 @@ namespace MyLab.Search.Indexer.Services
             }
             catch (Exception e)
             {
-                throw new InvalidOperationException("Input string-entity parsing error", e)
+                throw new InputEntityValidationException("Input string-entity parsing error", e)
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
             }
 
             if (entity.Properties == null || entity.Properties.Count == 0)
-                throw new InvalidOperationException("Cant detect properties in the entity object")
+                throw new InputEntityValidationException("Cant detect properties in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
             if (entity.Properties.Keys.All(k => k != jobOptions.IdProperty))
-                throw new InvalidOperationException("Cant find ID property in the entity object")
+                throw new InputEntityValidationException("Cant find ID property in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 

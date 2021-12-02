@@ -48,6 +48,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<IIndexMappingService, IndexMappingService>()
                 .AddSingleton<IPushIndexer, PushIndexer>()
+                .AddRabbit()
                 .AddRabbitConsumers<IndexerConsumerRegistrar>()
                 .AddUrlBasedHttpMetrics()
                 .AddControllers(c => c.AddExceptionProcessing());
@@ -55,7 +56,7 @@ namespace MyLab.Search.Indexer
             services
                 .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
                 .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
-                .ConfigureRabbitClient(_configuration)
+                .ConfigureRabbit(_configuration)
                 .Configure<ExceptionProcessingOptions>(o => o.HideError =
 #if DEBUG
                 false

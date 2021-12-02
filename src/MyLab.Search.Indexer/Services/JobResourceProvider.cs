@@ -1,9 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
-using MyLab.Logging;
+using MyLab.Log;
 
 namespace MyLab.Search.Indexer.Services
 {

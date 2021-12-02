@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using MyLab.Logging;
+using MyLab.Log;
 
 namespace MyLab.Search.Indexer
 {

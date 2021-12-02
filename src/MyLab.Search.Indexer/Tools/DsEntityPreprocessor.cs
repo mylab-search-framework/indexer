@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using MyLab.Logging;
+using MyLab.Log;
 using MyLab.Search.Indexer.DataContract;
 
 namespace MyLab.Search.Indexer.Tools

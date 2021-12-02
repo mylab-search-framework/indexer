@@ -38,7 +38,15 @@ namespace MyLab.Search.Indexer.Services
                 throw new InvalidOperationException("Job not found for queue")
                     .AndFactIs("queue", consumedMessage.Queue);
 
-            return _pushIndexer.Index(consumedMessage.Content, "mq", jobOpts);
+            try
+            {
+                return _pushIndexer.Index(consumedMessage.Content, "mq", jobOpts);
+            }
+            catch (Exception e)
+            {
+                e.AndFactIs("queue", consumedMessage.Queue);
+                throw;
+            }
         }
     }
 }

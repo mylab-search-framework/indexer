@@ -7,12 +7,12 @@ namespace FunctionTests
 {
     public class MqFixture : IDisposable
     {
-        private readonly RabbitConnectionProvider _connection;
+        private readonly LazyRabbitConnectionProvider _connection;
         private readonly RabbitQueueFactory _qFactory;
 
         public MqFixture()
         {
-            _connection = new RabbitConnectionProvider(new RabbitOptions
+            _connection = new LazyRabbitConnectionProvider(new RabbitOptions
             {
                 Host = "localhost",
                 Password = "guest",
