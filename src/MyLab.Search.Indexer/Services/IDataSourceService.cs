@@ -8,5 +8,7 @@ namespace MyLab.Search.Indexer.Services
     public interface IDataSourceService
     {
         IAsyncEnumerable<DataSourceBatch> Read(string jobId, string query, DataParameter seedParameter);
+
+        Task<DataSourceBatch> ReadByIdAsync(string query, DataParameter idParameter);
     }
 }

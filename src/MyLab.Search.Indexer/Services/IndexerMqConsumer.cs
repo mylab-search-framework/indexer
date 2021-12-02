@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.RabbitClient.Consuming;
@@ -40,7 +41,7 @@ namespace MyLab.Search.Indexer.Services
 
             try
             {
-                return _pushIndexer.Index(consumedMessage.Content, "mq", jobOpts);
+                return _pushIndexer.IndexAsync(consumedMessage.Content, "mq", jobOpts, CancellationToken.None);
             }
             catch (Exception e)
             {

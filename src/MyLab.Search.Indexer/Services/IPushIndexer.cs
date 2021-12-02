@@ -10,7 +10,7 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IPushIndexer
     {
-        Task Index(string strEntity, string sourceId, JobOptions jobOptions);
+        Task IndexAsync(string strEntity, string sourceId, JobOptions jobOptions, CancellationToken cancellationToken);
     }
 
     class PushIndexer : IPushIndexer
@@ -22,13 +22,13 @@ namespace MyLab.Search.Indexer.Services
             _indexer = indexer;
         }
 
-        public Task Index(string strEntity, string sourceId, JobOptions jobOptions)
+        public Task IndexAsync(string strEntity, string sourceId, JobOptions jobOptions, CancellationToken cancellationToken)
         {
             if (sourceId == null) throw new ArgumentNullException(nameof(sourceId));
             if (jobOptions == null) throw new ArgumentNullException(nameof(jobOptions));
 
             if (string.IsNullOrWhiteSpace(strEntity))
-                throw new InputEntityValidationException("Entity object is empty");
+                throw new BadIndexingRequestException("Entity object is empty");
             
             var sourceEntityDeserializer = new SourceEntityDeserializer(jobOptions.NewIndexStrategy == NewIndexStrategy.Auto);
 
@@ -40,25 +40,25 @@ namespace MyLab.Search.Indexer.Services
             }
             catch (Exception e)
             {
-                throw new InputEntityValidationException("Input string-entity parsing error", e)
+                throw new BadIndexingRequestException("Input string-entity parsing error", e)
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
             }
 
             if (entity.Properties == null || entity.Properties.Count == 0)
-                throw new InputEntityValidationException("Cant detect properties in the entity object")
+                throw new BadIndexingRequestException("Cant detect properties in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
             if (entity.Properties.Keys.All(k => k != jobOptions.IdProperty))
-                throw new InputEntityValidationException("Cant find ID property in the entity object")
+                throw new BadIndexingRequestException("Cant find ID property in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
             var preproc = new DsEntityPreprocessor(jobOptions);
             var entForIndex = new[] { preproc.Process(entity) };
 
-            return _indexer.IndexAsync(jobOptions.JobId, entForIndex, CancellationToken.None);
+            return _indexer.IndexAsync(jobOptions.JobId, entForIndex, cancellationToken);
         }
 
         string TrimDump(string dump)

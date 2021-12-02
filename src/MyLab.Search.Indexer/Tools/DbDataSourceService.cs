@@ -40,5 +40,20 @@ namespace MyLab.Search.Indexer.Tools
                 EnablePaging = foundJob.EnablePaging
             };
         }
+
+        public Task<DataSourceBatch> ReadByIdAsync(string query, DataParameter idParameter)
+        {
+            using var c = _dbManager.Use();
+
+            var entities = c.Query(DataSourceEntity.ReadEntity, query, idParameter).ToArray();
+
+            var res = new DataSourceBatch
+            {
+                Entities = entities,
+                Query = c.LastQuery
+            };
+
+            return Task.FromResult(res);
+        }
     }
 }

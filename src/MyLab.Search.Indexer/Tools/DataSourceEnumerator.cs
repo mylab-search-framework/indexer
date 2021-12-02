@@ -56,7 +56,7 @@ namespace MyLab.Search.Indexer.Tools
             if(_seedParameter != null)
                 queryParams.Add(_seedParameter);
                 
-            var entities = _connection.Query(ReadEntity, _sql, queryParams.ToArray()).ToArray();
+            var entities = _connection.Query(DataSourceEntity.ReadEntity, _sql, queryParams.ToArray()).ToArray();
 
             Current = new DataSourceBatch
             {
@@ -71,32 +71,6 @@ namespace MyLab.Search.Indexer.Tools
             _pageIndex += 1;
 
             return new ValueTask<bool>(res);
-        }
-
-        private static DataSourceEntity ReadEntity(IDataReader reader)
-        {
-            var resEnt = new DataSourceEntity
-            {
-                Properties = new Dictionary<string, DataSourcePropertyValue>()
-            };
-
-            for (var index = 0; index < reader.FieldCount; index++)
-            {
-                var name = reader.GetName(index);
-                var typeName = reader.GetDataTypeName(index);
-                var value = new DataSourcePropertyValue
-                {
-                    DbType = DataSourcePropertyTypeConverter.Convert(typeName),
-                    PropertyTypeReason = typeName
-                };
-
-                if (!reader.IsDBNull(index))
-                    value.Value = reader.GetString(index);
-
-                resEnt.Properties.Add(name, value);
-            }
-
-            return resEnt;
         }
     }
 }

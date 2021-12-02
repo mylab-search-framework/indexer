@@ -42,9 +42,11 @@ namespace MyLab.Search.Indexer
         public NewIndexStrategy NewIndexStrategy { get; set; }
         public string LastChangeProperty { get; set; }
         public string IdProperty { get; set; }
+        public IdPropertyType IdPropertyType { get; set; }
         public int PageSize { get; set; }
         public bool EnablePaging { get; set; } = false;
         public string DbQuery { get; set; }
+        public string KickQuery { get; set; }
         public string EsIndex { get; set; }
     }
 
@@ -60,5 +62,12 @@ namespace MyLab.Search.Indexer
         Undefined,
         Auto,
         File
+    }
+
+    public enum IdPropertyType
+    {
+        Undefined,
+        Text,
+        Integer
     }
 }

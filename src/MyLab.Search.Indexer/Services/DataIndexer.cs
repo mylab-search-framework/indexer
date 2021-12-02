@@ -69,13 +69,13 @@ namespace MyLab.Search.Indexer.Services
 
                 var createIndexStrategy = await factory.CreateAsync(cancellationToken);
 
-                _log?.Warning("Index not found and will be created")
+                _log?.Warning("IndexAsync not found and will be created")
                     .AndFactIs("index-name", indexName)
                     .Write();
 
                 await createIndexStrategy.CreateIndexAsync(_esManager, indexName, cancellationToken);
 
-                _log?.Action("Index created")
+                _log?.Action("IndexAsync created")
                     .AndFactIs("index-name", indexName)
                     .Write();
             }

@@ -8,5 +8,8 @@ namespace MyLab.Search.IndexerClient
     {
         [Post("{job}")]
         Task IndexAsync([Path] string job, [JsonContent] object entity);
+
+        [Post("{job}/{id}/kick")]
+        Task KickIndexAsync([Path] string job, [Path] string id);
     }
 }

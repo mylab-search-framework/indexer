@@ -28,7 +28,7 @@ namespace MyLab.Search.Indexer.Tools
             switch (_options.NewIndexStrategy)
             {
                 case NewIndexStrategy.Undefined:
-                    throw new InvalidOperationException("Index creation mode not defined");
+                    throw new InvalidOperationException("IndexAsync creation mode not defined");
                 case NewIndexStrategy.Auto:
                 {
                     var autoStrategy = new AutoSettingsBasedCreateIndexStrategy(_exampleEntity) { Log = Log };

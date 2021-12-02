@@ -35,13 +35,13 @@ namespace MyLab.Search.Indexer.Services
             var mappingResponse = await client.Indices.GetMappingAsync(new GetMappingRequest(indexName));
             
             if (!mappingResponse.Indices.TryGetValue(indexName, out var indexMapping))
-                throw new InvalidOperationException("Index mapping not found")
+                throw new InvalidOperationException("IndexAsync mapping not found")
                     .AndFactIs("index", indexName);
 
             var propertiesMapping = indexMapping?.Mappings?.Properties;
 
             if (propertiesMapping == null)
-                throw new InvalidOperationException("Index properties mapping not found")
+                throw new InvalidOperationException("IndexAsync properties mapping not found")
                     .AndFactIs("index", indexName);
 
             currentMapping = new IndexMapping(propertiesMapping.Values.Select(p => new IndexMappingProperty(p.Name.Name, p.Type)));

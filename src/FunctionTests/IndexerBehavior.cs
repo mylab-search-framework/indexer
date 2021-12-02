@@ -448,5 +448,119 @@ namespace FunctionTests
             Assert.Single(searchRes);
             Assert.Equal(testEntity.Value, searchRes.First().Value);
         }
+
+        [Fact]
+        public async Task ShouldKickIndexFromApi()
+        {
+            //Arrange
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var testEntity = new TestEntity
+            {
+                Id = 2,
+                Value = "foo"
+            };
+
+            var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
+
+            var taskApi = _taskApi.StartWithProxy(srv =>
+            {
+                srv.Configure<IndexerDbOptions>(o =>
+                {
+                    o.Provider = "mysql";
+                }
+                );
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Jobs = new[]
+                    {
+                            new JobOptions
+                            {
+                                JobId = "foojob",
+
+                                DbQuery = "select * from test",
+                                NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                NewIndexStrategy = NewIndexStrategy.Auto,
+                                IdProperty = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            }
+                        };
+                });
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                {
+                    o.Url = "http://localhost:9200";
+                }
+                );
+
+                srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            await _db.DoOnce().InsertAsync(testEntity);
+
+            await taskApi.PostProcessAsync();
+            await Task.Delay(2000);
+
+            var updated = await _db.DoOnce()
+                .Tab<TestEntity>()
+                .Where(e => e.Id == 2)
+                .Set(e => e.Value, "bar")
+                .UpdateAsync();
+
+            if(updated < 1)
+                throw new Exception("Not updated");
+
+            var indexApi = _indexApi.StartWithProxy(srv =>
+            {
+                srv.Configure<IndexerDbOptions>(o =>
+                    {
+                        o.Provider = "mysql";
+                    }
+                );
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Jobs = new[]
+                    {
+                        new JobOptions
+                        {
+                            JobId = "foojob",
+
+                            KickQuery = "select * from test where id=@id",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                            NewIndexStrategy = NewIndexStrategy.Auto,
+                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyType = IdPropertyType.Integer,
+                            EsIndex = indexName
+                        }
+                    };
+                });
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                    {
+                        o.Url = "http://localhost:9200";
+                    }
+                );
+
+                srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+
+            await indexApi.KickIndexAsync("foojob", "2");
+            await Task.Delay(2000);
+
+            var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);
+
+            //Assert
+            Assert.NotNull(searchRes);
+            Assert.Single(searchRes);
+            Assert.Equal("bar", searchRes.First().Value);
+        }
     }
 }
