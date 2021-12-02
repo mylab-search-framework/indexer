@@ -8,11 +8,14 @@ using System.Linq;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using MyLab.Db;
+using MyLab.HttpMetrics;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
+using MyLab.WebErrors;
+using Prometheus;
 
 namespace MyLab.Search.Indexer
 {
@@ -34,11 +37,6 @@ namespace MyLab.Search.Indexer
         {
             services
                 .AddSingleton(_configuration)
-                .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
-                .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
-                .ConfigureRabbitClient(_configuration);
-
-            services
                 .AddTaskLogic<IndexerTaskLogic>()
                 .AddAppStatusProviding()
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
@@ -49,7 +47,21 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<IIndexMappingService, IndexMappingService>()
-                .AddRabbitConsumers<IndexerConsumerRegistrar>();
+                .AddRabbitConsumers<IndexerConsumerRegistrar>()
+                .AddUrlBasedHttpMetrics()
+                .AddControllers(c => c.AddExceptionProcessing());
+
+            services
+                .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
+                .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
+                .ConfigureRabbitClient(_configuration)
+                .Configure<ExceptionProcessingOptions>(o => o.HideError =
+#if DEBUG
+                false
+#else
+                true
+#endif
+                );
 
         }
 
@@ -62,7 +74,13 @@ namespace MyLab.Search.Indexer
             }
 
             app.UseRouting()
+                .UseHttpMetrics()
                 .UseTaskApi()
+                .UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapMetrics();
+                })
                 .UseStatusApi();
 
         }
