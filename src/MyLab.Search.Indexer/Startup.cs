@@ -47,6 +47,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<IIndexMappingService, IndexMappingService>()
+                .AddSingleton<IPushIndexer, PushIndexer>()
                 .AddRabbitConsumers<IndexerConsumerRegistrar>()
                 .AddUrlBasedHttpMetrics()
                 .AddControllers(c => c.AddExceptionProcessing());

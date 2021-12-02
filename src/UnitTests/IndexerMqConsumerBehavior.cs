@@ -34,7 +34,8 @@ namespace UnitTests
             };
 
             var indexer = new TestDataIndexer();
-            var consumer = new IndexerMqConsumer(indexerOpt, indexer);
+            var pushIndexer = new PushIndexer(indexer);
+            var consumer = new IndexerMqConsumer(indexerOpt, pushIndexer);
 
             var testEntity = new TestEntity
             {
@@ -73,7 +74,8 @@ namespace UnitTests
             };
 
             var indexer = new TestDataIndexer();
-            var consumer = new IndexerMqConsumer(indexerOpt, indexer);
+            var pushIndexer = new PushIndexer(indexer);
+            var consumer = new IndexerMqConsumer(indexerOpt, pushIndexer);
 
             var testEntity = new TestEntity
             {
