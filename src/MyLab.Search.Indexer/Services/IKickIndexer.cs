@@ -14,13 +14,16 @@ namespace MyLab.Search.Indexer.Services
 
     class KickIndexer : IKickIndexer
     {
+        private readonly INamespaceResourceProvider _nsResourceProvider;
         private readonly IDataSourceService _dataSourceService;
         private readonly IDataIndexer _indexer;
 
         public KickIndexer(
+            INamespaceResourceProvider nsResourceProvider,
             IDataSourceService dataSourceService,
             IDataIndexer indexer)
         {
+            _nsResourceProvider = nsResourceProvider;
             _dataSourceService = dataSourceService;
             _indexer = indexer;
         }
@@ -36,7 +39,19 @@ namespace MyLab.Search.Indexer.Services
                     .AndFactIs("strategy", nsOptions.NewUpdatesStrategy);
 
             var idParam = CreateIdParameter(nsOptions.IdPropertyName, nsOptions.IdPropertyType, entityId);
-            var entBatch = await _dataSourceService.ReadByIdAsync(nsOptions.KickDbQuery, idParam);
+
+            string klickQuery;
+            
+            if (nsOptions.SyncDbQuery != null)
+            {
+                klickQuery = nsOptions.SyncDbQuery;
+            }
+            else
+            {
+                klickQuery = await _nsResourceProvider.ReadFileAsync(nsOptions.NsId, "kick.sql");
+            }
+
+            var entBatch = await _dataSourceService.ReadByIdAsync(klickQuery, idParam);
 
             await _indexer.IndexAsync(nsOptions.NsId, entBatch.Entities, cancellationToken);
         }
