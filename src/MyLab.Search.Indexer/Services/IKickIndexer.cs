@@ -36,7 +36,7 @@ namespace MyLab.Search.Indexer.Services
                     .AndFactIs("strategy", nsOptions.NewUpdatesStrategy);
 
             var idParam = CreateIdParameter(nsOptions.IdPropertyName, nsOptions.IdPropertyType, entityId);
-            var entBatch = await _dataSourceService.ReadByIdAsync(nsOptions.KickQuery, idParam);
+            var entBatch = await _dataSourceService.ReadByIdAsync(nsOptions.KickDbQuery, idParam);
 
             await _indexer.IndexAsync(nsOptions.NsId, entBatch.Entities, cancellationToken);
         }
@@ -45,9 +45,9 @@ namespace MyLab.Search.Indexer.Services
         {
             switch (idPropertyType)
             {
-                case IdPropertyType.Text:
+                case IdPropertyType.String:
                     return DataParameter.Text(idPropertyName, value);
-                case IdPropertyType.Integer:
+                case IdPropertyType.Int:
                 {
                     if (!long.TryParse(value, out var intVal))
                     {

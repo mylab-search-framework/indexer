@@ -56,7 +56,7 @@ namespace FunctionTests
                             {
                                 NsId = "foo-ns",
 
-                                DbQuery = "select * from test",
+                                SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
                                 IdPropertyName = nameof(TestEntity.Id),
@@ -127,7 +127,7 @@ namespace FunctionTests
                             {
                                 NsId = "foo-ns",
 
-                                DbQuery = "select * from test",
+                                SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
                                 IdPropertyName = nameof(TestEntity.Id),
@@ -198,7 +198,7 @@ namespace FunctionTests
                             {
                                 NsId = "foo-ns",
 
-                                DbQuery = "select * from test",
+                                SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
                                 IdPropertyName = nameof(TestEntity.Id),
@@ -346,7 +346,7 @@ namespace FunctionTests
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
-                                    DbQuery = "select * from test",
+                                    SyncDbQuery = "select * from test",
                                     NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                     EsIndex = indexName
                                 }
@@ -479,7 +479,7 @@ namespace FunctionTests
                             {
                                 NsId = "foo-ns",
 
-                                DbQuery = "select * from test",
+                                SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
                                 IdPropertyName = nameof(TestEntity.Id),
@@ -529,11 +529,11 @@ namespace FunctionTests
                         {
                             NsId = "foo-ns",
 
-                            KickQuery = "select * from test where id=@id",
+                            KickDbQuery = "select * from test where id=@id",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
                             NewIndexStrategy = NewIndexStrategy.Auto,
                             IdPropertyName = nameof(TestEntity.Id),
-                            IdPropertyType = IdPropertyType.Integer,
+                            IdPropertyType = IdPropertyType.Int,
                             EsIndex = indexName
                         }
                     };
