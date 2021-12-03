@@ -1,8 +1,10 @@
 # MyLab.Search.Indexer
 
-[![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=image&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
+`Docker` образ: [![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=image&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
 
-[![NuGet](https://img.shields.io/nuget/v/MyLab.Search.IndexerClient.svg)](https://www.nuget.org/packages/MyLab.Search.IndexerClient/)
+Спецификация `API` : [![API specification](https://img.shields.io/badge/OAS3-v1 (actual)-green)](https://app.swaggerhub.com/apis/ozzy/MyLab.Search.Indexer/1)
+
+Клиент: [![NuGet](https://img.shields.io/nuget/v/MyLab.Search.IndexerClient.svg)](https://www.nuget.org/packages/MyLab.Search.IndexerClient/)
 
 Индексирует данные из базы данных и/или `RabbitMQ` в `ElasticSearch`.
 
@@ -46,7 +48,7 @@
 
 * или размещён в файле, путь которого состоит из следующих частей:
 
-  * базовый путь к директории с файлами `Job`-ов из конфигурации `Indexer.NamespacesPath` = `/etc/mylab-indexer/namespaces` (по умолчанию);
+  * базовый путь к директории с файлами `Namespace`-ов из конфигурации `Indexer.NamespacesPath` = `/etc/mylab-indexer/namespaces` (по умолчанию);
   * идентификатор `Namespace`-а;
   * `query.sql`.
 
@@ -109,9 +111,7 @@ select * from foo_table where LastModified > @seed
 
 `Push`-индексация - подход, подразумевающий передачу полноценной сущности со всеми её полями для индексации. При этом переданная сущность полностью заменяет сущость, проиндексированную ранее с тем же идентификатором.
 
-Не в зависимости от того, изменена ли сущетсвующая сущность или создаётся новая, передаваться в сообщении должны все актуальные данные в том виде, в каком они будут индексироваться. В случае, если сущность новая, то запись о ней появится в `ElasticSearch`. Если сущность была изменена и её индесированная копия уже есть в `ElasticSearch`, то данные будут заменены. Сопоставление переданной сущности и индексированной копии происходит по полю, указанному в настройках `Indexer.Namespaces[].IdProperty` (поле-идентификатор). 
-
-Применяется только для стратегии индексации `Add`.
+Не в зависимости от того, изменена ли сущетсвующая сущность или создаётся новая, передаваться в сообщении должны все актуальные данные в том виде, в каком они будут индексироваться. В случае, если сущность новая, то запись о ней появится в `ElasticSearch`. Если сущность была изменена и её индесированная копия уже есть в `ElasticSearch`, то данные будут заменены. Сопоставление переданной сущности и индексированной копии происходит по полю, указанному в настройках `Indexer.Namespaces[].IdProperty` (поле-идентификатор).
 
 ### Push через очередь
 
@@ -168,7 +168,7 @@ public class SearchTestEntity
 Запрос #1:
 
 ```http
-POST http://localhost/v1/test-namespaces
+POST /v1/test-namespaces
 
 Content-Type: application/json
 Content-Length: 20
@@ -185,7 +185,7 @@ Content-Length: 20
 Запрос #2:
 
 ```http
-POST http://localhost/v1/test-namespaces
+POST /v1/test-namespaces
 
 Content-Type: application/json
 Content-Length: 20
@@ -202,6 +202,11 @@ Content-Length: 20
 ## Kick индексация
 
 `Kick`-индексация - подход, подразумевающий передачу идентификатора сущности для дальнейшей её переиндексации из первоисточника - БД.
+
+При `kick`-индексации, среди прочих, необходимо указывать следующие параметры для `Namespace`:
+
+* `IdPropertyType`
+* `KickDbQuery`
 
 ### Kick через API
 
@@ -238,7 +243,7 @@ WHERE
 `kick`-запрос:
 
 ```http
-POST http://localhost/v1/test-namespaces/2/kick
+POST /v1/test-namespaces/2/kick
 ```
 
 Результат поиска #2 индексированной сущности (лишнее обрезано):
@@ -294,14 +299,14 @@ POST http://localhost/v1/test-namespaces/2/kick
 
 По этой стратегии запрос создания индекса загружаются из файла, путь к которому формируется из следующих частей:
 
-* базовый путь к директории с файлами `Job`-ов из конфигурации `Indexer.NamespacesPath` = `/etc/mylab-indexer/jobs` (по умолчанию);
-* идентификатор `Job`-а;
+* базовый путь к директории с файлами `Namepsace`-ов из конфигурации `Indexer.NamespacesPath` = `/etc/mylab-indexer/namespaces` (по умолчанию);
+* идентификатор `Namespace`-а;
 * `new-index.json`.
 
 Пример:
 
 ```
-/etc/mylab-indexer/jobs/users/new-index.json
+/etc/mylab-indexer/namespaces/users/new-index.json
 ```
 
 Содержимое файла должно быть в формате `JSON` и соответствовать [документации от ElasticSearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
@@ -379,14 +384,15 @@ POST http://localhost/v1/test-namespaces/2/kick
 * `Namespaces` - настройки `Namespace`-ов:
   * `NsId` - литеральный идентификатор `Namespace`-а. Например, `users` при индексации информации о пользователях;
   * `IdPropertyName` - имя свойства, идентифицирующего сущность;
-  * `IdPropertyType` - тип свойства, идентифицирующего сущность: `Text`/`Integer`. Обязательно для `push`-индексации;
+  * `IdPropertyType` - тип свойства, идентифицирующего сущность: `String`/`Int`. Обязательно для `push`-индексации;
   * `LastChangeProperty` - имя свойства, содержащее дату и время актуализации данных сущности (создания или изменения). Обязательно, если `NewUpdatesStrategy == 'Update'`;
   * `MqQueue` - имя RabbitMQ очереди - источника индексируесых сущностей;
   *  `NewUpdatesStrategy` - стратегия определения записей для индексации: `Add`/`Update`;
   * `NewIndexStrategy` - стратегия создания индекса: `Auto`/`File`;
   * `EnablePaging` - флаг включения постраничной загрузки данных:`true`/`false`. `false` - по умолчанию;
   * `PageSize` - размер страницы. Обязателен если устанолен `EnablePaging`;
-  * `DbQuery` - `SQL` запрос выборки данных для индексации;
+  * `SyncDbQuery` - `SQL` запрос выборки данных для индексации при синхронизации по расписанию;
+  * `KickDbQuery` - `SQL` запрос выборки данных для `kick`-индексации;
   * `EsIndex` - целевой индекс (должен быть в нижнем регистре).
 
 Пример узла конфигурации `Indexer`:
@@ -394,9 +400,9 @@ POST http://localhost/v1/test-namespaces/2/kick
 ```json
 {
   "Indexer": {
-    Jobs:[ 
+    "Namespaces":[ 
       {
-        "JobId": "users",
+        "NsId": "users",
         "IdProperty" : "Id",
         "LastChangeProperty" : "LastChangeDt",
         "MqQueue": "my-queue",
@@ -455,7 +461,7 @@ services:
 Предпочитайте собирать конфигурацию в виде `docker-образа` - наследника, который включает в себя постоянные части конфигурации:
 
 * узел конфигурации  `Index`;
-* файлы для `Job`-ов;
+* файлы для `Namespace`-ов;
 * конфигурация поставщика данных `DB.Provider`.
 
 Остальные настройки, зависящие от окружения, могут быть переданы в контейнер другим способом. Например, через переменные окружения:
