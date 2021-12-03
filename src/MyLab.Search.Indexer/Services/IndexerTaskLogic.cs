@@ -104,7 +104,7 @@ namespace MyLab.Search.Indexer.Services
             }
             else
             {
-                query = await _namespaceResourceProvider.ReadFileAsync(indexerOptionsNs.NsId, "query.sql");
+                query = await _namespaceResourceProvider.ReadFileAsync(indexerOptionsNs.NsId, "sync.sql");
             }
 
             var iterator = _dataSourceService.Read(indexerOptionsNs.NsId, query, seedParameter);
