@@ -6,6 +6,6 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IDataIndexer
     {
-        Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken);
+        Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken);
     }
 }

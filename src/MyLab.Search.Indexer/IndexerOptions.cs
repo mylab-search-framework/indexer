@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using MyLab.Logging;
+using MyLab.Log;
 
 namespace MyLab.Search.Indexer
 {
@@ -11,40 +11,42 @@ namespace MyLab.Search.Indexer
 
     public class IndexerOptions
     {
-        public string JobPath { get; set; } = "/etc/mylab-indexer/jobs";
+        public string NamespacesPath { get; set; } = "/etc/mylab-indexer/namespaces";
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
         public string IndexNamePrefix { get; set; }
         public string IndexNamePostfix { get; set; }
-        public JobOptions[] Jobs { get; set; }
+        public NsOptions[] Namespaces { get; set; }
 
-        public JobOptions GetJobOptions(string jobId)
+        public NsOptions GetNsOptions(string nsId)
         {
-            var jobOptions = Jobs?.FirstOrDefault(n => n.JobId == jobId);
-            if (jobOptions == null)
-                throw new InvalidOperationException("Job options not found")
-                    .AndFactIs("job-id", jobId);
+            var nsOptions = Namespaces?.FirstOrDefault(n => n.NsId == nsId);
+            if (nsOptions == null)
+                throw new InvalidOperationException("Namespace options not found")
+                    .AndFactIs("namespace-id", nsId);
 
-            return jobOptions;
+            return nsOptions;
         }
 
-        public string GetIndexName(string jobId)
+        public string GetIndexName(string nsId)
         {
-            var jobOptions = GetJobOptions(jobId);
-            return $"{IndexNamePrefix ?? string.Empty}{jobOptions.EsIndex}{IndexNamePostfix ?? string.Empty}";
+            var nsOptions = GetNsOptions(nsId);
+            return $"{IndexNamePrefix ?? string.Empty}{nsOptions.EsIndex}{IndexNamePostfix ?? string.Empty}";
         }
     }
 
-    public class JobOptions
+    public class NsOptions
     {
-        public string JobId { get; set; }
+        public string NsId { get; set; }
         public string MqQueue { get; set; }
         public NewUpdatesStrategy NewUpdatesStrategy { get; set; }
         public NewIndexStrategy NewIndexStrategy { get; set; }
         public string LastChangeProperty { get; set; }
-        public string IdProperty { get; set; }
+        public string IdPropertyName { get; set; }
+        public IdPropertyType IdPropertyType { get; set; }
         public int PageSize { get; set; }
         public bool EnablePaging { get; set; } = false;
         public string DbQuery { get; set; }
+        public string KickQuery { get; set; }
         public string EsIndex { get; set; }
     }
 
@@ -60,5 +62,12 @@ namespace MyLab.Search.Indexer
         Undefined,
         Auto,
         File
+    }
+
+    public enum IdPropertyType
+    {
+        Undefined,
+        Text,
+        Integer
     }
 }

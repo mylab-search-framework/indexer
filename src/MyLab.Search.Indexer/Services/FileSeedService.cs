@@ -18,9 +18,9 @@ namespace MyLab.Search.Indexer.Services
             _options = options;
         }
 
-        public Task WriteAsync(string jobId, string seed)
+        public Task WriteAsync(string nsId, string seed)
         {
-            var fn = JobIdToFilename(jobId);
+            var fn = nsIdToFilename(nsId);
             var dir = Path.GetDirectoryName(fn);
 
             if (dir != null && !Directory.Exists(dir))
@@ -29,17 +29,17 @@ namespace MyLab.Search.Indexer.Services
             return File.WriteAllTextAsync(fn, seed);
         }
 
-        public async Task<string> ReadAsync(string jobId)
+        public async Task<string> ReadAsync(string nsId)
         {
-            var fn = JobIdToFilename(jobId);
+            var fn = nsIdToFilename(nsId);
             return File.Exists(fn)
                 ? await File.ReadAllTextAsync(fn)
                 : null;
         }
 
-        string JobIdToFilename(string jobId)
+        string nsIdToFilename(string nsId)
         {
-            return Path.Combine(_options.SeedPath, jobId);
+            return Path.Combine(_options.SeedPath, nsId);
         }
     }
 }

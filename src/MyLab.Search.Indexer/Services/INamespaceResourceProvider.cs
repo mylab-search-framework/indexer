@@ -4,8 +4,8 @@ using System.Threading.Tasks;
 
 namespace MyLab.Search.Indexer.Services
 {
-    public interface IJobResourceProvider
+    public interface INamespaceResourceProvider
     {
-        Task<string> ReadFileAsync(string jobId, string filename);
+        Task<string> ReadFileAsync(string nsId, string filename);
     }
 }

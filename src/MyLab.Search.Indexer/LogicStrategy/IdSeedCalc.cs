@@ -9,23 +9,23 @@ namespace MyLab.Search.Indexer.LogicStrategy
 {
     class IdSeedCalc : ISeedCalc
     {
-        private readonly string _jobId;
+        private readonly string _nsId;
         private readonly string _idFieldName;
         private readonly ISeedService _seedService;
         private long _lastId;
 
         public IDslLogger Log { get; set; }
 
-        public IdSeedCalc(string jobId, string idFieldName, ISeedService seedService)
+        public IdSeedCalc(string nsId, string idFieldName, ISeedService seedService)
         {
-            _jobId = jobId;
+            _nsId = nsId;
             _idFieldName = idFieldName;
             _seedService = seedService;
         }
 
         public async Task StartAsync()
         {
-            _lastId = await _seedService.ReadIdAsync(_jobId);
+            _lastId = await _seedService.ReadIdAsync(_nsId);
         }
 
         public void Update(DataSourceEntity[] entities)
@@ -39,7 +39,7 @@ namespace MyLab.Search.Indexer.LogicStrategy
 
         public Task SaveAsync()
         {
-            return _seedService.WriteIdAsync( _jobId, _lastId);
+            return _seedService.WriteIdAsync( _nsId, _lastId);
         }
 
         public string GetLogValue()

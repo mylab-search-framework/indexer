@@ -23,13 +23,13 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Jobs = new[]
+                o.Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
@@ -66,13 +66,13 @@ namespace UnitTests
             var sp = await InitServices(
                 o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -111,13 +111,13 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -150,12 +150,12 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
-                            IdProperty = nameof(TestEntity.Id),
+                            NsId = "foojob",
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -185,13 +185,13 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Jobs = new[]
+                o.Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
@@ -225,14 +225,14 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             DbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = "[no mater in this test]"
                         }
                     };

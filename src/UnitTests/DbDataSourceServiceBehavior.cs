@@ -33,11 +33,11 @@ namespace UnitTests
 
             var options = new IndexerOptions
             {
-                Jobs = new []
+                Namespaces = new []
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foojob",
                         PageSize = 2,
                         EnablePaging = true
                     }
@@ -96,12 +96,12 @@ namespace UnitTests
 
         class TestSeedService : ISeedService
         {
-            public Task WriteAsync(string jobId, string seed)
+            public Task WriteAsync(string nsId, string seed)
             {
                 return Task.CompletedTask;
             }
 
-            public Task<string> ReadAsync(string jobId)
+            public Task<string> ReadAsync(string nsId)
             {
                 return Task.FromResult(string.Empty);
             }

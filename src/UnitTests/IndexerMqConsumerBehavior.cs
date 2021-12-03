@@ -19,14 +19,14 @@ namespace UnitTests
             //Arrange
             var indexerOpt = new IndexerOptions
             {
-                Jobs = new[]
+                Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foo",
+                        NsId = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         NewUpdatesStrategy = NewUpdatesStrategy.Update
                     },
@@ -34,7 +34,8 @@ namespace UnitTests
             };
 
             var indexer = new TestDataIndexer();
-            var consumer = new IndexerMqConsumer(indexerOpt, indexer);
+            var pushIndexer = new PushIndexer(indexer);
+            var consumer = new IndexerMqConsumer(indexerOpt, pushIndexer);
 
             var testEntity = new TestEntity
             {
@@ -50,7 +51,7 @@ namespace UnitTests
             await consumer.ConsumeAsync(msg);
 
             //Assert
-            Assert.Equal("foo", indexer.LastJobId);
+            Assert.Equal("foo", indexer.LastnsId);
             Assert.False(indexer.LstEntities[0].Properties.ContainsKey(nameof(TestEntity.LastModified)));
         }
 
@@ -60,20 +61,21 @@ namespace UnitTests
             //Arrange
             var indexerOpt = new IndexerOptions
             {
-                Jobs = new []
+                Namespaces = new []
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foo",
+                        NsId = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
-                        IdProperty = nameof(TestEntity.Id)
+                        IdPropertyName = nameof(TestEntity.Id)
                     }, 
                 }
             };
 
             var indexer = new TestDataIndexer();
-            var consumer = new IndexerMqConsumer(indexerOpt, indexer);
+            var pushIndexer = new PushIndexer(indexer);
+            var consumer = new IndexerMqConsumer(indexerOpt, pushIndexer);
 
             var testEntity = new TestEntity
             {
@@ -89,17 +91,17 @@ namespace UnitTests
             await consumer.ConsumeAsync(msg);
 
             //Assert
-            Assert.Equal("foo", indexer.LastJobId);
+            Assert.Equal("foo", indexer.LastnsId);
         }
 
         class TestDataIndexer : IDataIndexer
         {
             public DataSourceEntity[] LstEntities { get; private set; }
-            public string LastJobId { get; private set; }
+            public string LastnsId { get; private set; }
 
-            public Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+            public Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
-                LastJobId = jobId;
+                LastnsId = nsId;
                 LstEntities = dataSourceEntities;
 
                 return Task.CompletedTask;

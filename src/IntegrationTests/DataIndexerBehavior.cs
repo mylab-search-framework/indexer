@@ -31,13 +31,13 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                Jobs = new []
+                Namespaces = new []
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foo-ns",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id",
+                        IdPropertyName = "Id",
                         EsIndex = indexName
                     }
                 }
@@ -82,7 +82,7 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync("foojob", new []{ testEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-ns", new []{ testEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 
@@ -106,13 +106,13 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                Jobs = new[]
+                Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foo-ns",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id",
+                        IdPropertyName = "Id",
                         EsIndex = indexName
                     }
                 }
@@ -180,8 +180,8 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync("foojob", new[] { initialTestEntity }, CancellationToken.None);
-                await indexer.IndexAsync("foojob", new[] { lateTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-ns", new[] { initialTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-ns", new[] { lateTestEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 

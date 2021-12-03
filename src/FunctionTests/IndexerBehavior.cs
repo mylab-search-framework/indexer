@@ -11,6 +11,7 @@ using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.IndexerClient;
 using MyLab.TaskApp;
 using Nest;
 using Xunit;
@@ -39,7 +40,7 @@ namespace FunctionTests
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
 
-            var client = _api.StartWithProxy(srv =>
+            var client = _taskApi.StartWithProxy(srv =>
             {
                 srv.Configure<IndexerDbOptions>(o =>
                 {
@@ -49,16 +50,16 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -73,7 +74,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IJobResourceProvider>(new TestJobResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -110,7 +111,7 @@ namespace FunctionTests
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
 
-            var client = _api.StartWithProxy(srv =>
+            var client = _taskApi.StartWithProxy(srv =>
             {
                 srv.Configure<IndexerDbOptions>(o =>
                     {
@@ -120,16 +121,16 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -144,7 +145,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IJobResourceProvider>(new TestJobResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -180,7 +181,7 @@ namespace FunctionTests
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
 
-            var client = _api.StartWithProxy(srv =>
+            var client = _taskApi.StartWithProxy(srv =>
                 {
                     srv.Configure<IndexerDbOptions>(o =>
                         {
@@ -191,16 +192,16 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                     {
-                        o.Jobs = new[]
+                        o.Namespaces = new[]
                         {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -251,19 +252,19 @@ namespace FunctionTests
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
 
-            _api.StartWithProxy(srv =>
+            _taskApi.StartWithProxy(srv =>
                 {
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Jobs = new JobOptions[]
+                            o.Namespaces = new NsOptions[]
                             {
-                                new JobOptions
+                                new NsOptions
                                 {
-                                    JobId = "foojob",
+                                    NsId = "foo-ns",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
-                                    IdProperty = nameof(TestEntity.Id),
+                                    IdPropertyName = nameof(TestEntity.Id),
                                     EsIndex = indexName
                                 },
 
@@ -277,7 +278,7 @@ namespace FunctionTests
                         }
                     );
 
-                    srv.ConfigureRabbitClient(o =>
+                    srv.ConfigureRabbit(o =>
                         {
                             o.Host = "localhost";
                             o.Port = 5672;
@@ -327,7 +328,7 @@ namespace FunctionTests
 
             var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(initialTestEntity.Id)));
 
-            var client = _api.StartWithProxy(srv =>
+            var client = _taskApi.StartWithProxy(srv =>
                 {
                     srv.Configure<IndexerDbOptions>(o =>
                         {
@@ -337,13 +338,13 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Jobs = new[]
+                            o.Namespaces = new[]
                             {
-                                new JobOptions
+                                new NsOptions
                                 {
-                                    JobId = "foojob",
+                                    NsId = "foo-ns",
                                     NewIndexStrategy = NewIndexStrategy.Auto,
-                                    IdProperty = nameof(TestEntity.Id),
+                                    IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
                                     DbQuery = "select * from test",
                                     NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -359,7 +360,7 @@ namespace FunctionTests
                         }
                     );
 
-                    srv.ConfigureRabbitClient(o =>
+                    srv.ConfigureRabbit(o =>
                     {
                         o.Host = "localhost";
                         o.Port = 5672;
@@ -390,6 +391,176 @@ namespace FunctionTests
             Assert.NotNull(searchRes);
             Assert.Single(searchRes);
             Assert.Equal(overrideTestEntity.Value, searchRes.First().Value);
+        }
+
+        [Fact]
+        public async Task ShouldIndexFromApi()
+        {
+            //Arrange
+            var testEntity = new SearchTestEntity
+            {
+                Id = 2,
+                Value = "foo",
+                Bool = false
+            };
+
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
+
+            var api = _indexApi.StartWithProxy(srv =>
+            {
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Namespaces = new NsOptions[]
+                    {
+                        new NsOptions
+                        {
+                            NsId = "foo-ns",
+                            NewIndexStrategy = NewIndexStrategy.Auto,
+                            IdPropertyName = nameof(TestEntity.Id),
+                            EsIndex = indexName
+                        },
+
+                    };
+                }
+                );
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                {
+                    o.Url = "http://localhost:9200";
+                }
+                );
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+            await api.IndexAsync("foo-ns", testEntity);
+
+            await Task.Delay(2000);
+
+            var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);
+
+            //Assert
+            Assert.NotNull(searchRes);
+            Assert.Single(searchRes);
+            Assert.Equal(testEntity.Value, searchRes.First().Value);
+        }
+
+        [Fact]
+        public async Task ShouldKickIndexFromApi()
+        {
+            //Arrange
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var testEntity = new TestEntity
+            {
+                Id = 2,
+                Value = "foo"
+            };
+
+            var searchParams = new SearchParams<SearchTestEntity>(d => d.Ids(iqd => iqd.Values(testEntity.Id)));
+
+            var taskApi = _taskApi.StartWithProxy(srv =>
+            {
+                srv.Configure<IndexerDbOptions>(o =>
+                {
+                    o.Provider = "mysql";
+                }
+                );
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Namespaces = new[]
+                    {
+                            new NsOptions
+                            {
+                                NsId = "foo-ns",
+
+                                DbQuery = "select * from test",
+                                NewUpdatesStrategy = NewUpdatesStrategy.Add,
+                                NewIndexStrategy = NewIndexStrategy.Auto,
+                                IdPropertyName = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            }
+                        };
+                });
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                {
+                    o.Url = "http://localhost:9200";
+                }
+                );
+
+                srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            await _db.DoOnce().InsertAsync(testEntity);
+
+            await taskApi.PostProcessAsync();
+            await Task.Delay(2000);
+
+            var updated = await _db.DoOnce()
+                .Tab<TestEntity>()
+                .Where(e => e.Id == 2)
+                .Set(e => e.Value, "bar")
+                .UpdateAsync();
+
+            if(updated < 1)
+                throw new Exception("Not updated");
+
+            var indexApi = _indexApi.StartWithProxy(srv =>
+            {
+                srv.Configure<IndexerDbOptions>(o =>
+                    {
+                        o.Provider = "mysql";
+                    }
+                );
+
+                srv.Configure<IndexerOptions>(o =>
+                {
+                    o.Namespaces = new[]
+                    {
+                        new NsOptions
+                        {
+                            NsId = "foo-ns",
+
+                            KickQuery = "select * from test where id=@id",
+                            NewUpdatesStrategy = NewUpdatesStrategy.Update,
+                            NewIndexStrategy = NewIndexStrategy.Auto,
+                            IdPropertyName = nameof(TestEntity.Id),
+                            IdPropertyType = IdPropertyType.Integer,
+                            EsIndex = indexName
+                        }
+                    };
+                });
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                    {
+                        o.Url = "http://localhost:9200";
+                    }
+                );
+
+                srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+
+            await indexApi.KickIndexAsync("foo-ns", "2");
+            await Task.Delay(2000);
+
+            var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);
+
+            //Assert
+            Assert.NotNull(searchRes);
+            Assert.Single(searchRes);
+            Assert.Equal("bar", searchRes.First().Value);
         }
     }
 }
