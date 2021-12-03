@@ -49,13 +49,13 @@ namespace MyLab.Search.Indexer.Services
                     return DataParameter.Text(idPropertyName, value);
                 case IdPropertyType.Integer:
                 {
-                    if (!int.TryParse(value, out var intVal))
+                    if (!long.TryParse(value, out var intVal))
                     {
                         throw new BadIndexingRequestException("ID value should be int32")
                             .AndFactIs("actual-value", value);
                     }
 
-                    return DataParameter.Int32(idPropertyName, intVal);
+                    return DataParameter.Int64(idPropertyName, intVal);
                 }
                 default:
                     throw new ArgumentOutOfRangeException(nameof(idPropertyType), idPropertyType, null);
