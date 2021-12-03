@@ -45,8 +45,8 @@ namespace MyLab.Search.Indexer
         public IdPropertyType IdPropertyType { get; set; }
         public int PageSize { get; set; }
         public bool EnablePaging { get; set; } = false;
-        public string DbQuery { get; set; }
-        public string KickQuery { get; set; }
+        public string SyncDbQuery { get; set; }
+        public string KickDbQuery { get; set; }
         public string EsIndex { get; set; }
     }
 
@@ -67,7 +67,7 @@ namespace MyLab.Search.Indexer
     public enum IdPropertyType
     {
         Undefined,
-        Text,
-        Integer
+        String,
+        Int
     }
 }

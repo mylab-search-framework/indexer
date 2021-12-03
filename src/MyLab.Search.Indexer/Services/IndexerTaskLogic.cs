@@ -98,9 +98,9 @@ namespace MyLab.Search.Indexer.Services
 
             string query;
 
-            if (indexerOptionsNs.DbQuery != null)
+            if (indexerOptionsNs.SyncDbQuery != null)
             {
-                query = indexerOptionsNs.DbQuery;
+                query = indexerOptionsNs.SyncDbQuery;
             }
             else
             {

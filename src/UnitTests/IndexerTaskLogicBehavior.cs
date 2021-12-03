@@ -30,7 +30,7 @@ namespace UnitTests
                         NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
-                        DbQuery = "select * from foo_table where LastModified > @seed",
+                        SyncDbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
                     }
@@ -75,7 +75,7 @@ namespace UnitTests
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            SyncDbQuery = "select * from foo_table limit @limit offset @offset",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
                             EsIndex = "[no mater in this test]"
                         }
@@ -120,7 +120,7 @@ namespace UnitTests
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            SyncDbQuery = "select * from foo_table limit @limit offset @offset",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
                             EsIndex = "[no mater in this test]"
                         }
@@ -158,7 +158,7 @@ namespace UnitTests
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
-                            DbQuery = "select * from foo_table limit @limit offset @offset",
+                            SyncDbQuery = "select * from foo_table limit @limit offset @offset",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             EsIndex = "[no mater in this test]"
                         }
@@ -192,7 +192,7 @@ namespace UnitTests
                         NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
-                        DbQuery = "select * from foo_table where LastModified > @seed",
+                        SyncDbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
                     }
@@ -230,7 +230,7 @@ namespace UnitTests
                         new NsOptions
                         {
                             NsId = "foojob",
-                            DbQuery =  "select * from foo_table where Id > @seed",
+                            SyncDbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = "[no mater in this test]"
