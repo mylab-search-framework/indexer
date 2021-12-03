@@ -23,11 +23,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Jobs = new[]
+                o.Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
@@ -66,11 +66,11 @@ namespace UnitTests
             var sp = await InitServices(
                 o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -111,11 +111,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -150,11 +150,11 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
@@ -185,11 +185,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Jobs = new[]
+                o.Namespaces = new[]
                 {
-                    new JobOptions
+                    new NsOptions
                     {
-                        JobId = "foojob",
+                        NsId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
@@ -225,11 +225,11 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foojob",
                             DbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             IdPropertyName = nameof(TestEntity.Id),

@@ -9,7 +9,7 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IKickIndexer
     {
-        Task IndexAsync(string entityId, string source, JobOptions jobOptions, CancellationToken cancellationToken);
+        Task IndexAsync(string entityId, string source, NsOptions nsOptions, CancellationToken cancellationToken);
     }
 
     class KickIndexer : IKickIndexer
@@ -25,20 +25,20 @@ namespace MyLab.Search.Indexer.Services
             _indexer = indexer;
         }
 
-        public async Task IndexAsync(string entityId, string source, JobOptions jobOptions, CancellationToken cancellationToken)
+        public async Task IndexAsync(string entityId, string source, NsOptions nsOptions, CancellationToken cancellationToken)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (jobOptions == null) throw new ArgumentNullException(nameof(jobOptions));
+            if (nsOptions == null) throw new ArgumentNullException(nameof(nsOptions));
             if (string.IsNullOrWhiteSpace(entityId))
                 throw new BadIndexingRequestException("ID empty or not defined");
-            if(jobOptions.NewUpdatesStrategy != NewUpdatesStrategy.Update)
+            if(nsOptions.NewUpdatesStrategy != NewUpdatesStrategy.Update)
                 throw new BadIndexingRequestException("Not supported for current NewUpdatesStrategy")
-                    .AndFactIs("strategy", jobOptions.NewUpdatesStrategy);
+                    .AndFactIs("strategy", nsOptions.NewUpdatesStrategy);
 
-            var idParam = CreateIdParameter(jobOptions.IdPropertyName, jobOptions.IdPropertyType, entityId);
-            var entBatch = await _dataSourceService.ReadByIdAsync(jobOptions.KickQuery, idParam);
+            var idParam = CreateIdParameter(nsOptions.IdPropertyName, nsOptions.IdPropertyType, entityId);
+            var entBatch = await _dataSourceService.ReadByIdAsync(nsOptions.KickQuery, idParam);
 
-            await _indexer.IndexAsync(jobOptions.JobId, entBatch.Entities, cancellationToken);
+            await _indexer.IndexAsync(nsOptions.NsId, entBatch.Entities, cancellationToken);
         }
 
         DataParameter CreateIdParameter(string idPropertyName, IdPropertyType idPropertyType, string value)

@@ -35,26 +35,26 @@ namespace MyLab.Search.Indexer.Controllers
             _log = logger.Dsl();
         }
 
-        [HttpPost("{job}")]
+        [HttpPost("{ns}")]
         [Consumes("application/json")]
-        public async Task<IActionResult> Push([FromRoute] string job)
+        public async Task<IActionResult> Push([FromRoute] string ns)
         {
             using var reader = new StreamReader(Request.Body);
             var body = await reader.ReadToEndAsync();
 
-            var jobOpts = _options.Jobs.FirstOrDefault(j => j.JobId == job);
-            if (jobOpts == null)
+            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.NsId == ns);
+            if (nsOpts == null)
             {
-                _log.Warning("Job not found")
-                    .AndFactIs("job", job)
+                _log.Warning("Namespace not found")
+                    .AndFactIs("namespace", ns)
                     .Write();
 
-                return BadRequest("Job not found");
+                return BadRequest("Namespace not found");
             }
 
             try
             {
-                await _pushIndexer.IndexAsync(body, "api", jobOpts, CancellationToken.None);
+                await _pushIndexer.IndexAsync(body, "api", nsOpts, CancellationToken.None);
             }
             catch (BadIndexingRequestException e)
             {
@@ -65,22 +65,22 @@ namespace MyLab.Search.Indexer.Controllers
             return Ok();
         }
 
-        [HttpPost("{job}/{id}/kick")]
-        public async Task<IActionResult> Kick([FromRoute] string job, [FromRoute] string id)
+        [HttpPost("{ns}/{id}/kick")]
+        public async Task<IActionResult> Kick([FromRoute] string ns, [FromRoute] string id)
         {
-            var jobOpts = _options.Jobs.FirstOrDefault(j => j.JobId == job);
-            if (jobOpts == null)
+            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.NsId == ns);
+            if (nsOpts == null)
             {
-                _log.Warning("Job not found")
-                    .AndFactIs("job", job)
+                _log.Warning("Namespace not found")
+                    .AndFactIs("namespace", ns)
                     .Write();
 
-                return BadRequest("Job not found");
+                return BadRequest("Namespace not found");
             }
 
             try
             {
-                await _kickIndexer.IndexAsync(id, "api", jobOpts, CancellationToken.None);
+                await _kickIndexer.IndexAsync(id, "api", nsOpts, CancellationToken.None);
             }
             catch (BadIndexingRequestException e)
             {

@@ -10,7 +10,7 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IPushIndexer
     {
-        Task IndexAsync(string strEntity, string sourceId, JobOptions jobOptions, CancellationToken cancellationToken);
+        Task IndexAsync(string strEntity, string sourceId, NsOptions nsOptions, CancellationToken cancellationToken);
     }
 
     class PushIndexer : IPushIndexer
@@ -22,15 +22,15 @@ namespace MyLab.Search.Indexer.Services
             _indexer = indexer;
         }
 
-        public Task IndexAsync(string strEntity, string sourceId, JobOptions jobOptions, CancellationToken cancellationToken)
+        public Task IndexAsync(string strEntity, string sourceId, NsOptions nsOptions, CancellationToken cancellationToken)
         {
             if (sourceId == null) throw new ArgumentNullException(nameof(sourceId));
-            if (jobOptions == null) throw new ArgumentNullException(nameof(jobOptions));
+            if (nsOptions == null) throw new ArgumentNullException(nameof(nsOptions));
 
             if (string.IsNullOrWhiteSpace(strEntity))
                 throw new BadIndexingRequestException("Entity object is empty");
             
-            var sourceEntityDeserializer = new SourceEntityDeserializer(jobOptions.NewIndexStrategy == NewIndexStrategy.Auto);
+            var sourceEntityDeserializer = new SourceEntityDeserializer(nsOptions.NewIndexStrategy == NewIndexStrategy.Auto);
 
             DataSourceEntity entity;
 
@@ -50,15 +50,15 @@ namespace MyLab.Search.Indexer.Services
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
-            if (entity.Properties.Keys.All(k => k != jobOptions.IdPropertyName))
+            if (entity.Properties.Keys.All(k => k != nsOptions.IdPropertyName))
                 throw new BadIndexingRequestException("Cant find ID property in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
-            var preproc = new DsEntityPreprocessor(jobOptions);
+            var preproc = new DsEntityPreprocessor(nsOptions);
             var entForIndex = new[] { preproc.Process(entity) };
 
-            return _indexer.IndexAsync(jobOptions.JobId, entForIndex, cancellationToken);
+            return _indexer.IndexAsync(nsOptions.NsId, entForIndex, cancellationToken);
         }
 
         string TrimDump(string dump)

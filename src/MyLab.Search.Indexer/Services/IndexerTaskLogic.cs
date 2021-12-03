@@ -21,7 +21,7 @@ namespace MyLab.Search.Indexer.Services
         private readonly IDataSourceService _dataSourceService;
         private readonly ISeedService _seedService;
         private readonly IDataIndexer _indexer;
-        private readonly IJobResourceProvider _jobResourceProvider;
+        private readonly INamespaceResourceProvider _namespaceResourceProvider;
         private readonly IDslLogger _log;
 
         public IndexerTaskLogic(
@@ -31,9 +31,9 @@ namespace MyLab.Search.Indexer.Services
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
-            IJobResourceProvider jobResourceProvider,
+            INamespaceResourceProvider namespaceResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
-            : this(indexerOptions.Value, dataSourceService, seedService, indexer, jobResourceProvider, logger)
+            : this(indexerOptions.Value, dataSourceService, seedService, indexer, namespaceResourceProvider, logger)
         {
             
         }
@@ -43,22 +43,22 @@ namespace MyLab.Search.Indexer.Services
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
-            IJobResourceProvider jobResourceProvider,
+            INamespaceResourceProvider namespaceResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
         {
             _indexerOptions = indexerOptions;
             _dataSourceService = dataSourceService;
             _seedService = seedService;
             _indexer = indexer;
-            _jobResourceProvider = jobResourceProvider;
+            _namespaceResourceProvider = namespaceResourceProvider;
             _log = logger?.Dsl();
         }
 
         public async Task Perform(CancellationToken cancellationToken)
         {
-            if (_indexerOptions.Jobs != null)
+            if (_indexerOptions.Namespaces != null)
             {
-                foreach (var indexerOptionsJob in _indexerOptions.Jobs)
+                foreach (var indexerOptionsJob in _indexerOptions.Namespaces)
                 {
                     try
                     {
@@ -80,7 +80,7 @@ namespace MyLab.Search.Indexer.Services
             }
         }
 
-        private async Task PerformJob(JobOptions indexerOptionsJob, CancellationToken cancellationToken)
+        private async Task PerformJob(NsOptions indexerOptionsNs, CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -90,7 +90,7 @@ namespace MyLab.Search.Indexer.Services
 
             int counter = 0;
 
-            var strategy = CreateStrategy(indexerOptionsJob);
+            var strategy = CreateStrategy(indexerOptionsNs);
             var seedCalc = strategy.CreateSeedCalc();
 
             await seedCalc.StartAsync();
@@ -98,18 +98,18 @@ namespace MyLab.Search.Indexer.Services
 
             string query;
 
-            if (indexerOptionsJob.DbQuery != null)
+            if (indexerOptionsNs.DbQuery != null)
             {
-                query = indexerOptionsJob.DbQuery;
+                query = indexerOptionsNs.DbQuery;
             }
             else
             {
-                query = await _jobResourceProvider.ReadFileAsync(indexerOptionsJob.JobId, "query.sql");
+                query = await _namespaceResourceProvider.ReadFileAsync(indexerOptionsNs.NsId, "query.sql");
             }
 
-            var iterator = _dataSourceService.Read(indexerOptionsJob.JobId, query, seedParameter);
+            var iterator = _dataSourceService.Read(indexerOptionsNs.NsId, query, seedParameter);
 
-            var preproc = new DsEntityPreprocessor(indexerOptionsJob);
+            var preproc = new DsEntityPreprocessor(indexerOptionsNs);
 
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
@@ -123,7 +123,7 @@ namespace MyLab.Search.Indexer.Services
                     .Select(preproc.Process)
                     .ToArray();
 
-                await _indexer.IndexAsync(indexerOptionsJob.JobId, entForIndex, cancellationToken);
+                await _indexer.IndexAsync(indexerOptionsNs.NsId, entForIndex, cancellationToken);
 
                 seedCalc.Update(batch.Entities);
             }
@@ -139,19 +139,19 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private IIndexerLogicStrategy CreateStrategy(JobOptions jobOptions)
+        private IIndexerLogicStrategy CreateStrategy(NsOptions nsOptions)
         {
-            switch (jobOptions.NewUpdatesStrategy)
+            switch (nsOptions.NewUpdatesStrategy)
             {
                 case NewUpdatesStrategy.Update:
-                    return new UpdateModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.LastChangeProperty, _seedService){ Log = _log};
+                    return new UpdateModeIndexerLogicStrategy(nsOptions.NsId, nsOptions.LastChangeProperty, _seedService){ Log = _log};
                 case NewUpdatesStrategy.Add:
-                    return new AddModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.IdPropertyName, _seedService) { Log = _log };
+                    return new AddModeIndexerLogicStrategy(nsOptions.NsId, nsOptions.IdPropertyName, _seedService) { Log = _log };
                 case NewUpdatesStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:
                     throw new InvalidOperationException("Unsupported Indexer mode")
-                        .AndFactIs("mode", jobOptions.NewUpdatesStrategy);
+                        .AndFactIs("mode", nsOptions.NewUpdatesStrategy);
             }
         }
     }

@@ -19,7 +19,7 @@ namespace MyLab.Search.Indexer.Services
         private readonly IndexerOptions _options;
         private readonly IEsIndexer<IndexEntity> _esIndexer;
         private readonly IEsManager _esManager;
-        private readonly IJobResourceProvider _jobResourceProvider;
+        private readonly INamespaceResourceProvider _namespaceResourceProvider;
         private readonly IIndexMappingService _indexMappingService;
         private readonly IDslLogger _log;
         
@@ -27,10 +27,10 @@ namespace MyLab.Search.Indexer.Services
             IOptions<IndexerOptions> options,
             IEsIndexer<IndexEntity> esIndexer,
             IEsManager esManager,
-            IJobResourceProvider jobResourceProvider,
+            INamespaceResourceProvider namespaceResourceProvider,
             IIndexMappingService indexMappingService,
             ILogger<DataIndexer> logger)
-        :this(options.Value, esIndexer, esManager, jobResourceProvider, indexMappingService, logger)
+        :this(options.Value, esIndexer, esManager, namespaceResourceProvider, indexMappingService, logger)
         {
         }
 
@@ -38,22 +38,22 @@ namespace MyLab.Search.Indexer.Services
             IndexerOptions options,
             IEsIndexer<IndexEntity> esIndexer, 
             IEsManager esManager,
-            IJobResourceProvider jobResourceProvider,
+            INamespaceResourceProvider namespaceResourceProvider,
             IIndexMappingService indexMappingService,
             ILogger<DataIndexer> logger)
         {
             _options = options;
             _esIndexer = esIndexer;
             _esManager = esManager;
-            _jobResourceProvider = jobResourceProvider;
+            _namespaceResourceProvider = namespaceResourceProvider;
             _indexMappingService = indexMappingService;
             _log = logger?.Dsl();
         }
 
-        public async Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+        public async Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
         {
-            var curJob = _options.GetJobOptions(jobId);
-            var indexName = _options.GetIndexName(jobId);
+            var curJob = _options.GetNsOptions(nsId);
+            var indexName = _options.GetIndexName(nsId);
 
             if (dataSourceEntities.Length == 0)
                 return;
@@ -62,7 +62,7 @@ namespace MyLab.Search.Indexer.Services
             
             if (!indexExists)
             {
-                var factory = new CreateIndexStrategyFactory(curJob, _jobResourceProvider, dataSourceEntities.First())
+                var factory = new CreateIndexStrategyFactory(curJob, _namespaceResourceProvider, dataSourceEntities.First())
                 {
                     Log = _log
                 };

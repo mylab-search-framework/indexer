@@ -31,9 +31,9 @@ namespace MyLab.Search.Indexer.Tools
             _options = options;
         }
 
-        public IAsyncEnumerable<DataSourceBatch> Read(string jobId, string query, DataParameter seedParameter = null)
+        public IAsyncEnumerable<DataSourceBatch> Read(string nsId, string query, DataParameter seedParameter = null)
         {
-            var foundJob = _options.GetJobOptions(jobId);
+            var foundJob = _options.GetNsOptions(nsId);
 
             return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundJob.PageSize)
             {

@@ -10,16 +10,16 @@ namespace MyLab.Search.Indexer.Tools
 {
     class CreateIndexStrategyFactory
     {
-        private readonly JobOptions _options;
-        private readonly IJobResourceProvider _jobResourceProvider;
+        private readonly NsOptions _options;
+        private readonly INamespaceResourceProvider _namespaceResourceProvider;
         private readonly DataSourceEntity _exampleEntity;
 
         public IDslLogger Log { get; set; }
 
-        public CreateIndexStrategyFactory(JobOptions options, IJobResourceProvider jobResourceProvider, DataSourceEntity exampleEntity)
+        public CreateIndexStrategyFactory(NsOptions options, INamespaceResourceProvider namespaceResourceProvider, DataSourceEntity exampleEntity)
         {
             _options = options;
-            _jobResourceProvider = jobResourceProvider;
+            _namespaceResourceProvider = namespaceResourceProvider;
             _exampleEntity = exampleEntity;
         }
 
@@ -36,7 +36,7 @@ namespace MyLab.Search.Indexer.Tools
                 }
                 case NewIndexStrategy.File:
                 {
-                    var request = await _jobResourceProvider.ReadFileAsync(_options.JobId, "new-index.json");
+                    var request = await _namespaceResourceProvider.ReadFileAsync(_options.NsId, "new-index.json");
 
                     var jsonStrategy = new JsonSettingsBasedCreateIndexStrategy(request)
                     {

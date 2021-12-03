@@ -42,7 +42,7 @@ namespace UnitTests
                 .AddSingleton<ISeedService, TestSeedService>()
                 .AddSingleton<IDataIndexer, TestIndexer>()
                 .AddSingleton<ITaskLogic, IndexerTaskLogic>()
-                .AddSingleton<IJobResourceProvider, JobResourceProvider>()
+                .AddSingleton<INamespaceResourceProvider, NamespaceResourceProvider>()
                 //.Configure(configureDbOptions)
                 .Configure<ElasticsearchOptions>(o =>
                 {
@@ -93,14 +93,14 @@ namespace UnitTests
             {
             }
 
-            public Task WriteAsync(string jobId, string seed)
+            public Task WriteAsync(string nsId, string seed)
             {
                 _seed = seed;
 
                 return Task.CompletedTask;
             }
 
-            public Task<string> ReadAsync(string jobId)
+            public Task<string> ReadAsync(string nsId)
             {
                 return Task.FromResult(_seed);
             }
@@ -111,7 +111,7 @@ namespace UnitTests
             public Dictionary<string, DataSourceEntity> IndexedEntities { get; } =
                 new Dictionary<string, DataSourceEntity>();
 
-            public Task IndexAsync(string jobId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+            public Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
                 foreach (var entity in dataSourceEntities)
                 {

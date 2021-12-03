@@ -42,16 +42,16 @@ namespace FunctionTests
             [Boolean(Name = "Bool")] public bool? Bool { get; set; }
         }
 
-        private class TestJobResourceProvider : IJobResourceProvider
+        private class TestNamespaceResourceProvider : INamespaceResourceProvider
         {
             private readonly string _filepath;
 
-            public TestJobResourceProvider(string filepath)
+            public TestNamespaceResourceProvider(string filepath)
             {
                 _filepath = filepath;
             }
 
-            public Task<string> ReadFileAsync(string jobId, string filename)
+            public Task<string> ReadFileAsync(string nsId, string filename)
             {
                 return File.ReadAllTextAsync(Path.Combine("files", _filepath));
             }
@@ -61,14 +61,14 @@ namespace FunctionTests
         {
             private string _seed;
 
-            public Task WriteAsync(string jobId, string seed)
+            public Task WriteAsync(string nsId, string seed)
             {
                 _seed = seed;
 
                 return Task.CompletedTask;
             }
 
-            public Task<string> ReadAsync(string jobId)
+            public Task<string> ReadAsync(string nsId)
             {
                 return Task.FromResult(_seed);
             }

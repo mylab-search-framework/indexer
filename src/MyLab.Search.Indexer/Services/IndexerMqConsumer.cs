@@ -34,7 +34,7 @@ namespace MyLab.Search.Indexer.Services
             if (consumedMessage.Content == null)
                 throw new InvalidOperationException("Empty message payload detected");
 
-            var jobOpts = _options.Jobs.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
+            var jobOpts = _options.Namespaces.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
             if(jobOpts == null)
                 throw new InvalidOperationException("Job not found for queue")
                     .AndFactIs("queue", consumedMessage.Queue);

@@ -50,11 +50,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -74,7 +74,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IJobResourceProvider>(new TestJobResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -121,11 +121,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -145,7 +145,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IJobResourceProvider>(new TestJobResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -192,11 +192,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                     {
-                        o.Jobs = new[]
+                        o.Namespaces = new[]
                         {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -257,11 +257,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Jobs = new JobOptions[]
+                            o.Namespaces = new NsOptions[]
                             {
-                                new JobOptions
+                                new NsOptions
                                 {
-                                    JobId = "foojob",
+                                    NsId = "foo-ns",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
@@ -338,11 +338,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Jobs = new[]
+                            o.Namespaces = new[]
                             {
-                                new JobOptions
+                                new NsOptions
                                 {
-                                    JobId = "foojob",
+                                    NsId = "foo-ns",
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
@@ -413,11 +413,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new JobOptions[]
+                    o.Namespaces = new NsOptions[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foo-ns",
                             NewIndexStrategy = NewIndexStrategy.Auto,
                             IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = indexName
@@ -437,7 +437,7 @@ namespace FunctionTests
             });
 
             //Act
-            await api.IndexAsync("foojob", testEntity);
+            await api.IndexAsync("foo-ns", testEntity);
 
             await Task.Delay(2000);
 
@@ -473,11 +473,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                            new JobOptions
+                            new NsOptions
                             {
-                                JobId = "foojob",
+                                NsId = "foo-ns",
 
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -523,11 +523,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Jobs = new[]
+                    o.Namespaces = new[]
                     {
-                        new JobOptions
+                        new NsOptions
                         {
-                            JobId = "foojob",
+                            NsId = "foo-ns",
 
                             KickQuery = "select * from test where id=@id",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
@@ -552,7 +552,7 @@ namespace FunctionTests
 
             //Act
 
-            await indexApi.KickIndexAsync("foojob", "2");
+            await indexApi.KickIndexAsync("foo-ns", "2");
             await Task.Delay(2000);
 
             var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);

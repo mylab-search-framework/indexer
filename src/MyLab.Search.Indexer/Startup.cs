@@ -42,7 +42,7 @@ namespace MyLab.Search.Indexer
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
                 .AddEsTools(_configuration, "ES")
                 .AddLogging(l => l.AddConsole())
-                .AddSingleton<IJobResourceProvider, JobResourceProvider>()
+                .AddSingleton<INamespaceResourceProvider, NamespaceResourceProvider>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
