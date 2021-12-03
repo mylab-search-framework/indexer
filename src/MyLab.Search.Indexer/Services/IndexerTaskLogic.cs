@@ -146,7 +146,7 @@ namespace MyLab.Search.Indexer.Services
                 case NewUpdatesStrategy.Update:
                     return new UpdateModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.LastChangeProperty, _seedService){ Log = _log};
                 case NewUpdatesStrategy.Add:
-                    return new AddModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.IdProperty, _seedService) { Log = _log };
+                    return new AddModeIndexerLogicStrategy(jobOptions.JobId, jobOptions.IdPropertyName, _seedService) { Log = _log };
                 case NewUpdatesStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:

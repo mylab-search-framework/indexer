@@ -41,7 +41,7 @@ namespace MyLab.Search.Indexer
         public NewUpdatesStrategy NewUpdatesStrategy { get; set; }
         public NewIndexStrategy NewIndexStrategy { get; set; }
         public string LastChangeProperty { get; set; }
-        public string IdProperty { get; set; }
+        public string IdPropertyName { get; set; }
         public IdPropertyType IdPropertyType { get; set; }
         public int PageSize { get; set; }
         public bool EnablePaging { get; set; } = false;

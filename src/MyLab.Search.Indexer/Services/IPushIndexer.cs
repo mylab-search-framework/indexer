@@ -50,7 +50,7 @@ namespace MyLab.Search.Indexer.Services
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);
 
-            if (entity.Properties.Keys.All(k => k != jobOptions.IdProperty))
+            if (entity.Properties.Keys.All(k => k != jobOptions.IdPropertyName))
                 throw new BadIndexingRequestException("Cant find ID property in the entity object")
                     .AndFactIs("dump", TrimDump(strEntity))
                     .AndFactIs("source", sourceId);

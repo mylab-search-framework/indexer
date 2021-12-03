@@ -90,7 +90,7 @@ namespace MyLab.Search.Indexer.Services
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
                     .Index(indexName)
-                    .Id(doc[curJob.IdProperty].ToString())
+                    .Id(doc[curJob.IdPropertyName].ToString())
                 , cancellationToken);
         }
     }

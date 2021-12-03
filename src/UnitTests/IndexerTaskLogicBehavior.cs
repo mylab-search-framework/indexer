@@ -29,7 +29,7 @@ namespace UnitTests
                     {
                         JobId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
@@ -72,7 +72,7 @@ namespace UnitTests
                         {
                             JobId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -117,7 +117,7 @@ namespace UnitTests
                         {
                             JobId = "foojob",
                             LastChangeProperty = nameof(TestEntity.LastModified),
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -155,7 +155,7 @@ namespace UnitTests
                         new JobOptions
                         {
                             JobId = "foojob",
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
                             DbQuery = "select * from foo_table limit @limit offset @offset",
@@ -191,7 +191,7 @@ namespace UnitTests
                     {
                         JobId = "foojob",
                         LastChangeProperty = nameof(TestEntity.LastModified),
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         DbQuery = "select * from foo_table where LastModified > @seed",
                         NewUpdatesStrategy = NewUpdatesStrategy.Update,
                         EsIndex = "[no mater in this test]"
@@ -232,7 +232,7 @@ namespace UnitTests
                             JobId = "foojob",
                             DbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = "[no mater in this test]"
                         }
                     };

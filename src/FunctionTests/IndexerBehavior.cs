@@ -59,7 +59,7 @@ namespace FunctionTests
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -130,7 +130,7 @@ namespace FunctionTests
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.File,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -201,7 +201,7 @@ namespace FunctionTests
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -264,7 +264,7 @@ namespace FunctionTests
                                     JobId = "foojob",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
-                                    IdProperty = nameof(TestEntity.Id),
+                                    IdPropertyName = nameof(TestEntity.Id),
                                     EsIndex = indexName
                                 },
 
@@ -344,7 +344,7 @@ namespace FunctionTests
                                 {
                                     JobId = "foojob",
                                     NewIndexStrategy = NewIndexStrategy.Auto,
-                                    IdProperty = nameof(TestEntity.Id),
+                                    IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
                                     DbQuery = "select * from test",
                                     NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -419,7 +419,7 @@ namespace FunctionTests
                         {
                             JobId = "foojob",
                             NewIndexStrategy = NewIndexStrategy.Auto,
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = indexName
                         },
 
@@ -482,7 +482,7 @@ namespace FunctionTests
                                 DbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
-                                IdProperty = nameof(TestEntity.Id),
+                                IdPropertyName = nameof(TestEntity.Id),
                                 EsIndex = indexName
                             }
                         };
@@ -532,7 +532,7 @@ namespace FunctionTests
                             KickQuery = "select * from test where id=@id",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
                             NewIndexStrategy = NewIndexStrategy.Auto,
-                            IdProperty = nameof(TestEntity.Id),
+                            IdPropertyName = nameof(TestEntity.Id),
                             IdPropertyType = IdPropertyType.Integer,
                             EsIndex = indexName
                         }

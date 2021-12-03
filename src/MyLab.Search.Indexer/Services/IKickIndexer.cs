@@ -35,7 +35,7 @@ namespace MyLab.Search.Indexer.Services
                 throw new BadIndexingRequestException("Not supported for current NewUpdatesStrategy")
                     .AndFactIs("strategy", jobOptions.NewUpdatesStrategy);
 
-            var idParam = CreateIdParameter(jobOptions.IdProperty, jobOptions.IdPropertyType, entityId);
+            var idParam = CreateIdParameter(jobOptions.IdPropertyName, jobOptions.IdPropertyType, entityId);
             var entBatch = await _dataSourceService.ReadByIdAsync(jobOptions.KickQuery, idParam);
 
             await _indexer.IndexAsync(jobOptions.JobId, entBatch.Entities, cancellationToken);

@@ -60,7 +60,7 @@ namespace UnitTests
             {
                 srvs = srvs.Configure<IndexerOptions>(o =>
                 {
-                    //o.IdProperty = "[for validation]";
+                    //o.IdPropertyName = "[for validation]";
                 });
             }
             

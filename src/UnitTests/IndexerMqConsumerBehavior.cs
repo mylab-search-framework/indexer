@@ -26,7 +26,7 @@ namespace UnitTests
                         JobId = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
-                        IdProperty = nameof(TestEntity.Id),
+                        IdPropertyName = nameof(TestEntity.Id),
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         NewUpdatesStrategy = NewUpdatesStrategy.Update
                     },
@@ -68,7 +68,7 @@ namespace UnitTests
                         JobId = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
-                        IdProperty = nameof(TestEntity.Id)
+                        IdPropertyName = nameof(TestEntity.Id)
                     }, 
                 }
             };

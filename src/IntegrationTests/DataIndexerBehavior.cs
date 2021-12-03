@@ -37,7 +37,7 @@ namespace IntegrationTests
                     {
                         JobId = "foojob",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id",
+                        IdPropertyName = "Id",
                         EsIndex = indexName
                     }
                 }
@@ -112,7 +112,7 @@ namespace IntegrationTests
                     {
                         JobId = "foojob",
                         NewIndexStrategy = NewIndexStrategy.Auto,
-                        IdProperty = "Id",
+                        IdPropertyName = "Id",
                         EsIndex = indexName
                     }
                 }
