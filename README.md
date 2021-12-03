@@ -2,7 +2,7 @@
 
 `Docker` образ: [![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=image&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
 
-Спецификация `API` : [![API specification](https://img.shields.io/badge/OAS3-v1 (actual)-green)](https://app.swaggerhub.com/apis/ozzy/MyLab.Search.Indexer/1)
+Спецификация `API` : [![API specification](https://img.shields.io/badge/OAS3-v1%20(actual)-green)](https://app.swaggerhub.com/apis/ozzy/MyLab.Search.Indexer/1)
 
 Клиент: [![NuGet](https://img.shields.io/nuget/v/MyLab.Search.IndexerClient.svg)](https://www.nuget.org/packages/MyLab.Search.IndexerClient/)
 
@@ -50,12 +50,12 @@
 
   * базовый путь к директории с файлами `Namespace`-ов из конфигурации `Indexer.NamespacesPath` = `/etc/mylab-indexer/namespaces` (по умолчанию);
   * идентификатор `Namespace`-а;
-  * `query.sql`.
+  * `sync.sql`.
 
   Пример:
 
   ```
-  /etc/mylab-indexer/namespaces/users/query.sql
+  /etc/mylab-indexer/namespaces/users/sync.sql
   ```
 
 Запрос представляет из себя `SQL` запрос, в котором доступны следующие переменные:
@@ -206,7 +206,13 @@ Content-Length: 20
 При `kick`-индексации, среди прочих, необходимо указывать следующие параметры для `Namespace`:
 
 * `IdPropertyType`
-* `KickDbQuery`
+* `KickDbQuery` или файл `kick.sql` в ресурсах `Namespace`-а.
+
+`Kick` `sql` запрос должен осуществлять выборку записи для инлексации по идентификатору, где для сравнения с идентификатором испольщуется переменная `id`:
+
+```sql
+select * from foo_table where Id > @id
+```
 
 ### Kick через API
 
@@ -403,14 +409,14 @@ POST /v1/test-namespaces/2/kick
     "Namespaces":[ 
       {
         "NsId": "users",
-        "IdProperty" : "Id",
+        "IdPropertyName" : "Id",
         "LastChangeProperty" : "LastChangeDt",
         "MqQueue": "my-queue",
         "NewUpdatesStrategy": "Add",
         "NewIndexStrategy": "Auto",
         "EnablePaging": "true",
         "PageSize": "100",
-        "DbQuery": "select * from test_tb where Id > @seed limit @limit offset @offset",
+        "SyncDbQuery": "select * from test_tb where Id > @seed limit @limit offset @offset",
         "EsIndex": "users-index"      
       }
     ]
