@@ -3,13 +3,13 @@ using MyLab.ApiClient;
 
 namespace MyLab.Search.IndexerClient
 {
-    [Api("v1")]
+    [Api("v1", Key = "indexer")]
     public interface IIndexerApiV1
     {
-        [Post("{job}")]
-        Task IndexAsync([Path] string job, [JsonContent] object entity);
+        [Post("{ns}")]
+        Task IndexAsync([Path] string ns, [JsonContent] object entity);
 
-        [Post("{job}/{id}/kick")]
-        Task KickIndexAsync([Path] string job, [Path] string id);
+        [Post("{ns}/{ent_id}/kick")]
+        Task KickIndexAsync([Path] string ns, [Path("ent_id")] string id);
     }
 }

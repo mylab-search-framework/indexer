@@ -58,16 +58,16 @@ namespace MyLab.Search.Indexer.Services
         {
             if (_indexerOptions.Namespaces != null)
             {
-                foreach (var indexerOptionsJob in _indexerOptions.Namespaces)
+                foreach (var indexerOptionsNs in _indexerOptions.Namespaces)
                 {
                     try
                     {
-                        await PerformJob(indexerOptionsJob, cancellationToken);
+                        await PerformNamespaceIndexing(indexerOptionsNs, cancellationToken);
                     }
                     catch (Exception e)
                     {
-                        _log?.Error("Indexer job performing failed", e)
-                            .AndFactIs("job", indexerOptionsJob)
+                        _log?.Error("Indexer namespace performing failed", e)
+                            .AndFactIs("namespace", indexerOptionsNs)
                             .Write();
                     }
                 }
@@ -75,12 +75,12 @@ namespace MyLab.Search.Indexer.Services
             else
             {
                 _log?
-                    .Warning("No indexing job found")
+                    .Warning("No indexing namespace found")
                     .Write();
             }
         }
 
-        private async Task PerformJob(NsOptions indexerOptionsNs, CancellationToken cancellationToken)
+        private async Task PerformNamespaceIndexing(NsOptions indexerOptionsNs, CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();

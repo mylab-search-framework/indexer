@@ -37,7 +37,7 @@ namespace UnitTests
                 {
                     new NsOptions
                     {
-                        NsId = "foojob",
+                        NsId = "foo-ns",
                         PageSize = 2,
                         EnablePaging = true
                     }
@@ -48,7 +48,7 @@ namespace UnitTests
 
             var accum = new List<DataSourceEntity[]>();
 
-            var iterator = service.Read("foojob", "select * from foo_table where Id > 0 limit @limit offset @offset");
+            var iterator = service.Read("foo-ns", "select * from foo_table where Id > 0 limit @limit offset @offset");
 
             //Act
             await foreach(var batch in  iterator)

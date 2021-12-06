@@ -52,7 +52,7 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
         {
-            var curJob = _options.GetNsOptions(nsId);
+            var curNs = _options.GetNsOptions(nsId);
             var indexName = _options.GetIndexName(nsId);
 
             if (dataSourceEntities.Length == 0)
@@ -62,7 +62,7 @@ namespace MyLab.Search.Indexer.Services
             
             if (!indexExists)
             {
-                var factory = new CreateIndexStrategyFactory(curJob, _namespaceResourceProvider, dataSourceEntities.First())
+                var factory = new CreateIndexStrategyFactory(curNs, _namespaceResourceProvider, dataSourceEntities.First())
                 {
                     Log = _log
                 };
@@ -90,7 +90,7 @@ namespace MyLab.Search.Indexer.Services
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
                     .Index(indexName)
-                    .Id(doc[curJob.IdPropertyName].ToString())
+                    .Id(doc[curNs.IdPropertyName].ToString())
                 , cancellationToken);
         }
     }

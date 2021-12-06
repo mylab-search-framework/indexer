@@ -27,7 +27,7 @@ namespace UnitTests
                 {
                     new NsOptions
                     {
-                        NsId = "foojob",
+                        NsId = "foo-ns",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -47,7 +47,7 @@ namespace UnitTests
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteDateTimeAsync("foojob", lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync("foo-ns", lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -70,7 +70,7 @@ namespace UnitTests
                     {
                         new NsOptions
                         {
-                            NsId = "foojob",
+                            NsId = "foo-ns",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -115,7 +115,7 @@ namespace UnitTests
                     {
                         new NsOptions
                         {
-                            NsId = "foojob",
+                            NsId = "foo-ns",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -138,7 +138,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadDateTimeAsync("foojob");
+            var actualSeed = await seedService.ReadDateTimeAsync("foo-ns");
 
             //Assert
             Assert.Equal(lastModified, actualSeed);
@@ -154,7 +154,7 @@ namespace UnitTests
                     {
                         new NsOptions
                         {
-                            NsId = "foojob",
+                            NsId = "foo-ns",
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
@@ -171,7 +171,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadIdAsync("foojob");
+            var actualSeed = await seedService.ReadIdAsync("foo-ns");
 
             //Assert
             Assert.Equal(4, actualSeed);
@@ -189,7 +189,7 @@ namespace UnitTests
                 {
                     new NsOptions
                     {
-                        NsId = "foojob",
+                        NsId = "foo-ns",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -209,7 +209,7 @@ namespace UnitTests
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteDateTimeAsync("foojob", lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync("foo-ns", lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -229,7 +229,7 @@ namespace UnitTests
                     {
                         new NsOptions
                         {
-                            NsId = "foojob",
+                            NsId = "foo-ns",
                             SyncDbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             IdPropertyName = nameof(TestEntity.Id),
@@ -241,7 +241,7 @@ namespace UnitTests
             var logic = sp.GetService<ITaskLogic>();
             var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
 
-            await SaveSeed(sp, ss => ss.WriteIdAsync("foojob", 3));
+            await SaveSeed(sp, ss => ss.WriteIdAsync("foo-ns", 3));
 
             //Act
             await logic.Perform(CancellationToken.None);

@@ -42,9 +42,9 @@ namespace MyLab.Search.Indexer.Services
 
             string klickQuery;
             
-            if (nsOptions.SyncDbQuery != null)
+            if (nsOptions.KickDbQuery != null)
             {
-                klickQuery = nsOptions.SyncDbQuery;
+                klickQuery = nsOptions.KickDbQuery;
             }
             else
             {

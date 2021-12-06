@@ -23,9 +23,9 @@ namespace MyLab.Search.Indexer.Tools
 
         public void Register(IRabbitConsumerRegistry registry, IServiceProvider serviceProvider)
         {
-            foreach (var job in _opts.Namespaces.Where(j => j.MqQueue != null))
+            foreach (var ns in _opts.Namespaces.Where(j => j.MqQueue != null))
             {
-                registry.Add(job.MqQueue, new TypedConsumerProvider<IndexerMqConsumer>());
+                registry.Add(ns.MqQueue, new TypedConsumerProvider<IndexerMqConsumer>());
             }
         }
     }

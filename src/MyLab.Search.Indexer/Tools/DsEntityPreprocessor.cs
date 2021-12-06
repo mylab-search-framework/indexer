@@ -22,7 +22,7 @@ namespace MyLab.Search.Indexer.Tools
             {
                 if(_nsOptions.LastChangeProperty == null)
                     throw new InvalidOperationException("LastChangeProperty not defined")
-                        .AndFactIs("job-id", _nsOptions.NsId);
+                        .AndFactIs("namespace", _nsOptions.NsId);
 
                 newDict.Remove(_nsOptions.LastChangeProperty);
             }

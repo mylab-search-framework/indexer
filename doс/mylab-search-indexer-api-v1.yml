@@ -1,0 +1,68 @@
+openapi: 3.0.0
+info:
+  version: '1'
+  title: MyLab.Search.Indexer API
+servers:
+  - url: https://api.example.com/v1
+paths:
+  '/{ns}':
+    post:
+      tags:
+      - Indexing
+      summary: Push indexing 
+      description: Push-index the entity from body
+      parameters:
+      - $ref: '#/components/parameters/Namespace'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Entity'
+      responses:
+        '200':
+          description: The entity was indexed successful
+          
+  '/{ns}/{ent_id}/kick':
+    post:
+      tags:
+      - Indexing
+      summary: Kick indexing 
+      description: Kick-index the entity with specified identifier
+      parameters:
+      - $ref: '#/components/parameters/Namespace'
+      - $ref: '#/components/parameters/EntityId'
+      responses:
+        '200':
+          description: The entity was indexed successful
+  
+components:
+  parameters:
+    
+    Namespace:
+      name: ns
+      in: path
+      required: true
+      description: Namespace name
+      schema:
+        type:
+          string
+      example: users
+      
+    EntityId:
+      name: ent_id
+      in: path
+      required: true
+      description: Entity identifier
+      schema:
+        type:
+          string
+      example: 2
+      
+  schemas:
+  
+    Entity:
+      type: object
+      additionalProperties: true
+      example:
+        id: 2
+        value: "foo"
