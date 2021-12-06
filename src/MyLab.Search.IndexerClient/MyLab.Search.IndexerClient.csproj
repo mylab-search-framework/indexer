@@ -10,9 +10,9 @@
     <PackageIcon>analytics.png</PackageIcon>
     <PackageIconUrl />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.4.5</Version>
-    <AssemblyVersion>1.4.5.0312</AssemblyVersion>
-    <FileVersion>1.4.5.0312</FileVersion>
+    <Version>1.4.6</Version>
+    <AssemblyVersion>1.4.6.0612</AssemblyVersion>
+    <FileVersion>1.4.6.0612</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
