@@ -23,7 +23,7 @@ namespace MyLab.Search.Indexer.Services
             var path = Path.Combine(_options.NamespacesPath, nsId, filename);
 
             if(!File.Exists(path))
-                throw new InvalidOperationException("Job file not found")
+                throw new InvalidOperationException("Namespace file not found")
                     .AndFactIs("filepath", path);
 
             return File.ReadAllTextAsync(path);

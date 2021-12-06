@@ -480,6 +480,7 @@ namespace FunctionTests
                                 NsId = "foo-ns",
 
                                 SyncDbQuery = "select * from test",
+                                KickDbQuery = "select * from test where Id=@id",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
                                 NewIndexStrategy = NewIndexStrategy.Auto,
                                 IdPropertyName = nameof(TestEntity.Id),

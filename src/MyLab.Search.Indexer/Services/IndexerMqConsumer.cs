@@ -34,14 +34,14 @@ namespace MyLab.Search.Indexer.Services
             if (consumedMessage.Content == null)
                 throw new InvalidOperationException("Empty message payload detected");
 
-            var jobOpts = _options.Namespaces.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
-            if(jobOpts == null)
-                throw new InvalidOperationException("Job not found for queue")
+            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
+            if(nsOpts == null)
+                throw new InvalidOperationException("Namespace not found for queue")
                     .AndFactIs("queue", consumedMessage.Queue);
 
             try
             {
-                return _pushIndexer.IndexAsync(consumedMessage.Content, "mq", jobOpts, CancellationToken.None);
+                return _pushIndexer.IndexAsync(consumedMessage.Content, "mq", nsOpts, CancellationToken.None);
             }
             catch (Exception e)
             {

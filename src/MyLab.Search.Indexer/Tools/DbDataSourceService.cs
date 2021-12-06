@@ -33,11 +33,11 @@ namespace MyLab.Search.Indexer.Tools
 
         public IAsyncEnumerable<DataSourceBatch> Read(string nsId, string query, DataParameter seedParameter = null)
         {
-            var foundJob = _options.GetNsOptions(nsId);
+            var foundNs = _options.GetNsOptions(nsId);
 
-            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundJob.PageSize)
+            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundNs.PageSize)
             {
-                EnablePaging = foundJob.EnablePaging
+                EnablePaging = foundNs.EnablePaging
             };
         }
 
