@@ -442,6 +442,12 @@ services:
     - ./new-index-request.json:/etc/mylab-indexer/namepsaces/users/new-index.json
 ```
 
+## Клиент
+
+Для индексатора разработан клиент на `.NET Core`, доступный в виде `nuget` пакета - [MyLab.Search.IndexerClient](https://www.nuget.org/packages/MyLab.Search.IndexerClient/).
+
+Ключ клиента для конфигурирования - `indexer`. Подробнее о конфигурировании клиента - [тут](https://github.com/mylab-tools/apiclient#%D1%81%D0%BE%D0%BF%D0%BE%D1%81%D1%82%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5-%D0%BA%D0%BE%D0%BD%D1%82%D1%80%D0%B0%D0%BA%D1%82%D0%BE%D0%B2).
+
 ## Рекомендации
 
 ### 1. Используйте очередь или API только при необходиомости
