@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFrameworks>netcoreapp3.1;net5.0</TargetFrameworks>
     <Authors>Andrey O.</Authors>
     <Copyright>Copyright (c) 2021 Andrey Osintsev &lt;ozzy.ext@gmail.com&gt;</Copyright>
     <PackageProjectUrl>https://github.com/mylab-search-fx/indexer</PackageProjectUrl>
@@ -10,9 +10,9 @@
     <PackageIcon>analytics.png</PackageIcon>
     <PackageIconUrl />
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Version>1.4.6</Version>
-    <AssemblyVersion>1.4.6.0612</AssemblyVersion>
-    <FileVersion>1.4.6.0612</FileVersion>
+    <Version>1.4.7</Version>
+    <AssemblyVersion>1.4.7.0912</AssemblyVersion>
+    <FileVersion>1.4.7.0912</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
