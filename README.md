@@ -503,7 +503,7 @@ select Id, LastModified, LastModified as LastChanged from foo_table where LastMo
 
 ### Не найдено поле последней модификации
 
-Симптом:
+**Симптом**
 
 ```yaml
 fail: MyLab.Search.Indexer.Services.IndexerTaskLogic[0]
@@ -516,7 +516,7 @@ fail: MyLab.Search.Indexer.Services.IndexerTaskLogic[0]
         Actual fields: Id, GivenName, LastName
 ```
 
-Прична:
+**Прична**
 
 Запрос не выбирает поле последнего изменения записи, поэтому индексатор не может его найти, чтобы вычислить максимальное значение и записать в `seed`.
 
@@ -526,11 +526,31 @@ fail: MyLab.Search.Indexer.Services.IndexerTaskLogic[0]
 select Id, GivenName, LastName from user where LastChangeDt > @seed
 ```
 
-Решение:
+**Решение**
 
 Добавить поле последнего именения сущности в список получаемых полей:
 
 ```sql
 select Id, GivenName, LastName, LastChangeDt from user where LastChangeDt > @seed
+```
+
+### Время сдвинуто
+
+**Симптом**
+
+В индексированных записях поля с соедражие дату+время, имеют значения, сдвинутые на величину часового пояса. 
+
+**Прична**
+
+В контейнере с сервисом локальное время +00, а не такое, как у времени, выбранного для инлексации.
+
+**Решение**
+
+Установить правильный часовой пояс у контейнера. 
+
+Например, устанвоить время, как на хостовой машине - подключить `localtime` в контейнер через `volume`:
+
+```
+/etc/localtime:/etc/localtime:ro
 ```
 
