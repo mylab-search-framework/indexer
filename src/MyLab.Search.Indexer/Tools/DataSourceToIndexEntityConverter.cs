@@ -11,8 +11,6 @@ namespace MyLab.Search.Indexer.Tools
 {
     class DataSourceToIndexEntityConverter
     {
-        static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0);
-
         private readonly IndexMapping _mapping;
 
         public IDslLogger Log { get; set; }
@@ -77,7 +75,7 @@ namespace MyLab.Search.Indexer.Tools
                     case "float":
                         return double.Parse(strVal, CultureInfo.InvariantCulture);
                     case "date":
-                        return (DateTime.Parse(strVal) - Epoch).TotalMilliseconds;
+                        return UnixDateTimeConverter.ToUnixDt(strVal);
                     default:
                         return strVal;
                 }
@@ -103,7 +101,7 @@ namespace MyLab.Search.Indexer.Tools
                     case DataSourcePropertyType.Double:
                         return double.Parse(strVal, CultureInfo.InvariantCulture);
                     case DataSourcePropertyType.DateTime:
-                        return (DateTime.Parse(strVal) - Epoch).TotalMilliseconds;
+                        return UnixDateTimeConverter.ToUnixDt(strVal);
                     default:
                         return strVal;
 
