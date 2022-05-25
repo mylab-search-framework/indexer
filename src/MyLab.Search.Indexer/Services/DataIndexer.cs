@@ -10,6 +10,7 @@ using MyLab.Log.Dsl;
 using MyLab.Log;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services
@@ -19,7 +20,7 @@ namespace MyLab.Search.Indexer.Services
         private readonly IndexerOptions _options;
         private readonly IEsIndexer<IndexEntity> _esIndexer;
         private readonly IEsManager _esManager;
-        private readonly INamespaceResourceProvider _namespaceResourceProvider;
+        private readonly IIndexResourceProvider _indexResourceProvider;
         private readonly IIndexMappingService _indexMappingService;
         private readonly IDslLogger _log;
         
@@ -27,10 +28,10 @@ namespace MyLab.Search.Indexer.Services
             IOptions<IndexerOptions> options,
             IEsIndexer<IndexEntity> esIndexer,
             IEsManager esManager,
-            INamespaceResourceProvider namespaceResourceProvider,
+            IIndexResourceProvider indexResourceProvider,
             IIndexMappingService indexMappingService,
             ILogger<DataIndexer> logger)
-        :this(options.Value, esIndexer, esManager, namespaceResourceProvider, indexMappingService, logger)
+        :this(options.Value, esIndexer, esManager, indexResourceProvider, indexMappingService, logger)
         {
         }
 
@@ -38,22 +39,34 @@ namespace MyLab.Search.Indexer.Services
             IndexerOptions options,
             IEsIndexer<IndexEntity> esIndexer, 
             IEsManager esManager,
-            INamespaceResourceProvider namespaceResourceProvider,
+            IIndexResourceProvider indexResourceProvider,
             IIndexMappingService indexMappingService,
             ILogger<DataIndexer> logger)
         {
             _options = options;
             _esIndexer = esIndexer;
             _esManager = esManager;
-            _namespaceResourceProvider = namespaceResourceProvider;
+            _indexResourceProvider = indexResourceProvider;
             _indexMappingService = indexMappingService;
             _log = logger?.Dsl();
         }
 
         public async Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
         {
-            var curNs = _options.GetNsOptions(nsId);
-            var indexName = _options.GetIndexName(nsId);
+            IdxOptions curIdx;
+
+            try
+            {
+                curIdx = _options.GetIndexOptions(nsId);
+            }
+            catch (NamespaceConfigException e)
+            {
+                curIdx = e.IndexOptionsFromNamespaceOptions;
+
+                _log?.Warning(e).Write();
+            }
+
+            var indexName = _options.CreateEsIndexName(nsId);
 
             if (dataSourceEntities.Length == 0)
                 return;
@@ -62,7 +75,7 @@ namespace MyLab.Search.Indexer.Services
             
             if (!indexExists)
             {
-                var factory = new CreateIndexStrategyFactory(curNs, _namespaceResourceProvider, dataSourceEntities.First())
+                var factory = new CreateIndexStrategyFactory(curIdx, _indexResourceProvider, dataSourceEntities.First())
                 {
                     Log = _log
                 };
@@ -90,7 +103,7 @@ namespace MyLab.Search.Indexer.Services
             await  _esIndexer.IndexManyAsync(indexEntities, 
                 (d, doc) => d
                     .Index(indexName)
-                    .Id(doc[curNs.IdPropertyName].ToString())
+                    .Id(doc[curIdx.IdPropertyName].ToString())
                 , cancellationToken);
         }
     }

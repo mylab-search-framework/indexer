@@ -7,6 +7,7 @@ using MyLab.Db;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.TaskApp;
 using Xunit;
@@ -23,11 +24,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Namespaces = new[]
+                o.Indexes = new[]
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo-ns",
+                        Id = "foo-ns",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -66,11 +67,11 @@ namespace UnitTests
             var sp = await InitServices(
                 o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -111,11 +112,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -150,11 +151,11 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
@@ -185,11 +186,11 @@ namespace UnitTests
 
             var sp = await InitServices(o =>
             {
-                o.Namespaces = new[]
+                o.Indexes = new[]
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo-ns",
+                        Id = "foo-ns",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -225,11 +226,11 @@ namespace UnitTests
             //Arrange
             var sp = await InitServices(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
                             SyncDbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             IdPropertyName = nameof(TestEntity.Id),

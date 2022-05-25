@@ -7,6 +7,7 @@ using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Xunit;
 using Xunit.Abstractions;
@@ -31,11 +32,11 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                Namespaces = new []
+                Indexes = new []
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo-ns",
+                        Id = "foo-ns",
                         NewIndexStrategy = NewIndexStrategy.Auto,
                         IdPropertyName = "Id",
                         EsIndex = indexName
@@ -106,11 +107,11 @@ namespace IntegrationTests
 
             var options = new IndexerOptions
             {
-                Namespaces = new[]
+                Indexes = new[]
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo-ns",
+                        Id = "foo-ns",
                         NewIndexStrategy = NewIndexStrategy.Auto,
                         IdPropertyName = "Id",
                         EsIndex = indexName

@@ -4,6 +4,18 @@
 
 Формат лога изменений базируется на [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.5.9] - 2022-05-25
+
+### Изменено
+
+* заменён термин `namespace` на `index` 
+* в конфигурации переименован узел `Indexer/Namespaces` -> `Indexer/Indexes`
+* в конфигурации переименован узел `Indexer/Namespaces[]/NsId` -> `Indexer/Indexes[]/Id`
+* в конфигурации переименован узел `Indexer/IndexNamePrefix` -> `Indexer/EsIndexNamePrefix`
+* в конфигурации переименован узел `Indexer/IndexNamePostfix` -> `Indexer/EsIndexNamePostfix`
+* изменён путь по умолчанию для ресурсов индексов `/etc/mylab-indexer/namespaces` -> `/etc/mylab-indexer/indexes`
+* временно оставлена поддержка старых имён узлов с записью в лог записей уровня `warning` 
+
 ## [1.4.9] - 2021-12-17
 
 ### Исправлено

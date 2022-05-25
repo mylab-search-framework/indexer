@@ -2,6 +2,7 @@
 using System.Linq;
 using Microsoft.Extensions.Options;
 using MyLab.RabbitClient.Consuming;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -23,7 +24,7 @@ namespace MyLab.Search.Indexer.Tools
 
         public void Register(IRabbitConsumerRegistry registry, IServiceProvider serviceProvider)
         {
-            foreach (var ns in _opts.Namespaces.Where(j => j.MqQueue != null))
+            foreach (var ns in _opts.Indexes.Where(j => j.MqQueue != null))
             {
                 registry.Add(ns.MqQueue, new TypedConsumerProvider<IndexerMqConsumer>());
             }

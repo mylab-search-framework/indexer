@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Xunit;
 

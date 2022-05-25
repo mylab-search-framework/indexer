@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.HttpMetrics;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
@@ -42,7 +43,7 @@ namespace MyLab.Search.Indexer
                 .AddDbTools<ConfiguredDataProviderSource>(_configuration)
                 .AddEsTools(_configuration, "ES")
                 .AddLogging(l => l.AddConsole())
-                .AddSingleton<INamespaceResourceProvider, NamespaceResourceProvider>()
+                .AddSingleton<IIndexResourceProvider, IndexResourceProvider>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IDataIndexer, DataIndexer>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()

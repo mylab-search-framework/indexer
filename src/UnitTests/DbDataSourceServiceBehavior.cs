@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.Routing;
 using MyLab.DbTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using Xunit;
@@ -33,11 +34,11 @@ namespace UnitTests
 
             var options = new IndexerOptions
             {
-                Namespaces = new []
+                Indexes = new []
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo-ns",
+                        Id = "foo-idx",
                         PageSize = 2,
                         EnablePaging = true
                     }
@@ -48,7 +49,7 @@ namespace UnitTests
 
             var accum = new List<DataSourceEntity[]>();
 
-            var iterator = service.Read("foo-ns", "select * from foo_table where Id > 0 limit @limit offset @offset");
+            var iterator = service.Read("foo-idx", "select * from foo_table where Id > 0 limit @limit offset @offset");
 
             //Act
             await foreach(var batch in  iterator)

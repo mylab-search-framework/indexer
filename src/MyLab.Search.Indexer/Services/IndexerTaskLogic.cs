@@ -10,6 +10,7 @@ using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.LogicStrategy;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
 using MyLab.TaskApp;
 
@@ -21,7 +22,7 @@ namespace MyLab.Search.Indexer.Services
         private readonly IDataSourceService _dataSourceService;
         private readonly ISeedService _seedService;
         private readonly IDataIndexer _indexer;
-        private readonly INamespaceResourceProvider _namespaceResourceProvider;
+        private readonly IIndexResourceProvider _indexResourceProvider;
         private readonly IDslLogger _log;
 
         public IndexerTaskLogic(
@@ -31,9 +32,9 @@ namespace MyLab.Search.Indexer.Services
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
-            INamespaceResourceProvider namespaceResourceProvider,
+            IIndexResourceProvider indexResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
-            : this(indexerOptions.Value, dataSourceService, seedService, indexer, namespaceResourceProvider, logger)
+            : this(indexerOptions.Value, dataSourceService, seedService, indexer, indexResourceProvider, logger)
         {
             
         }
@@ -43,31 +44,31 @@ namespace MyLab.Search.Indexer.Services
             IDataSourceService dataSourceService, 
             ISeedService seedService,
             IDataIndexer indexer,
-            INamespaceResourceProvider namespaceResourceProvider,
+            IIndexResourceProvider indexResourceProvider,
             ILogger<IndexerTaskLogic> logger = null)
         {
             _indexerOptions = indexerOptions;
             _dataSourceService = dataSourceService;
             _seedService = seedService;
             _indexer = indexer;
-            _namespaceResourceProvider = namespaceResourceProvider;
+            _indexResourceProvider = indexResourceProvider;
             _log = logger?.Dsl();
         }
 
         public async Task Perform(CancellationToken cancellationToken)
         {
-            if (_indexerOptions.Namespaces != null)
+            if (_indexerOptions.Indexes != null)
             {
-                foreach (var indexerOptionsNs in _indexerOptions.Namespaces)
+                foreach (var idxOptions in _indexerOptions.Indexes)
                 {
                     try
                     {
-                        await PerformNamespaceIndexing(indexerOptionsNs, cancellationToken);
+                        await PerformNamespaceIndexing(idxOptions, cancellationToken);
                     }
                     catch (Exception e)
                     {
-                        _log?.Error("Indexer namespace performing failed", e)
-                            .AndFactIs("namespace", indexerOptionsNs)
+                        _log?.Error("Indexing performing failed", e)
+                            .AndFactIs("index", idxOptions)
                             .Write();
                     }
                 }
@@ -75,12 +76,12 @@ namespace MyLab.Search.Indexer.Services
             else
             {
                 _log?
-                    .Warning("No indexing namespace found")
+                    .Warning("No index found")
                     .Write();
             }
         }
 
-        private async Task PerformNamespaceIndexing(NsOptions indexerOptionsNs, CancellationToken cancellationToken)
+        private async Task PerformNamespaceIndexing(IdxOptions idxOptions, CancellationToken cancellationToken)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -90,7 +91,7 @@ namespace MyLab.Search.Indexer.Services
 
             int counter = 0;
 
-            var strategy = CreateStrategy(indexerOptionsNs);
+            var strategy = CreateStrategy(idxOptions);
             var seedCalc = strategy.CreateSeedCalc();
 
             await seedCalc.StartAsync();
@@ -98,18 +99,18 @@ namespace MyLab.Search.Indexer.Services
 
             string query;
 
-            if (indexerOptionsNs.SyncDbQuery != null)
+            if (idxOptions.SyncDbQuery != null)
             {
-                query = indexerOptionsNs.SyncDbQuery;
+                query = idxOptions.SyncDbQuery;
             }
             else
             {
-                query = await _namespaceResourceProvider.ReadFileAsync(indexerOptionsNs.NsId, "sync.sql");
+                query = await _indexResourceProvider.ReadFileAsync(idxOptions.Id, "sync.sql");
             }
 
-            var iterator = _dataSourceService.Read(indexerOptionsNs.NsId, query, seedParameter);
+            var iterator = _dataSourceService.Read(idxOptions.Id, query, seedParameter);
 
-            var preproc = new DsEntityPreprocessor(indexerOptionsNs);
+            var preproc = new DsEntityPreprocessor(idxOptions);
 
             await foreach (var batch in iterator.WithCancellation(cancellationToken))
             {
@@ -123,7 +124,7 @@ namespace MyLab.Search.Indexer.Services
                     .Select(preproc.Process)
                     .ToArray();
 
-                await _indexer.IndexAsync(indexerOptionsNs.NsId, entForIndex, cancellationToken);
+                await _indexer.IndexAsync(idxOptions.Id, entForIndex, cancellationToken);
 
                 seedCalc.Update(batch.Entities);
             }
@@ -139,19 +140,19 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private IIndexerLogicStrategy CreateStrategy(NsOptions nsOptions)
+        private IIndexerLogicStrategy CreateStrategy(IdxOptions idxOptions)
         {
-            switch (nsOptions.NewUpdatesStrategy)
+            switch (idxOptions.NewUpdatesStrategy)
             {
                 case NewUpdatesStrategy.Update:
-                    return new UpdateModeIndexerLogicStrategy(nsOptions.NsId, nsOptions.LastChangeProperty, _seedService){ Log = _log};
+                    return new UpdateModeIndexerLogicStrategy(idxOptions.Id, idxOptions.LastChangeProperty, _seedService){ Log = _log};
                 case NewUpdatesStrategy.Add:
-                    return new AddModeIndexerLogicStrategy(nsOptions.NsId, nsOptions.IdPropertyName, _seedService) { Log = _log };
+                    return new AddModeIndexerLogicStrategy(idxOptions.Id, idxOptions.IdPropertyName, _seedService) { Log = _log };
                 case NewUpdatesStrategy.Undefined:
                     throw new InvalidOperationException("Indexer mode not defined");
                 default:
                     throw new InvalidOperationException("Unsupported Indexer mode")
-                        .AndFactIs("mode", nsOptions.NewUpdatesStrategy);
+                        .AndFactIs("mode", idxOptions.NewUpdatesStrategy);
             }
         }
     }

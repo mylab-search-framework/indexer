@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -42,14 +43,23 @@ namespace MyLab.Search.Indexer.Controllers
             using var reader = new StreamReader(Request.Body);
             var body = await reader.ReadToEndAsync();
 
-            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.NsId == ns);
-            if (nsOpts == null)
-            {
-                _log.Warning("Namespace not found")
-                    .AndFactIs("namespace", ns)
-                    .Write();
+            IdxOptions nsOpts;
 
-                return BadRequest("Namespace not found");
+            try
+            {
+                nsOpts = _options.GetIndexOptions(ns);
+            }
+            catch (IndexOptionsNotFoundException e)
+            {
+                _log.Warning(e).Write();
+
+                return BadRequest("Index not found");
+            }
+            catch (NamespaceConfigException e)
+            {
+                _log.Warning(e).Write();
+
+                nsOpts = e.IndexOptionsFromNamespaceOptions;
             }
 
             try
@@ -68,14 +78,23 @@ namespace MyLab.Search.Indexer.Controllers
         [HttpPost("{ns}/{id}/kick")]
         public async Task<IActionResult> Kick([FromRoute] string ns, [FromRoute] string id)
         {
-            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.NsId == ns);
-            if (nsOpts == null)
-            {
-                _log.Warning("Namespace not found")
-                    .AndFactIs("namespace", ns)
-                    .Write();
+            IdxOptions nsOpts;
 
-                return BadRequest("Namespace not found");
+            try
+            {
+                nsOpts = _options.GetIndexOptions(ns);
+            }
+            catch (IndexOptionsNotFoundException e)
+            {
+                _log.Warning(e).Write();
+
+                return BadRequest("Index not found");
+            }
+            catch (NamespaceConfigException e)
+            {
+                _log.Warning(e).Write();
+
+                nsOpts = e.IndexOptionsFromNamespaceOptions;
             }
 
             try

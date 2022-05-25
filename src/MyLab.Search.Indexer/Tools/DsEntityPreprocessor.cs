@@ -2,29 +2,30 @@
 using System.Collections.Generic;
 using MyLab.Log;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Tools
 {
     class DsEntityPreprocessor
     {
-        private readonly NsOptions _nsOptions;
+        private readonly IdxOptions _idxOptions;
 
-        public DsEntityPreprocessor(NsOptions nsOptions)
+        public DsEntityPreprocessor(IdxOptions idxOptions)
         {
-            _nsOptions = nsOptions;
+            _idxOptions = idxOptions;
         }
 
         public DataSourceEntity Process(DataSourceEntity entity)
         {
             var newDict = new Dictionary<string, DataSourcePropertyValue>(entity.Properties);
 
-            if (_nsOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)
+            if (_idxOptions.NewUpdatesStrategy == NewUpdatesStrategy.Update)
             {
-                if(_nsOptions.LastChangeProperty == null)
+                if(_idxOptions.LastChangeProperty == null)
                     throw new InvalidOperationException("LastChangeProperty not defined")
-                        .AndFactIs("namespace", _nsOptions.NsId);
+                        .AndFactIs("index", _idxOptions.Id);
 
-                newDict.Remove(_nsOptions.LastChangeProperty);
+                newDict.Remove(_idxOptions.LastChangeProperty);
             }
 
             return new DataSourceEntity

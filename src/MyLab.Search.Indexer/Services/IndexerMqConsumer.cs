@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.RabbitClient.Consuming;
 using MyLab.Log;
+using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -34,14 +35,14 @@ namespace MyLab.Search.Indexer.Services
             if (consumedMessage.Content == null)
                 throw new InvalidOperationException("Empty message payload detected");
 
-            var nsOpts = _options.Namespaces.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
-            if(nsOpts == null)
-                throw new InvalidOperationException("Namespace not found for queue")
+            var idxOpts = _options.Indexes.FirstOrDefault(j => j.MqQueue == consumedMessage.Queue);
+            if(idxOpts == null)
+                throw new InvalidOperationException("Index not found for queue")
                     .AndFactIs("queue", consumedMessage.Queue);
 
             try
             {
-                return _pushIndexer.IndexAsync(consumedMessage.Content, "mq", nsOpts, CancellationToken.None);
+                return _pushIndexer.IndexAsync(consumedMessage.Content, "mq", idxOpts, CancellationToken.None);
             }
             catch (Exception e)
             {

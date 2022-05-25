@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using LinqToDB.Data;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
 using MyLab.Log;
+using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -15,29 +18,45 @@ namespace MyLab.Search.Indexer.Tools
     {
         private readonly IDbManager _dbManager;
         private readonly IndexerOptions _options;
+        private readonly IDslLogger _log;
 
         public DbDataSourceService(
             IDbManager dbManager, 
-            IOptions<IndexerOptions> options)
+            IOptions<IndexerOptions> options,
+            ILogger<DbDataSourceService> logger = null)
             : this(dbManager, options.Value)
         {
+            _log = logger?.Dsl();
         }
 
         public DbDataSourceService(
             IDbManager dbManager,
-            IndexerOptions options)
+            IndexerOptions options,
+            ILogger<DbDataSourceService> logger = null)
         {
             _dbManager = dbManager;
             _options = options;
+            _log = logger?.Dsl();
         }
 
         public IAsyncEnumerable<DataSourceBatch> Read(string nsId, string query, DataParameter seedParameter = null)
         {
-            var foundNs = _options.GetNsOptions(nsId);
+            IdxOptions foundIdx;
 
-            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundNs.PageSize)
+            try
             {
-                EnablePaging = foundNs.EnablePaging
+                foundIdx = _options.GetIndexOptions(nsId);
+            }
+            catch (NamespaceConfigException e)
+            {
+                foundIdx = e.IndexOptionsFromNamespaceOptions;
+
+                _log?.Warning(e).Write();
+            }
+
+            return new DataSourceEnumerable(query, seedParameter, _dbManager.Use(), foundIdx.PageSize)
+            {
+                EnablePaging = foundIdx.EnablePaging
             };
         }
 

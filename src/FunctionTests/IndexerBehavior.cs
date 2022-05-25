@@ -10,6 +10,7 @@ using MyLab.Db;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.IndexerClient;
 using MyLab.TaskApp;
@@ -50,11 +51,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                            new NsOptions
+                            new IdxOptions
                             {
-                                NsId = "foo-ns",
+                                Id = "foo-ns",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -74,7 +75,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -121,11 +122,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                            new NsOptions
+                            new IdxOptions
                             {
-                                NsId = "foo-ns",
+                                Id = "foo-ns",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -145,7 +146,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<INamespaceResourceProvider>(new TestNamespaceResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json"));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -192,11 +193,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                     {
-                        o.Namespaces = new[]
+                        o.Indexes = new[]
                         {
-                            new NsOptions
+                            new IdxOptions
                             {
-                                NsId = "foo-ns",
+                                Id = "foo-ns",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -257,11 +258,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Namespaces = new NsOptions[]
+                            o.Indexes = new IdxOptions[]
                             {
-                                new NsOptions
+                                new IdxOptions
                                 {
-                                    NsId = "foo-ns",
+                                    Id = "foo-ns",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
@@ -338,11 +339,11 @@ namespace FunctionTests
 
                     srv.Configure<IndexerOptions>(o =>
                         {
-                            o.Namespaces = new[]
+                            o.Indexes = new[]
                             {
-                                new NsOptions
+                                new IdxOptions
                                 {
-                                    NsId = "foo-ns",
+                                    Id = "foo-ns",
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
@@ -413,11 +414,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Namespaces = new NsOptions[]
+                    o.Indexes = new IdxOptions[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
                             NewIndexStrategy = NewIndexStrategy.Auto,
                             IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = indexName
@@ -473,11 +474,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                            new NsOptions
+                            new IdxOptions
                             {
-                                NsId = "foo-ns",
+                                Id = "foo-ns",
 
                                 SyncDbQuery = "select * from test",
                                 KickDbQuery = "select * from test where Id=@id",
@@ -524,11 +525,11 @@ namespace FunctionTests
 
                 srv.Configure<IndexerOptions>(o =>
                 {
-                    o.Namespaces = new[]
+                    o.Indexes = new[]
                     {
-                        new NsOptions
+                        new IdxOptions
                         {
-                            NsId = "foo-ns",
+                            Id = "foo-ns",
 
                             KickDbQuery = "select * from test where id=@id",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,

@@ -4,22 +4,23 @@ using System.Threading.Tasks;
 using LinqToDB.Data;
 using MyLab.Search.EsAdapter;
 using MyLab.Log;
+using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
 {
     public interface IKickIndexer
     {
-        Task IndexAsync(string entityId, string source, NsOptions nsOptions, CancellationToken cancellationToken);
+        Task IndexAsync(string entityId, string source, IdxOptions idxOptions, CancellationToken cancellationToken);
     }
 
     class KickIndexer : IKickIndexer
     {
-        private readonly INamespaceResourceProvider _nsResourceProvider;
+        private readonly IIndexResourceProvider _nsResourceProvider;
         private readonly IDataSourceService _dataSourceService;
         private readonly IDataIndexer _indexer;
 
         public KickIndexer(
-            INamespaceResourceProvider nsResourceProvider,
+            IIndexResourceProvider nsResourceProvider,
             IDataSourceService dataSourceService,
             IDataIndexer indexer)
         {
@@ -28,32 +29,32 @@ namespace MyLab.Search.Indexer.Services
             _indexer = indexer;
         }
 
-        public async Task IndexAsync(string entityId, string source, NsOptions nsOptions, CancellationToken cancellationToken)
+        public async Task IndexAsync(string entityId, string source, IdxOptions idxOptions, CancellationToken cancellationToken)
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
-            if (nsOptions == null) throw new ArgumentNullException(nameof(nsOptions));
+            if (idxOptions == null) throw new ArgumentNullException(nameof(idxOptions));
             if (string.IsNullOrWhiteSpace(entityId))
                 throw new BadIndexingRequestException("ID empty or not defined");
-            if(nsOptions.NewUpdatesStrategy != NewUpdatesStrategy.Update)
+            if(idxOptions.NewUpdatesStrategy != NewUpdatesStrategy.Update)
                 throw new BadIndexingRequestException("Not supported for current NewUpdatesStrategy")
-                    .AndFactIs("strategy", nsOptions.NewUpdatesStrategy);
+                    .AndFactIs("strategy", idxOptions.NewUpdatesStrategy);
 
-            var idParam = CreateIdParameter(nsOptions.IdPropertyName, nsOptions.IdPropertyType, entityId);
+            var idParam = CreateIdParameter(idxOptions.IdPropertyName, idxOptions.IdPropertyType, entityId);
 
-            string klickQuery;
+            string kickQuery;
             
-            if (nsOptions.KickDbQuery != null)
+            if (idxOptions.KickDbQuery != null)
             {
-                klickQuery = nsOptions.KickDbQuery;
+                kickQuery = idxOptions.KickDbQuery;
             }
             else
             {
-                klickQuery = await _nsResourceProvider.ReadFileAsync(nsOptions.NsId, "kick.sql");
+                kickQuery = await _nsResourceProvider.ReadFileAsync(idxOptions.Id, "kick.sql");
             }
 
-            var entBatch = await _dataSourceService.ReadByIdAsync(klickQuery, idParam);
+            var entBatch = await _dataSourceService.ReadByIdAsync(kickQuery, idParam);
 
-            await _indexer.IndexAsync(nsOptions.NsId, entBatch.Entities, cancellationToken);
+            await _indexer.IndexAsync(idxOptions.Id, entBatch.Entities, cancellationToken);
         }
 
         DataParameter CreateIdParameter(string idPropertyName, IdPropertyType idPropertyType, string value)

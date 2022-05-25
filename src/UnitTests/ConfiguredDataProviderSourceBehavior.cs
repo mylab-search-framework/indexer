@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.Db;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Xunit;
 

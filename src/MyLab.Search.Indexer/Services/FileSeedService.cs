@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
+using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
 {

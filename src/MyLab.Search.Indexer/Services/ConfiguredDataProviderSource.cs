@@ -7,6 +7,7 @@ using LinqToDB.DataProvider.SQLite;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
 using MyLab.Log;
+using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
 {

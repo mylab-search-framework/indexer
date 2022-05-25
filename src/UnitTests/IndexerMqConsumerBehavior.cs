@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json;
 using RabbitMQ.Client.Events;
@@ -19,11 +20,11 @@ namespace UnitTests
             //Arrange
             var indexerOpt = new IndexerOptions
             {
-                Namespaces = new[]
+                Indexes = new[]
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo",
+                        Id = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
                         IdPropertyName = nameof(TestEntity.Id),
@@ -61,11 +62,11 @@ namespace UnitTests
             //Arrange
             var indexerOpt = new IndexerOptions
             {
-                Namespaces = new []
+                Indexes = new []
                 {
-                    new NsOptions
+                    new IdxOptions
                     {
-                        NsId = "foo",
+                        Id = "foo",
                         MqQueue = "bar",
                         EsIndex = "baz",
                         IdPropertyName = nameof(TestEntity.Id)
