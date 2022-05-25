@@ -40,26 +40,27 @@ namespace MyLab.Search.Indexer.Options
 
                 indexOptions = new IdxOptions(nsOptions);
 
-                throw new NamespaceConfigException(indexOptions);
+                throw new NamespaceConfigException(indexOptions)
+                    .AndFactIs("index-id", indexId);
             }
 
             return indexOptions;
         }
 
-        public string CreateEsIndexName(string nsId)
+        public string CreateEsIndexName(string idxId)
         {
-            IdxOptions nsOptions;
+            IdxOptions idxOptions;
 
             try
             {
-                nsOptions = GetIndexOptions(nsId);
+                idxOptions = GetIndexOptions(idxId);
             }
             catch (NamespaceConfigException e)
             {
-                nsOptions = e.IndexOptionsFromNamespaceOptions;
+                idxOptions = e.IndexOptionsFromNamespaceOptions;
             }
 
-            return $"{EsIndexNamePrefix ?? IndexNamePrefix ?? string.Empty}{nsOptions.EsIndex}{EsIndexNamePostfix ?? IndexNamePostfix ?? string.Empty}";
+            return $"{EsIndexNamePrefix ?? IndexNamePrefix ?? string.Empty}{idxOptions.EsIndex}{EsIndexNamePostfix ?? IndexNamePostfix ?? string.Empty}";
         }
     }
 
