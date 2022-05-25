@@ -1,9 +1,9 @@
 version: '3.2'
 
 services:
-  mylab-search-test-es:
+  msindexer-es:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.12.1
-    container_name: mylab-search-test-es
+    container_name: msindexer-es
     environment:
       - discovery.type=single-node
     ulimits:
@@ -11,21 +11,21 @@ services:
         soft: -1
         hard: -1
     volumes:
-      - mylab_search_test_es_data:/usr/share/elasticsearch/data
+      - es_data:/usr/share/elasticsearch/data
     ports:
       - 9200:9200
 
-  mylab-search-test-mq:
-    container_name: mylab-search-test-mq
+  msindexer-mq:
+    container_name: msindexer-mq
     image: rabbitmq:3.8.3-management
     volumes:
-      - mylab_search_test_mq_data:/var/lib/rabbitmq
+      - mq_data:/var/lib/rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
 
-  mylab-search-test-db:
-    container_name: mylab-search-test-db
+  msindexer-db:
+    container_name: msindexer-db
     image: mysql:8.0.19
     environment:
       - MYSQL_ROOT_PASSWORD=root-pass
@@ -33,11 +33,11 @@ services:
       - MYSQL_PASSWORD=pass
       - MYSQL_DATABASE=test
     volumes:
-      - mylab_search_test_db_data:/var/lib/mysql
+      - db_data:/var/lib/mysql
     ports:
       - "3306:3306"
 
 volumes:
-  mylab_search_test_es_data:
-  mylab_search_test_mq_data:
-  mylab_search_test_db_data:
+  es_data:
+  mq_data:
+  db_data:

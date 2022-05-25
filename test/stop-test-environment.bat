@@ -1,1 +1,1 @@
-docker-compose -p mylab-async-proc-test down
+docker-compose -p mylab-serach-indexer-test down
