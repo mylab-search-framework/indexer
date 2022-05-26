@@ -55,7 +55,7 @@ namespace FunctionTests
                     {
                             new IdxOptions
                             {
-                                Id = "foo-ns",
+                                Id = "foo-idx",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -126,7 +126,7 @@ namespace FunctionTests
                     {
                             new IdxOptions
                             {
-                                Id = "foo-ns",
+                                Id = "foo-idx",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -197,7 +197,7 @@ namespace FunctionTests
                         {
                             new IdxOptions
                             {
-                                Id = "foo-ns",
+                                Id = "foo-idx",
 
                                 SyncDbQuery = "select * from test",
                                 NewUpdatesStrategy = NewUpdatesStrategy.Add,
@@ -262,7 +262,7 @@ namespace FunctionTests
                             {
                                 new IdxOptions
                                 {
-                                    Id = "foo-ns",
+                                    Id = "foo-idx",
                                     MqQueue = queue.Name,
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
@@ -343,7 +343,7 @@ namespace FunctionTests
                             {
                                 new IdxOptions
                                 {
-                                    Id = "foo-ns",
+                                    Id = "foo-idx",
                                     NewIndexStrategy = NewIndexStrategy.Auto,
                                     IdPropertyName = nameof(TestEntity.Id),
                                     MqQueue = queue.Name,
@@ -418,7 +418,7 @@ namespace FunctionTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
                             NewIndexStrategy = NewIndexStrategy.Auto,
                             IdPropertyName = nameof(TestEntity.Id),
                             EsIndex = indexName
@@ -438,7 +438,7 @@ namespace FunctionTests
             });
 
             //Act
-            await api.IndexAsync("foo-ns", testEntity);
+            await api.IndexAsync("foo-idx", testEntity);
 
             await Task.Delay(2000);
 
@@ -478,7 +478,7 @@ namespace FunctionTests
                     {
                             new IdxOptions
                             {
-                                Id = "foo-ns",
+                                Id = "foo-idx",
 
                                 SyncDbQuery = "select * from test",
                                 KickDbQuery = "select * from test where Id=@id",
@@ -529,7 +529,7 @@ namespace FunctionTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
 
                             KickDbQuery = "select * from test where id=@id",
                             NewUpdatesStrategy = NewUpdatesStrategy.Update,
@@ -554,7 +554,7 @@ namespace FunctionTests
 
             //Act
 
-            await indexApi.KickIndexAsync("foo-ns", "2");
+            await indexApi.KickIndexAsync("foo-idx", "2");
             await Task.Delay(2000);
 
             var searchRes = await _es.ForIndex(indexName).SearchAsync(searchParams);

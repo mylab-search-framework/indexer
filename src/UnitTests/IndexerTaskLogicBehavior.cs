@@ -28,7 +28,7 @@ namespace UnitTests
                 {
                     new IdxOptions
                     {
-                        Id = "foo-ns",
+                        Id = "foo-idx",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -48,7 +48,7 @@ namespace UnitTests
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteDateTimeAsync("foo-ns", lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync("foo-idx", lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -71,7 +71,7 @@ namespace UnitTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -116,7 +116,7 @@ namespace UnitTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
                             LastChangeProperty = nameof(TestEntity.LastModified),
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
@@ -139,7 +139,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadDateTimeAsync("foo-ns");
+            var actualSeed = await seedService.ReadDateTimeAsync("foo-idx");
 
             //Assert
             Assert.Equal(lastModified, actualSeed);
@@ -155,7 +155,7 @@ namespace UnitTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
                             IdPropertyName = nameof(TestEntity.Id),
                             PageSize = 2,
                             EnablePaging = true,
@@ -172,7 +172,7 @@ namespace UnitTests
             //Act
             await logic.Perform(CancellationToken.None);
 
-            var actualSeed = await seedService.ReadIdAsync("foo-ns");
+            var actualSeed = await seedService.ReadIdAsync("foo-idx");
 
             //Assert
             Assert.Equal(4, actualSeed);
@@ -190,7 +190,7 @@ namespace UnitTests
                 {
                     new IdxOptions
                     {
-                        Id = "foo-ns",
+                        Id = "foo-idx",
                         LastChangeProperty = nameof(TestEntity.LastModified),
                         IdPropertyName = nameof(TestEntity.Id),
                         SyncDbQuery = "select * from foo_table where LastModified > @seed",
@@ -210,7 +210,7 @@ namespace UnitTests
             _output.WriteLine("Updated count: {0}", updatedCount);
 
 
-            await seedService.WriteDateTimeAsync("foo-ns", lastModified.AddSeconds(-1));
+            await seedService.WriteDateTimeAsync("foo-idx", lastModified.AddSeconds(-1));
 
             //Act
             await logic.Perform(CancellationToken.None);
@@ -230,7 +230,7 @@ namespace UnitTests
                     {
                         new IdxOptions
                         {
-                            Id = "foo-ns",
+                            Id = "foo-idx",
                             SyncDbQuery =  "select * from foo_table where Id > @seed",
                             NewUpdatesStrategy = NewUpdatesStrategy.Add,
                             IdPropertyName = nameof(TestEntity.Id),
@@ -242,7 +242,7 @@ namespace UnitTests
             var logic = sp.GetService<ITaskLogic>();
             var indexer = (TestIndexer)sp.GetService<IDataIndexer>();
 
-            await SaveSeed(sp, ss => ss.WriteIdAsync("foo-ns", 3));
+            await SaveSeed(sp, ss => ss.WriteIdAsync("foo-idx", 3));
 
             //Act
             await logic.Perform(CancellationToken.None);

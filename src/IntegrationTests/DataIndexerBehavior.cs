@@ -36,7 +36,7 @@ namespace IntegrationTests
                 {
                     new IdxOptions
                     {
-                        Id = "foo-ns",
+                        Id = "foo-idx",
                         NewIndexStrategy = NewIndexStrategy.Auto,
                         IdPropertyName = "Id",
                         EsIndex = indexName
@@ -83,7 +83,7 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync("foo-ns", new []{ testEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-idx", new []{ testEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 
@@ -111,7 +111,7 @@ namespace IntegrationTests
                 {
                     new IdxOptions
                     {
-                        Id = "foo-ns",
+                        Id = "foo-idx",
                         NewIndexStrategy = NewIndexStrategy.Auto,
                         IdPropertyName = "Id",
                         EsIndex = indexName
@@ -181,8 +181,8 @@ namespace IntegrationTests
             //Act
             try
             {
-                await indexer.IndexAsync("foo-ns", new[] { initialTestEntity }, CancellationToken.None);
-                await indexer.IndexAsync("foo-ns", new[] { lateTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-idx", new[] { initialTestEntity }, CancellationToken.None);
+                await indexer.IndexAsync("foo-idx", new[] { lateTestEntity }, CancellationToken.None);
 
                 await Task.Delay(1000);
 
