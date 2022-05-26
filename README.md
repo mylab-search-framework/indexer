@@ -305,7 +305,7 @@ POST /v1/test-entities/2/kick
 
 По этой стратегии запрос создания индекса загружаются из файла, путь к которому формируется из следующих частей:
 
-* базовый путь к директории с файлами `Namepsace`-ов из конфигурации `Indexer.IndexesPath` = `/etc/mylab-indexer/indexes` (по умолчанию);
+* базовый путь к директории с файлами `index`-ов из конфигурации `Indexer.IndexesPath` = `/etc/mylab-indexer/indexes` (по умолчанию);
 * идентификатор `Index`-а;
 * `new-index.json`.
 
@@ -439,7 +439,7 @@ services:
     image: ghcr.io/mylab-search-fx/indexer:latest
     volumes:
     - ./appsettings.json:/app/appsettings.json
-    - ./new-index-request.json:/etc/mylab-indexer/namepsaces/users/new-index.json
+    - ./new-index-request.json:/etc/mylab-indexer/indexes/users/new-index.json
 ```
 
 ## Клиент
