@@ -44,9 +44,22 @@ namespace MyLab.Search.Indexer.Services
                 }
                 else
                 {
-                    throw new InvalidOperationException("Index file not found")
+                    throw new FileNotFoundException("Index file not found")
                         .AndFactIs("filepath", path);
                 }
+            }
+
+            return File.ReadAllTextAsync(path);
+        }
+
+        public Task<string> ReadDefaultFileAsync(string filename)
+        {
+            var path = Path.Combine(_options.IndexPath, filename);
+
+            if (!File.Exists(path))
+            {
+                throw new FileNotFoundException("Index file not found")
+                    .AndFactIs("filepath", path);
             }
 
             return File.ReadAllTextAsync(path);

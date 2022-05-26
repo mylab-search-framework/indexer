@@ -100,9 +100,9 @@ namespace UnitTests
             public DataSourceEntity[] LstEntities { get; private set; }
             public string LastnsId { get; private set; }
 
-            public Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+            public Task IndexAsync(string idxId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
-                LastnsId = nsId;
+                LastnsId = idxId;
                 LstEntities = dataSourceEntities;
 
                 return Task.CompletedTask;

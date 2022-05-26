@@ -8,7 +8,7 @@ namespace MyLab.Search.Indexer.Services
 {
     interface IIndexMappingService
     {
-        Task<IndexMapping> GetIndexMappingAsync(string indexName);
+        Task<IndexMapping> GetIndexMappingAsync(string esIndexName);
     }
 
     class IndexMapping

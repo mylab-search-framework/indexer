@@ -14,7 +14,7 @@ namespace MyLab.Search.Indexer.Services
     {
         private readonly IEsClientProvider _esClientProvider;
         private readonly IDslLogger _log;
-        private readonly ConcurrentDictionary<string, IndexMapping> _nsToIndexMapping = new ConcurrentDictionary<string, IndexMapping>();
+        private readonly ConcurrentDictionary<string, IndexMapping> _nsToIndexMapping = new();
 
         public IndexMappingService(
             IEsClientProvider esClientProvider,
@@ -24,28 +24,28 @@ namespace MyLab.Search.Indexer.Services
             _log = logger?.Dsl();
         }
 
-        public async Task<IndexMapping> GetIndexMappingAsync(string indexName)
+        public async Task<IndexMapping> GetIndexMappingAsync(string esIndexName)
         {
-            if (_nsToIndexMapping.TryGetValue(indexName, out var currentMapping))
+            if (_nsToIndexMapping.TryGetValue(esIndexName, out var currentMapping))
                 return currentMapping;
 
 
             var client = _esClientProvider.Provide();
 
-            var mappingResponse = await client.Indices.GetMappingAsync(new GetMappingRequest(indexName));
+            var mappingResponse = await client.Indices.GetMappingAsync(new GetMappingRequest(esIndexName));
             
-            if (!mappingResponse.Indices.TryGetValue(indexName, out var indexMapping))
-                throw new InvalidOperationException("IndexAsync mapping not found")
-                    .AndFactIs("index", indexName);
+            if (!mappingResponse.Indices.TryGetValue(esIndexName, out var indexMapping))
+                throw new InvalidOperationException("ES index mapping not found")
+                    .AndFactIs("index", esIndexName);
 
             var propertiesMapping = indexMapping?.Mappings?.Properties;
 
             if (propertiesMapping == null)
-                throw new InvalidOperationException("IndexAsync properties mapping not found")
-                    .AndFactIs("index", indexName);
+                throw new InvalidOperationException("ES index properties mapping not found")
+                    .AndFactIs("index", esIndexName);
 
             currentMapping = new IndexMapping(propertiesMapping.Values.Select(p => new IndexMappingProperty(p.Name.Name, p.Type)));
-            _nsToIndexMapping.TryAdd(indexName, currentMapping);
+            _nsToIndexMapping.TryAdd(esIndexName, currentMapping);
 
             return currentMapping;
         }

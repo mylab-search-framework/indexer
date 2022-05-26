@@ -112,7 +112,7 @@ namespace UnitTests
             public Dictionary<string, DataSourceEntity> IndexedEntities { get; } =
                 new Dictionary<string, DataSourceEntity>();
 
-            public Task IndexAsync(string nsId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
+            public Task IndexAsync(string idxId, DataSourceEntity[] dataSourceEntities, CancellationToken cancellationToken)
             {
                 foreach (var entity in dataSourceEntities)
                 {

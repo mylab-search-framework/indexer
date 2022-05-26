@@ -50,6 +50,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IIndexMappingService, IndexMappingService>()
                 .AddSingleton<IPushIndexer, PushIndexer>()
                 .AddSingleton<IKickIndexer, KickIndexer>()
+                .AddSingleton<IEsIndexToucher, EsIndexToucher>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerConsumerRegistrar>()
                 .AddUrlBasedHttpMetrics()

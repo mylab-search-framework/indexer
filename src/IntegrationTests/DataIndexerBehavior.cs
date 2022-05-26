@@ -45,7 +45,8 @@ namespace IntegrationTests
             };
             
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(),  null);
+            var indexToucher = new EsIndexToucher(_esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(), indexToucher,  null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -120,7 +121,8 @@ namespace IntegrationTests
             };
             
             var esIndexer = _esFxt.CreateIndexer<IndexEntity>();
-            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(), null);
+            var indexToucher = new EsIndexToucher(_esFxt.Manager, null, null);
+            var indexer = new DataIndexer(options, esIndexer, _esFxt.Manager, null, new TestIndexMappingService(), indexToucher, null);
 
             var searcher = _esFxt
                 .CreateSearcher<IndexEntity>()
@@ -201,7 +203,7 @@ namespace IntegrationTests
 
     class TestIndexMappingService : IIndexMappingService
     {
-        public Task<IndexMapping> GetIndexMappingAsync(string indexName)
+        public Task<IndexMapping> GetIndexMappingAsync(string esIndexName)
         {
             return Task.FromResult(
                 new IndexMapping(

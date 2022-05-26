@@ -22,6 +22,7 @@ namespace MyLab.Search.Indexer.Services
         private readonly IEsManager _esManager;
         private readonly IIndexResourceProvider _indexResourceProvider;
         private readonly IIndexMappingService _indexMappingService;
+        private readonly IEsIndexToucher _esIndexToucher;
         private readonly IDslLogger _log;
         
         public DataIndexer(
@@ -30,8 +31,9 @@ namespace MyLab.Search.Indexer.Services
             IEsManager esManager,
             IIndexResourceProvider indexResourceProvider,
             IIndexMappingService indexMappingService,
+            IEsIndexToucher esIndexToucher,
             ILogger<DataIndexer> logger)
-        :this(options.Value, esIndexer, esManager, indexResourceProvider, indexMappingService, logger)
+        :this(options.Value, esIndexer, esManager, indexResourceProvider, indexMappingService, esIndexToucher, logger)
         {
         }
 
@@ -41,6 +43,7 @@ namespace MyLab.Search.Indexer.Services
             IEsManager esManager,
             IIndexResourceProvider indexResourceProvider,
             IIndexMappingService indexMappingService,
+            IEsIndexToucher esIndexToucher,
             ILogger<DataIndexer> logger)
         {
             _options = options;
@@ -48,6 +51,7 @@ namespace MyLab.Search.Indexer.Services
             _esManager = esManager;
             _indexResourceProvider = indexResourceProvider;
             _indexMappingService = indexMappingService;
+            _esIndexToucher = esIndexToucher;
             _log = logger?.Dsl();
         }
 
@@ -71,28 +75,8 @@ namespace MyLab.Search.Indexer.Services
             if (dataSourceEntities.Length == 0)
                 return;
 
-            bool indexExists = await _esManager.IsIndexExistsAsync(indexName, cancellationToken);
+            await _esIndexToucher.TouchEsIndexAsync(curIdx, dataSourceEntities.First(), cancellationToken);
             
-            if (!indexExists)
-            {
-                var factory = new CreateIndexStrategyFactory(curIdx, _indexResourceProvider, dataSourceEntities.First())
-                {
-                    Log = _log
-                };
-
-                var createIndexStrategy = await factory.CreateAsync(cancellationToken);
-
-                _log?.Warning("IndexAsync not found and will be created")
-                    .AndFactIs("index-name", indexName)
-                    .Write();
-
-                await createIndexStrategy.CreateIndexAsync(_esManager, indexName, cancellationToken);
-
-                _log?.Action("IndexAsync created")
-                    .AndFactIs("index-name", indexName)
-                    .Write();
-            }
-
             var mapping = await _indexMappingService.GetIndexMappingAsync(indexName);
             var entitiesConverter = new DataSourceToIndexEntityConverter(mapping)
             {

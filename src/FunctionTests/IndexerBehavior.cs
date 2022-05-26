@@ -75,7 +75,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json", null));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -146,7 +146,7 @@ namespace FunctionTests
                 srv.AddSingleton<IConnectionStringProvider, TestDbCsProvider>();
                 srv.AddSingleton<ISeedService, TestSeedService>();
 
-                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json"));
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json", null));
 
                 srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
             }
@@ -563,6 +563,175 @@ namespace FunctionTests
             Assert.NotNull(searchRes);
             Assert.Single(searchRes);
             Assert.Equal("bar", searchRes.First().Value);
+        }
+
+        [Fact]
+        public async Task ShouldUseAutoMapping()
+        {
+            //Arrange
+            var testEntity = new SearchTestEntity
+            {
+                Id = 2,
+                Value = "foo",
+                Bool = false
+            };
+
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+            
+            var api = _indexApi.StartWithProxy(srv =>
+            {
+
+                srv.Configure<IndexerOptions>(o =>
+                    {
+                        o.Indexes = new IdxOptions[]
+                        {
+                            new IdxOptions
+                            {
+                                Id = "foo-idx",
+                                NewIndexStrategy = NewIndexStrategy.Auto,
+                                IdPropertyName = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            },
+
+                        };
+                    }
+                );
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                    {
+                        o.Url = "http://localhost:9200";
+                    }
+                );
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+            await api.IndexAsync("foo-idx", testEntity);
+
+            await Task.Delay(2000);
+
+            var mappingResp = await _esClient.Indices.GetMappingAsync(new GetMappingRequest(indexName));
+
+            mappingResp.Indices.TryGetValue(indexName, out var indexMapping);
+
+            //Assert
+            Assert.NotNull(indexMapping);
+            Assert.Equal("long", indexMapping.Mappings.Properties["Id"].Type);
+        }
+
+        [Fact]
+        public async Task ShouldUseFileMapping()
+        {
+            //Arrange
+            var testEntity = new SearchTestEntity
+            {
+                Id = 2,
+                Value = "foo",
+                Bool = false
+            };
+
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var api = _indexApi.StartWithProxy(srv =>
+            {
+
+                srv.Configure<IndexerOptions>(o =>
+                    {
+                        o.Indexes = new IdxOptions[]
+                        {
+                            new IdxOptions
+                            {
+                                Id = "foo-idx",
+                                NewIndexStrategy = NewIndexStrategy.File,
+                                IdPropertyName = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            },
+
+                        };
+                    }
+                );
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                    {
+                        o.Url = "http://localhost:9200";
+                    }
+                );
+
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("test-entity-map.json", null));
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+            await api.IndexAsync("foo-idx", testEntity);
+
+            await Task.Delay(2000);
+
+            var mappingResp = await _esClient.Indices.GetMappingAsync(new GetMappingRequest(indexName));
+
+            mappingResp.Indices.TryGetValue(indexName, out var indexMapping);
+
+            //Assert
+            Assert.NotNull(indexMapping);
+            Assert.Equal("text", indexMapping.Mappings.Properties["Value"].Type);
+        }
+
+        [Fact]
+        public async Task ShouldUseDefaultFileMapping()
+        {
+            //Arrange
+            var testEntity = new SearchTestEntity
+            {
+                Id = 2,
+                Value = "foo",
+                Bool = false
+            };
+
+            string indexName = "test-" + Guid.NewGuid().ToString("N");
+
+            var api = _indexApi.StartWithProxy(srv =>
+            {
+
+                srv.Configure<IndexerOptions>(o =>
+                    {
+                        o.Indexes = new IdxOptions[]
+                        {
+                            new IdxOptions
+                            {
+                                Id = "foo-idx",
+                                NewIndexStrategy = NewIndexStrategy.File,
+                                IdPropertyName = nameof(TestEntity.Id),
+                                EsIndex = indexName
+                            },
+
+                        };
+                    }
+                );
+
+                srv.Configure<ElasticsearchOptions>(o =>
+                    {
+                        o.Url = "http://localhost:9200";
+                    }
+                );
+
+                srv.AddSingleton<IIndexResourceProvider>(new TestIndexResourceProvider("absent.json", "default-test-entity-map.json"));
+
+                srv.AddLogging(l => l.AddXUnit(_output).AddFilter(l => true));
+            });
+
+            //Act
+            await api.IndexAsync("foo-idx", testEntity);
+
+            await Task.Delay(2000);
+
+            var mappingResp = await _esClient.Indices.GetMappingAsync(new GetMappingRequest(indexName));
+
+            mappingResp.Indices.TryGetValue(indexName, out var indexMapping);
+
+            //Assert
+            Assert.NotNull(indexMapping);
+            Assert.Equal("keyword", indexMapping.Mappings.Properties["Value"].Type);
         }
     }
 }

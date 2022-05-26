@@ -2,7 +2,7 @@
   "mappings": {
     "properties": {
       "Id": { "type": "integer" },
-      "Value": { "type": "text" },
+      "Value": { "type": "keyword" },
       "Bool": { "type": "boolean" }
     }
   }

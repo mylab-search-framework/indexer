@@ -21,6 +21,7 @@ namespace FunctionTests
         private readonly TestApi<Startup, IIndexerApiV1> _indexApi;
         private readonly IDbManager _db;
         private readonly IEsSearcher<SearchTestEntity> _es;
+        private readonly ElasticClient _esClient;
 
         public Task InitializeAsync()
         {
@@ -44,16 +45,23 @@ namespace FunctionTests
 
         private class TestIndexResourceProvider : IIndexResourceProvider
         {
-            private readonly string _filepath;
+            private readonly string _explicitFilepath;
+            private readonly string _defaultFilepath;
 
-            public TestIndexResourceProvider(string filepath)
+            public TestIndexResourceProvider(string explicitFilepath, string defaultFilepath)
             {
-                _filepath = filepath;
+                _explicitFilepath = explicitFilepath;
+                _defaultFilepath = defaultFilepath;
             }
 
             public Task<string> ReadFileAsync(string idxId, string filename)
             {
-                return File.ReadAllTextAsync(Path.Combine("files", _filepath));
+                return File.ReadAllTextAsync(Path.Combine("files", _explicitFilepath));
+            }
+
+            public Task<string> ReadDefaultFileAsync(string filename)
+            {
+                return File.ReadAllTextAsync(Path.Combine("files", _defaultFilepath));
             }
         }
 
@@ -98,6 +106,8 @@ namespace FunctionTests
             {
                 Output = output
             };
+
+            _esClient = esFxt.EsClient;
         }
     }
 }

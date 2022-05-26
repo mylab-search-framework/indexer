@@ -315,6 +315,14 @@ POST /v1/test-entities/2/kick
 /etc/mylab-indexer/indexes/users/new-index.json
 ```
 
+Если в указанном месте файл не обнаружен, то происходит попытка найти его на уровне выше - в базовом пути к диреткории с файлами `index`-ов.
+
+Пример:
+
+```
+/etc/mylab-indexer/indexes/new-index.json
+```
+
 Содержимое файла должно быть в формате `JSON` и соответствовать [документации от ElasticSearch](https://www.elastic.co/guide/en/elasticsearch/reference/current/indices-create-index.html).
 
 ## Конфигурирование

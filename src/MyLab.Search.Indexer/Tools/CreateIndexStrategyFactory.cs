@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using MyLab.Log;
@@ -29,7 +30,7 @@ namespace MyLab.Search.Indexer.Tools
             switch (_options.NewIndexStrategy)
             {
                 case NewIndexStrategy.Undefined:
-                    throw new InvalidOperationException("IndexAsync creation mode not defined");
+                    throw new InvalidOperationException("ES index creation mode not defined");
                 case NewIndexStrategy.Auto:
                 {
                     var autoStrategy = new AutoSettingsBasedCreateIndexStrategy(_exampleEntity) { Log = Log };
@@ -37,7 +38,23 @@ namespace MyLab.Search.Indexer.Tools
                 }
                 case NewIndexStrategy.File:
                 {
-                    var request = await _indexResourceProvider.ReadFileAsync(_options.Id, "new-index.json");
+                    string request;
+
+                    try
+                    {
+                        request = await _indexResourceProvider.ReadFileAsync(_options.Id, "new-index.json");
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        try
+                        {
+                            request = await _indexResourceProvider.ReadDefaultFileAsync("new-index.json");
+                        }
+                        catch (FileNotFoundException)
+                        {
+                            throw new InvalidOperationException("New index settings file not found");
+                        }
+                    }
 
                     var jsonStrategy = new JsonSettingsBasedCreateIndexStrategy(request)
                     {
