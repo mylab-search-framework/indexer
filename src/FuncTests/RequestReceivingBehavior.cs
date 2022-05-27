@@ -1,32 +1,22 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MyLab.ApiClient.Test;
+using Microsoft.Extensions.Logging;
+using MyLab.RabbitClient;
+using MyLab.RabbitClient.Consuming;
+using MyLab.RabbitClient.Publishing;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.IndexerClient;
 using Newtonsoft.Json.Linq;
 using Xunit;
-using Xunit.Abstractions;
-using IndexingRequest = MyLab.Search.Indexer.Models.IndexingRequest;
 
 namespace FuncTests
 {
-    public class RequestReceivingBehavior : IDisposable
+    public partial class RequestReceivingBehavior : IDisposable
     {
-        private readonly ITestOutputHelper _output;
-        private readonly TestApi<Startup, IIndexerV2> _testApi;
-
-        public RequestReceivingBehavior(ITestOutputHelper output)
-        {
-            _output = output;
-            _testApi = new TestApi<Startup, IIndexerV2>
-            {
-                Output = output
-            };
-        }
-
         [Fact]
         public async Task ShouldGetRequestThroughApi()
         {
@@ -60,26 +50,56 @@ namespace FuncTests
             Assert.Equal("bar", actualRequest.Kick?.FirstOrDefault());
         }
 
-        public void Dispose()
+        [Fact]
+        public void ShouldGetRequestThroughQueue()
         {
-            _testApi?.Dispose();
-        }
-
-        class TestInputRequestProcessor : IInputRequestProcessor
-        {
-            public IndexingRequest LastRequest { get; private set; }
-
-            public Task ProcessRequestAsync(IndexingRequest request)
+            //Arrange
+            var testEntity = new TestEntity
             {
-                LastRequest = request;
+                Id = Guid.NewGuid().ToString("N")
+            };
+            var testReq = new MyLab.Search.IndexerClient.IndexingRequest
+            {
+                IndexId = "foo",
+                Post = new[] { JObject.FromObject(testEntity) },
+                Kick = new[] { "bar" }
+            };
 
-                return Task.CompletedTask;
-            }
-        }
+            var config = new ConfigurationBuilder()
+                .Build();
 
-        class TestEntity
-        {
-            public string Id { get; set; }
+            var srvCollection = new ServiceCollection();
+
+            var startup = new Startup(config);
+            startup.ConfigureServices(srvCollection);
+            srvCollection.AddRabbitEmulation();
+
+            srvCollection.AddLogging(l => l.AddFilter(lvl => true).AddXUnit(_output));
+
+            var inputSrvProc = new TestInputRequestProcessor();
+            srvCollection.AddSingleton<IInputRequestProcessor>(inputSrvProc);
+
+            srvCollection.Configure<IndexerOptions>(opt =>
+            {
+                opt.MqQueue = "foo-queue";
+            });
+
+            var serviceProvider = srvCollection.BuildServiceProvider();
+            var publisher = serviceProvider.GetRequiredService<IRabbitPublisher>();
+
+            //Act
+            publisher
+                .IntoQueue("foo-queue")
+                .SendJson(testReq)
+                .Publish();
+
+            var actualRequest = inputSrvProc.LastRequest;
+
+            //Assert
+            Assert.NotNull(actualRequest);
+            Assert.Equal("foo", actualRequest.IndexId);
+            Assert.Equal(testEntity.Id, actualRequest.Post?.FirstOrDefault()?.ToObject<TestEntity>()?.Id);
+            Assert.Equal("bar", actualRequest.Kick?.FirstOrDefault());
         }
     }
 }
