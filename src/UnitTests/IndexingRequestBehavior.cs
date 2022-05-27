@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using MyLab.Search.Indexer.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -119,6 +120,27 @@ namespace UnitTests
 
             //Act and Assert
             Assert.Throws<ValidationException>(() => request.Validate());
+        }
+
+        [Fact]
+        public void ShouldBeDeserializable()
+        {
+            //Arrange
+            
+
+            //Act
+            var jsonObj = JObject.Parse(
+                "{\"indexId\":\"foo\",\"post\":[{\"Id\":\"3b60d17d9fa54708a25148dac6717bdb\"}],\"put\":null,\"patch\":null,\"kick\":[\"bar\"]}");
+            var req = jsonObj.ToObject<IndexingRequest>();
+
+            //Assert
+            Assert.NotNull(req);
+            Assert.Equal("foo", req.IndexId);
+            Assert.NotNull(req.Post);
+            Assert.Single(req.Post);
+            Assert.NotNull(req.Post[0].Property("Id"));
+            Assert.Equal("3b60d17d9fa54708a25148dac6717bdb", req.Post[0]["Id"].ToString());
+            Assert.Equal("bar", req.Kick?.FirstOrDefault());
         }
 
         class TestEntity

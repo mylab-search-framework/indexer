@@ -23,8 +23,10 @@ namespace MyLab.Search.Indexer.Queue
                     logger.Dsl().Warning("MqQueue configuration is not specified and will not connected").Write();
                 }
             }
-
-            registry.Register(mqQueue, new TypedConsumerProvider<IndexerRabbitConsumer>());
+            else
+            {
+                registry.Register(mqQueue, new TypedConsumerProvider<IndexerRabbitConsumer>());
+            }
         }
     }
 }

@@ -22,6 +22,11 @@ namespace MyLab.Search.Indexer
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers(opt => opt.AddExceptionProcessing());
+
+#if DEBUG
+            services.Configure<ExceptionProcessingOptions>(opt => opt.HideError = false);
+#endif
+
             services.Configure<IndexerOptions>(Configuration.GetSection("Indexer"));
             services.AddLogging(l => l.AddMyLabConsole());
             services
