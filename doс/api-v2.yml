@@ -1,0 +1,88 @@
+openapi: 3.0.0
+info:
+  version: '2'
+  title: MyLab.Search.Indexer API
+servers:
+  - url: https://api.example.com/v2
+paths:
+  '/':
+    
+    post:
+      tags:
+      - Indexing 
+      summary: Index entity from body
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IndexingRequest'
+      responses:
+        '200':
+          description: The entities was indexed successful
+        '400':
+          description: The request is malformed
+  
+components:
+  parameters:
+      
+    EntityId:
+      name: ent_id
+      in: path
+      required: true
+      description: Entity identifier
+      schema:
+        type:
+          string
+      example: 2
+      
+  schemas:
+  
+    IndexingRequest:
+      type: object
+      properties:
+        indexId:
+          type: string
+          description: Target index identifier
+        post:
+          type: array
+          description: Post-list, which contains entities for insert only
+          items: 
+            $ref: '#/components/schemas/Entity'
+        put:
+          type: array
+          description: Put-list, which contains entities for insert or replace if already indexed
+          items: 
+            $ref: '#/components/schemas/IdEntity'
+        patch:
+          type: array
+          description: Patch-list, which contains entities for change already indexed entities
+          items: 
+            $ref: '#/components/schemas/IdEntity'
+        kick:
+          type: array
+          description: Kick-list, which contains an entity identifiers for indexing from database
+          items:
+            type: string
+      required:
+      - indexId
+    
+    IdEntity:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Entity identifier
+          example: "12-334455"
+      additionalProperties: true
+      example:
+        id: 2
+        value: "foo"
+      required: 
+      - id
+    
+    Entity:
+      type: object
+      additionalProperties: true
+      example:
+        id: 2
+        value: "foo"

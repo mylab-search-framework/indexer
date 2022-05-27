@@ -4,14 +4,6 @@
     <TargetFramework>net5.0</TargetFramework>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE;SERVER_CODE</DefineConstants>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DefineConstants>$(DefineConstants)TRACE;SERVER_CODE</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="MyLab.Log" Version="3.3.12" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
