@@ -8,13 +8,13 @@ using Xunit;
 
 namespace UnitTests
 {
-    public class IndexingRequestBehavior
+    public class IndexingMqMessageBehavior
     {
         [Fact]
         public void ShouldValidateRequest()
         {
             //Arrange
-            var request = new IndexingRequest
+            var request = new IndexingMqMessage
             {
                 IndexId = "bar",
                 Post = new[]
@@ -43,7 +43,7 @@ namespace UnitTests
         public void ShouldValidateRequestWithoutLists()
         {
             //Arrange
-            var request = new IndexingRequest
+            var request = new IndexingMqMessage
             {
                 IndexId = "bar"
             };
@@ -56,7 +56,7 @@ namespace UnitTests
         public void ShouldNotValidateIfIndexIdNotSpecified()
         {
             //Arrange
-            var request = new IndexingRequest
+            var request = new IndexingMqMessage
             {
             };
 
@@ -68,7 +68,7 @@ namespace UnitTests
         public void ShouldNotValidateIfPutEntityWithoutIdProperty()
         {
             //Arrange
-            var request = new IndexingRequest
+            var request = new IndexingMqMessage
             {
                 IndexId = "bar",
                 Post = new[]
@@ -97,7 +97,7 @@ namespace UnitTests
         public void ShouldNotValidateIfPatchEntityWithoutIdProperty()
         {
             //Arrange
-            var request = new IndexingRequest
+            var request = new IndexingMqMessage
             {
                 IndexId = "bar",
                 Post = new[]
@@ -131,7 +131,7 @@ namespace UnitTests
             //Act
             var jsonObj = JObject.Parse(
                 "{\"indexId\":\"foo\",\"post\":[{\"Id\":\"3b60d17d9fa54708a25148dac6717bdb\"}],\"put\":null,\"patch\":null,\"kick\":[\"bar\"]}");
-            var req = jsonObj.ToObject<IndexingRequest>();
+            var req = jsonObj.ToObject<IndexingMqMessage>();
 
             //Assert
             Assert.NotNull(req);

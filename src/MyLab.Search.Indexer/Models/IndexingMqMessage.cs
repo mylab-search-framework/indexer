@@ -8,9 +8,9 @@ namespace MyLab.Search.IndexerClient
 #endif
 {
     /// <summary>
-    /// Contains indexing details
+    /// Contains indexing details to be transmitted in the MQ
     /// </summary>
-    public class IndexingRequest
+    public class IndexingMqMessage
     {
         /// <summary>
         /// Index identifier
@@ -32,6 +32,11 @@ namespace MyLab.Search.IndexerClient
         /// </summary>
         [JsonProperty("patch")]
         public JObject[] Patch { get; set; }
+        /// <summary>
+        /// Delete-list, which contains an entity identifiers for removing from index
+        /// </summary>
+        [JsonProperty("delete")]
+        public string[] Delete { get; set; }
         /// <summary>
         /// Kick-list, which contains an entity identifiers for indexing from database
         /// </summary>

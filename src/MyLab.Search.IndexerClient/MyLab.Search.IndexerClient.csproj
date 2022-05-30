@@ -5,11 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="..\MyLab.Search.Indexer\Models\IndexingRequest.cs" Link="IndexingRequest.cs" />
+    <Compile Include="..\MyLab.Search.Indexer\Models\IndexingMqMessage.cs" Link="IndexingMqMessage.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="MyLab.ApiClient" Version="3.13.24" />
+    <PackageReference Include="MyLab.ApiClient" Version="3.14.24" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

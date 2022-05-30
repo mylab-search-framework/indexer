@@ -13,6 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="MyLab.Db" Version="1.3.5" />
     <PackageReference Include="MyLab.Log" Version="3.3.12" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
     <PackageReference Include="MyLab.RabbitClient" Version="2.9.15" />

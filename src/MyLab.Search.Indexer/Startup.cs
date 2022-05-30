@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyLab.Log;
+using MyLab.Search.Indexer.Configuration;
 using MyLab.Search.Indexer.Queue;
 using MyLab.WebErrors;
 

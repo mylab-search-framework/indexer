@@ -4,22 +4,22 @@ using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Models
 {
-    static class IndexingRequestExtensions
+    static class IndexingMqMessageExtensions
     {
-        public static void Validate(this IndexingRequest req)
+        public static void Validate(this IndexingMqMessage msg)
         {
-            if (string.IsNullOrEmpty(req.IndexId))
+            if (string.IsNullOrEmpty(msg.IndexId))
                 throw new ValidationException("'indexId' must be specified");
 
-            if (req.Put != null)
+            if (msg.Put != null)
             {
-                if (!req.Put.All(HasIdProperty))
+                if (!msg.Put.All(HasIdProperty))
                     throw new ValidationException("Put entity must have an `id` property");
             }
 
-            if (req.Patch != null)
+            if (msg.Patch != null)
             {
-                if (!req.Patch.All(HasIdProperty))
+                if (!msg.Patch.All(HasIdProperty))
                     throw new ValidationException("Patch entity must have an `id` property");
             }
         }

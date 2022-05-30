@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
 using MyLab.RabbitClient.Consuming;
+using MyLab.Search.Indexer.Configuration;
 
 namespace MyLab.Search.Indexer.Queue
 {
