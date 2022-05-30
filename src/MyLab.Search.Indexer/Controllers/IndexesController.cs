@@ -24,19 +24,21 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPost("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Post([FromRoute] string indexId, [FromBody] JObject entity)
+        public async Task<IActionResult> Post([FromRoute] string indexId)
         {
+            var entity = await ReadEntityFromRequestBodyAsync();
+
             ValidateIndexId(indexId);
             ValidateEntity(entity);
 
+            var indexingEntity = ToIndexingRequestEntity(entity, false);
+
             var indexingReq = new IndexingRequest
             {
+                IndexId = indexId,
                 PostList = new []
                 {
-                    new IndexingRequestEntity
-                    {
-                        Entity = entity
-                    }
+                    indexingEntity
                 }
             };
 
@@ -45,48 +47,23 @@ namespace MyLab.Search.Indexer.Controllers
             return Ok();
         }
 
-        [HttpPost("{indexId}/{entityId}")]
+        [HttpPut("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Post([FromRoute] string indexId, [FromRoute] string entityId, [FromBody] JObject entity)
+        public async Task<IActionResult> Put([FromRoute] string indexId)
         {
+            var entity = await ReadEntityFromRequestBodyAsync();
+
             ValidateIndexId(indexId);
-            ValidateEntityId(entityId);
             ValidateEntity(entity);
+
+            var indexingEntity = ToIndexingRequestEntity(entity);
 
             var indexingReq = new IndexingRequest
             {
-                PostList = new []
-                {
-                    new IndexingRequestEntity
-                    {
-                        Id = entityId,
-                        Entity = entity
-                    }
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
-
-            return Ok();
-        }
-
-        [HttpPut("{indexId}/{entityId}")]
-        [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Put([FromRoute] string indexId, [FromRoute] string entityId, [FromBody] JObject entity)
-        {
-            ValidateIndexId(indexId);
-            ValidateEntityId(entityId);
-            ValidateEntity(entity);
-
-            var indexingReq = new IndexingRequest
-            {
+                IndexId = indexId,
                 PutList = new[]
                 {
-                    new IndexingRequestEntity
-                    {
-                        Id = entityId,
-                        Entity = entity
-                    }
+                    indexingEntity
                 }
             };
 
@@ -95,23 +72,23 @@ namespace MyLab.Search.Indexer.Controllers
             return Ok();
         }
 
-        [HttpPatch("{indexId}/{entityId}")]
+        [HttpPatch("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        public async Task<IActionResult> Patch([FromRoute] string indexId, [FromRoute] string entityId, [FromBody] JObject entity)
+        public async Task<IActionResult> Patch([FromRoute] string indexId)
         {
+            var entity = await ReadEntityFromRequestBodyAsync();
+
             ValidateIndexId(indexId);
-            ValidateEntityId(entityId);
             ValidateEntity(entity);
+
+            var indexingEntity = ToIndexingRequestEntity(entity);
 
             var indexingReq = new IndexingRequest
             {
+                IndexId = indexId,
                 PatchList = new[]
                 {
-                    new IndexingRequestEntity
-                    {
-                        Id = entityId,
-                        Entity = entity
-                    }
+                    indexingEntity
                 }
             };
 
@@ -129,6 +106,7 @@ namespace MyLab.Search.Indexer.Controllers
 
             var indexingReq = new IndexingRequest
             {
+                IndexId = indexId,
                 DeleteList = new[]
                 {
                     entityId
@@ -166,6 +144,23 @@ namespace MyLab.Search.Indexer.Controllers
                 throw new ValidationException("An entity identifier id empty");
         }
 
+        IndexingRequestEntity ToIndexingRequestEntity(JObject entity, bool idRequired = true)
+        {
+            var idProperty = entity.Property("id");
+            var entId = idProperty?.Value.ToString();
+
+            if (idRequired)
+                ValidateEntityId(entId);
+
+            var result = new IndexingRequestEntity
+            {
+                Entity = entity,
+                Id = string.IsNullOrWhiteSpace(entId) ? null : entId
+            };
+
+            return result;
+        }
+
         void ValidateEntity(JObject entity)
         {
             if (entity == null)
@@ -173,6 +168,18 @@ namespace MyLab.Search.Indexer.Controllers
 
             if(entity.Count == 0)
                 throw new ValidationException("An entity is empty");
+        }
+        private async Task<JObject> ReadEntityFromRequestBodyAsync()
+        {
+            JObject entity;
+
+            using (TextReader txtRdr = new StreamReader(Request.Body))
+            using (JsonReader jsonRdr = new JsonTextReader(txtRdr))
+            {
+                entity = await JObject.LoadAsync(jsonRdr);
+            }
+
+            return entity;
         }
     }
 }

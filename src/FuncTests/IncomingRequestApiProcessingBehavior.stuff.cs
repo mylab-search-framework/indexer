@@ -1,4 +1,3 @@
-using System;
 using MyLab.ApiClient.Test;
 using MyLab.Search.Indexer;
 using MyLab.Search.IndexerClient;
@@ -23,21 +22,6 @@ namespace FuncTests
         public void Dispose()
         {
             _testApi?.Dispose();
-        }
-
-        private class TestEntity
-        {
-            public string Content { get; set; }
-            
-            public TestEntity(string content)
-            {
-                Content = content;
-            }
-            
-            public TestEntity()
-            {
-                
-            }
         }
     }
 }

@@ -11,28 +11,22 @@ namespace MyLab.Search.IndexerClient
     public interface IIndexerV2
     {
         /// <summary>
-        /// Index new entity without id
+        /// Index new entity
         /// </summary>
         [Post("{indexId}")]
         Task PostAsync([Path] string indexId, [JsonContent] JObject entity);
 
         /// <summary>
-        /// Index new entity
-        /// </summary>
-        [Post("{indexId}/{entityId}")]
-        Task PostAsync([Path] string indexId, [Path] string entityId, [JsonContent] JObject entity);
-
-        /// <summary>
         /// Index new entity or reindex if already indexed
         /// </summary>
-        [Put("{indexId}/{entityId}")]
-        Task PutAsync([Path] string indexId,[Path] string entityId, [JsonContent] JObject entity);
+        [Put("{indexId}")]
+        Task PutAsync([Path] string indexId, [JsonContent] JObject entity);
 
         /// <summary>
         /// Merge specified partial data with indexed entity
         /// </summary>
-        [Patch("{indexId}/{entityId}")]
-        Task PatchAsync([Path] string indexId, [Path] string entityId, [JsonContent] JObject entity);
+        [Patch("{indexId}")]
+        Task PatchAsync([Path] string indexId, [JsonContent] JObject entity);
 
         /// <summary>
         /// Remove specified entity from index

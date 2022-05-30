@@ -20,7 +20,7 @@ namespace FuncTests
                     srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
                 );
 
-            var testEntity = new TestEntity("foo-content");
+            var testEntity = new TestEntity(null,"foo-content");
 
             TestEntity actualEntity = null;
 
@@ -49,12 +49,12 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-content");
+            var testEntity = new TestEntity("foo-id","foo-content");
 
             TestEntity actualEntity = null;
 
             //Act
-            await api.PostAsync("foo-index", "foo-id", JObject.FromObject(testEntity));
+            await api.PostAsync("foo-index", JObject.FromObject(testEntity));
 
             var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
             
@@ -78,12 +78,12 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-content");
+            var testEntity = new TestEntity("foo-id","foo-content");
 
             TestEntity actualEntity = null;
 
             //Act
-            await api.PutAsync("foo-index", "foo-id", JObject.FromObject(testEntity));
+            await api.PutAsync("foo-index", JObject.FromObject(testEntity));
 
             var item = inputSrvProc.LastRequest?.PutList?.FirstOrDefault();
 
@@ -107,12 +107,12 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-content");
+            var testEntity = new TestEntity("foo-id","foo-content");
 
             TestEntity actualEntity = null;
 
             //Act
-            await api.PatchAsync("foo-index", "foo-id", JObject.FromObject(testEntity));
+            await api.PatchAsync("foo-index", JObject.FromObject(testEntity));
 
             var item = inputSrvProc.LastRequest?.PatchList?.FirstOrDefault();
 
@@ -120,6 +120,8 @@ namespace FuncTests
                 actualEntity = item.Entity.ToObject<TestEntity>();
 
             //Assert
+            
+            Assert.NotNull(inputSrvProc.LastRequest);
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.NotNull(actualEntity);
             Assert.Equal("foo-id", item.Id);

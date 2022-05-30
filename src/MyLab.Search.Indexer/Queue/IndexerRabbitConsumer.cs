@@ -16,7 +16,7 @@ namespace MyLab.Search.Indexer.Queue
 
         protected override Task ConsumeMessageAsync(ConsumedMessage<IndexingRequest> consumedMessage)
         {
-            return _inputRequestProcessor.ProcessRequestAsync(consumedMessage.Content);
+            return _inputRequestProcessor.IndexAsync(consumedMessage.Content);
         }
     }
 }

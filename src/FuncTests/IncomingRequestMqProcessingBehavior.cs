@@ -83,32 +83,47 @@ namespace FuncTests
 
             var actualRequest = inputSrvProc.LastRequest;
 
-            var actualPostEnt = actualRequest.PostList?.FirstOrDefault(e => e.Id == postEnt.Id);
-            var actualPostEntWithoutId = actualRequest.PostList?.FirstOrDefault(e => e.Id == null);
-            var actualPutEnt = actualRequest.PutList?.FirstOrDefault(e => e.Id == putEnt.Id);
-            var actualPatchEnt = actualRequest.PatchList?.FirstOrDefault(e => e.Id == patchEnt.Id);
+            var actualPostIndexEnt = actualRequest.PostList?.FirstOrDefault(e => e.Id == postEnt.Id);
+            var actualPostIndexEntWithoutId = actualRequest.PostList?.FirstOrDefault(e => e.Id == null);
+            var actualPutIndexEnt = actualRequest.PutList?.FirstOrDefault(e => e.Id == putEnt.Id);
+            var actualPatchIndexEnt = actualRequest.PatchList?.FirstOrDefault(e => e.Id == patchEnt.Id);
+
+            var actualPostEnt = actualPostIndexEnt?.Entity?.ToObject<TestEntity>();
+            var actualPutEnt = actualPutIndexEnt?.Entity?.ToObject<TestEntity>();
+            var actualPatchEnt = actualPatchIndexEnt?.Entity?.ToObject<TestEntity>();
+            var actualPostEntWithoutId = actualPostIndexEntWithoutId?.Entity?.ToObject<TestEntity>();
 
             //Assert
-            Assert.NotNull(actualRequest);
             Assert.Equal("foo-index", actualRequest.IndexId);
             
+            Assert.NotNull(actualPostIndexEnt);
+            Assert.Equal(postEnt.Id, actualPostIndexEnt.Id);
+            Assert.NotNull(actualPostEnt);
+            Assert.Equal(postEnt.Id, actualPostEnt.Id);
+            Assert.Equal(postEnt.Content, actualPostEnt.Content);
+
+            Assert.NotNull(actualPostIndexEntWithoutId);
+            Assert.Equal(postWithoutIdEnt.Id, actualPostIndexEntWithoutId.Id);
+            Assert.NotNull(actualPostEntWithoutId);
+            Assert.Null(actualPostEntWithoutId.Id);
+            Assert.Equal(postWithoutIdEnt.Content, actualPostEntWithoutId.Content);
+
+            Assert.NotNull(actualPutIndexEnt);
+            Assert.Equal(putEnt.Id, actualPutIndexEnt.Id);
+            Assert.NotNull(actualPutEnt);
+            Assert.Equal(putEnt.Id, actualPutEnt.Id);
+            Assert.Equal(putEnt.Content, actualPutEnt.Content);
+
+            Assert.NotNull(actualPatchIndexEnt);
+            Assert.Equal(patchEnt.Id, actualPatchIndexEnt.Id);
+            Assert.NotNull(actualPatchEnt);
+            Assert.Equal(patchEnt.Id, actualPatchEnt.Id);
+            Assert.Equal(patchEnt.Content, actualPatchEnt.Content);
+
+            Assert.Single(actualRequest.DeleteList);
+            Assert.Equal(deleteId, actualRequest.DeleteList[0]);
         }
 
-        private class TestEntity
-        {
-            [JsonProperty("id")]
-            public string Id { get; set; }
-            public string Content { get; set; }
-
-            public static TestEntity Generate()
-            {
-                return new TestEntity
-                {
-                    Id = Guid.NewGuid().ToString("N"),
-                    Content = Guid.NewGuid().ToString("N")
-                };
-            }
-            
-        }
+        
     }
 }
