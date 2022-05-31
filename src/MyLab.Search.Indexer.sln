@@ -5,11 +5,11 @@ VisualStudioVersion = 17.1.32407.343
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.Search.Indexer", "MyLab.Search.Indexer\MyLab.Search.Indexer.csproj", "{B2EF725B-06DE-4395-880E-A0A3066F4B6D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{06AB17CA-762C-4668-9585-5ED256DC21DE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\UnitTests.csproj", "{06AB17CA-762C-4668-9585-5ED256DC21DE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuncTests", "FuncTests\FuncTests.csproj", "{169D4A18-F758-4747-98AF-77401A32EF8B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.Search.IndexerClient", "MyLab.Search.IndexerClient\MyLab.Search.IndexerClient.csproj", "{D198E1D2-C965-4103-AC08-B2766B9165F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MyLab.Search.IndexerClient", "MyLab.Search.IndexerClient\MyLab.Search.IndexerClient.csproj", "{D198E1D2-C965-4103-AC08-B2766B9165F5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FuncTests", "FuncTests\FuncTests.csproj", "{88A19920-644D-47B9-834C-83F348FA0528}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -25,14 +25,14 @@ Global
 		{06AB17CA-762C-4668-9585-5ED256DC21DE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06AB17CA-762C-4668-9585-5ED256DC21DE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06AB17CA-762C-4668-9585-5ED256DC21DE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{169D4A18-F758-4747-98AF-77401A32EF8B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{169D4A18-F758-4747-98AF-77401A32EF8B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{169D4A18-F758-4747-98AF-77401A32EF8B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{169D4A18-F758-4747-98AF-77401A32EF8B}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D198E1D2-C965-4103-AC08-B2766B9165F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D198E1D2-C965-4103-AC08-B2766B9165F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D198E1D2-C965-4103-AC08-B2766B9165F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D198E1D2-C965-4103-AC08-B2766B9165F5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88A19920-644D-47B9-834C-83F348FA0528}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88A19920-644D-47B9-834C-83F348FA0528}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88A19920-644D-47B9-834C-83F348FA0528}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88A19920-644D-47B9-834C-83F348FA0528}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

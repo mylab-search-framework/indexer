@@ -16,17 +16,17 @@ namespace FuncTests
             //Arrange
             var inputSrvProc = new TestInputRequestProcessor();
 
-            var api = _testApi.StartWithProxy(srv => 
+            var api = _testApi.StartWithProxy(srv =>
                     srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
                 );
 
-            var testEntity = new TestEntity(null,"foo-content");
+            var testEntity = new TestEntity(null, "foo-content");
 
             TestEntity actualEntity = null;
 
             //Act
             await api.PostAsync("foo-index", JObject.FromObject(testEntity));
-            
+
             var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
 
             if (item?.Entity != null)
@@ -49,7 +49,7 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id","foo-content");
+            var testEntity = new TestEntity("foo-id", "foo-content");
 
             TestEntity actualEntity = null;
 
@@ -57,7 +57,7 @@ namespace FuncTests
             await api.PostAsync("foo-index", JObject.FromObject(testEntity));
 
             var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
-            
+
             if (item?.Entity != null)
                 actualEntity = item.Entity.ToObject<TestEntity>();
 
@@ -78,7 +78,7 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id","foo-content");
+            var testEntity = new TestEntity("foo-id", "foo-content");
 
             TestEntity actualEntity = null;
 
@@ -107,7 +107,7 @@ namespace FuncTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id","foo-content");
+            var testEntity = new TestEntity("foo-id", "foo-content");
 
             TestEntity actualEntity = null;
 
@@ -120,7 +120,7 @@ namespace FuncTests
                 actualEntity = item.Entity.ToObject<TestEntity>();
 
             //Assert
-            
+
             Assert.NotNull(inputSrvProc.LastRequest);
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.NotNull(actualEntity);
@@ -137,13 +137,13 @@ namespace FuncTests
             var api = _testApi.StartWithProxy(srv =>
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
-            
+
 
             //Act
             await api.DeleteAsync("foo-index", "foo-id");
 
             var item = inputSrvProc.LastRequest?.DeleteList?.FirstOrDefault();
-            
+
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.Equal("foo-id", item);
