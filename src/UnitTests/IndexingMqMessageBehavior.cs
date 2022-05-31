@@ -157,6 +157,7 @@ namespace UnitTests
             var putEnt = TestIdEntity.Generate();
             var patchEnt = TestIdEntity.Generate();
             var deleteId = Guid.NewGuid().ToString("N");
+            var kickId = Guid.NewGuid().ToString("N");
 
             var mqMsg = new IndexingMqMessage
             {
@@ -178,6 +179,10 @@ namespace UnitTests
                 {
                     deleteId
                 },
+                Kick = new []
+                {
+                    kickId
+                }
             };
 
             //Act
@@ -202,6 +207,9 @@ namespace UnitTests
 
             Assert.Single(indexingRequest.DeleteList);
             Assert.Equal(deleteId, indexingRequest.DeleteList[0]);
+
+            Assert.Single(indexingRequest.KickList);
+            Assert.Equal(kickId, indexingRequest.KickList[0]);
         }
 
         class TestEntity

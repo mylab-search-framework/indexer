@@ -4,6 +4,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.WebErrors;
 using Newtonsoft.Json;
@@ -24,6 +25,7 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPost("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Post([FromRoute] string indexId)
         {
             var entity = await ReadEntityFromRequestBodyAsync();
@@ -33,7 +35,7 @@ namespace MyLab.Search.Indexer.Controllers
 
             var indexingEntity = ToIndexingRequestEntity(entity, false);
 
-            var indexingReq = new IndexingRequest
+            var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PostList = new []
@@ -49,6 +51,7 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPut("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Put([FromRoute] string indexId)
         {
             var entity = await ReadEntityFromRequestBodyAsync();
@@ -58,7 +61,7 @@ namespace MyLab.Search.Indexer.Controllers
 
             var indexingEntity = ToIndexingRequestEntity(entity);
 
-            var indexingReq = new IndexingRequest
+            var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PutList = new[]
@@ -74,6 +77,7 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPatch("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Patch([FromRoute] string indexId)
         {
             var entity = await ReadEntityFromRequestBodyAsync();
@@ -83,7 +87,7 @@ namespace MyLab.Search.Indexer.Controllers
 
             var indexingEntity = ToIndexingRequestEntity(entity);
 
-            var indexingReq = new IndexingRequest
+            var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PatchList = new[]
@@ -99,12 +103,13 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpDelete("{indexId}/{entityId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Delete([FromRoute] string indexId, [FromRoute] string entityId)
         {
             ValidateIndexId(indexId);
             ValidateEntityId(entityId);
 
-            var indexingReq = new IndexingRequest
+            var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 DeleteList = new[]
@@ -120,10 +125,22 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPost("{indexId}/{entityId}/kicker")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Kick([FromRoute] string indexId, [FromRoute] string entityId)
         {
             ValidateIndexId(indexId);
             ValidateEntityId(entityId);
+
+            var indexingReq = new InputIndexingRequest
+            {
+                IndexId = indexId,
+                KickList = new[]
+                {
+                    entityId
+                }
+            };
+
+            await _inputRequestProcessor.IndexAsync(indexingReq);
 
             return Ok();
         }

@@ -148,5 +148,26 @@ namespace FuncTests
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.Equal("foo-id", item);
         }
+
+        [Fact]
+        public async Task ShouldProcessKick()
+        {
+            //Arrange
+            var inputSrvProc = new TestInputRequestProcessor();
+
+            var api = _testApi.StartWithProxy(srv =>
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+            );
+
+
+            //Act
+            await api.KickAsync("foo-index", "foo-id");
+
+            var item = inputSrvProc.LastRequest?.KickList?.FirstOrDefault();
+
+            //Assert
+            Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
+            Assert.Equal("foo-id", item);
+        }
     }
 }

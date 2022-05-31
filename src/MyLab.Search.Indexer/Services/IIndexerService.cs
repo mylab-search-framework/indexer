@@ -3,8 +3,8 @@ using MyLab.Search.Indexer.Models;
 
 namespace MyLab.Search.Indexer.Services
 {
-    public interface IInputRequestProcessor
+    public interface IIndexerService
     {
-        Task IndexAsync(InputIndexingRequest inputRequest);
+        Task IndexEntities(IndexingRequest indexingRequest);
     }
 }

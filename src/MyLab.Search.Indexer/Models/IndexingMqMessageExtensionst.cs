@@ -25,15 +25,16 @@ namespace MyLab.Search.Indexer.Models
             }
         }
 
-        public static IndexingRequest ExtractIndexingRequest(this IndexingMqMessage msg)
+        public static InputIndexingRequest ExtractIndexingRequest(this IndexingMqMessage msg)
         {
-            return new IndexingRequest
+            return new InputIndexingRequest
             {
                 PostList = msg.Post.Select(JObjectToEntity).ToArray(),
                 PutList = msg.Put.Select(JObjectToEntity).ToArray(),
                 PatchList = msg.Patch.Select(JObjectToEntity).ToArray(),
                 IndexId = msg.IndexId,
-                DeleteList = msg.Delete
+                DeleteList = msg.Delete,
+                KickList = msg.Kick
             };
         }
 

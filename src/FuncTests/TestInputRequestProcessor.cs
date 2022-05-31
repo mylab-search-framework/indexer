@@ -1,15 +1,16 @@
 using System.Threading.Tasks;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
 
 namespace FuncTests
 {
     class TestInputRequestProcessor : IInputRequestProcessor
     {
-        public IndexingRequest LastRequest { get; private set; }
+        public InputIndexingRequest LastRequest { get; private set; }
 
-        public Task IndexAsync(IndexingRequest request)
+        public Task IndexAsync(InputIndexingRequest inputRequest)
         {
-            LastRequest = request;
+            LastRequest = inputRequest;
 
             return Task.CompletedTask;
         }

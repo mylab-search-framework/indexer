@@ -5,7 +5,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using MyLab.RabbitClient.Publishing;
 using MyLab.Search.Indexer;
-using MyLab.Search.Indexer.Configuration;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -70,7 +70,7 @@ namespace FuncTests
             var inputSrvProc = new TestInputRequestProcessor();
             srvCollection.AddSingleton<IInputRequestProcessor>(inputSrvProc);
 
-            srvCollection.Configure<IndexerOptions>(opt => { opt.MqQueue = "foo-queue"; });
+            srvCollection.Configure<IndexerOptions>(opt => opt.MqQueue = "foo-queue");
 
             var serviceProvider = srvCollection.BuildServiceProvider();
             var publisher = serviceProvider.GetRequiredService<IRabbitPublisher>();
