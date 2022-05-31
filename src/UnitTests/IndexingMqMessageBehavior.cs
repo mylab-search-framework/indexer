@@ -143,15 +143,88 @@ namespace UnitTests
             Assert.Equal("bar", req.Kick?.FirstOrDefault());
         }
 
+        [Fact]
+        public void ShouldExtractIndexingRequest()
+        {
+            //Arrange
+
+            var postEntWithoutId = new TestEntity
+            {
+                Content = Guid.NewGuid().ToString("N")
+            };
+
+            var postEnt = TestIdEntity.Generate();
+            var putEnt = TestIdEntity.Generate();
+            var patchEnt = TestIdEntity.Generate();
+            var deleteId = Guid.NewGuid().ToString("N");
+
+            var mqMsg = new IndexingMqMessage
+            {
+                IndexId = "foo",
+                Post = new[]
+                {
+                    JObject.FromObject(postEntWithoutId),
+                    JObject.FromObject(postEnt)
+                },
+                Put = new[]
+                {
+                    JObject.FromObject(putEnt)
+                },
+                Patch = new[]
+                {
+                    JObject.FromObject(patchEnt)
+                },
+                Delete = new[]
+                {
+                    deleteId
+                },
+            };
+
+            //Act
+            var indexingRequest = mqMsg.ExtractIndexingRequest();
+
+            //Assert
+            Assert.Equal("foo", indexingRequest.IndexId);
+
+            Assert.Equal(2, indexingRequest.PostList.Length);
+            Assert.Null(indexingRequest.PostList[0].Id);
+            Assert.Equal(postEntWithoutId.Content, indexingRequest.PostList[0]?.Entity?.ToObject<TestEntity>()?.Content);
+            Assert.Equal(postEnt.Id, indexingRequest.PostList[1].Id);
+            Assert.Equal(postEnt.Content, indexingRequest.PostList[1]?.Entity?.ToObject<TestIdEntity>()?.Content);
+
+            Assert.Single(indexingRequest.PutList);
+            Assert.Equal(putEnt.Id, indexingRequest.PutList[0].Id);
+            Assert.Equal(putEnt.Content, indexingRequest.PutList[0]?.Entity?.ToObject<TestIdEntity>()?.Content);
+
+            Assert.Single(indexingRequest.PatchList);
+            Assert.Equal(patchEnt.Id, indexingRequest.PatchList[0].Id);
+            Assert.Equal(patchEnt.Content, indexingRequest.PatchList[0]?.Entity?.ToObject<TestIdEntity>()?.Content);
+
+            Assert.Single(indexingRequest.DeleteList);
+            Assert.Equal(deleteId, indexingRequest.DeleteList[0]);
+        }
+
         class TestEntity
         {
-
+            public string Content { get; set; }
         }
 
         class TestIdEntity
         {
             [JsonProperty("id")]
             public string Id { get; set; }
+
+            [JsonProperty("content")]
+            public string Content { get; set; }
+
+            public static TestIdEntity Generate()
+            {
+                return new TestIdEntity
+                {
+                    Id = Guid.NewGuid().ToString("N"),
+                    Content = Guid.NewGuid().ToString("N")
+                };
+            }
         }
     }
 }

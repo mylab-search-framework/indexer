@@ -78,7 +78,7 @@ namespace FuncTests
             //Act
             publisher
                 .IntoQueue("foo-queue")
-                .SendJson(testReq)
+                .SetJsonContent(testReq)
                 .Publish();
 
             var actualRequest = inputSrvProc.LastRequest;
