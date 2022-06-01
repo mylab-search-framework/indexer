@@ -161,7 +161,7 @@ namespace MyLab.Search.Indexer.Controllers
                 throw new ValidationException("An entity identifier id empty");
         }
 
-        IndexingRequestEntity ToIndexingRequestEntity(JObject entity, bool idRequired = true)
+        IndexingEntity ToIndexingRequestEntity(JObject entity, bool idRequired = true)
         {
             var idProperty = entity.Property("id");
             var entId = idProperty?.Value.ToString();
@@ -169,7 +169,7 @@ namespace MyLab.Search.Indexer.Controllers
             if (idRequired)
                 ValidateEntityId(entId);
 
-            var result = new IndexingRequestEntity
+            var result = new IndexingEntity
             {
                 Entity = entity,
                 Id = string.IsNullOrWhiteSpace(entId) ? null : entId

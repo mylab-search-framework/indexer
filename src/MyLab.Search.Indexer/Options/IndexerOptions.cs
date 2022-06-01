@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MyLab.Log;
 
@@ -25,6 +26,20 @@ namespace MyLab.Search.Indexer.Options
     {
         public string Id { get; set; }
         public bool IsStream { get; set; }
+
+        public string KickDbQuery { get; set; }
+        public string SyncDbQuery { get; set; }
+
+        public IdPropertyType IdPropertyType { get; set; }
+
+        public int SyncPageSize { get; set; } = 500;
+
+        public void ValidateIdPropertyType()
+        {
+            if (IdPropertyType == IdPropertyType.Undefined)
+                throw new ValidationException("'" + nameof(IdPropertyType) + " index option is not defined")
+                    .AndFactIs("index-id", Id);
+        }
     }
 
     public class IndexOptionsNotFoundException : Exception
@@ -36,5 +51,12 @@ namespace MyLab.Search.Indexer.Options
             IndexName = indexName;
             this.AndFactIs("index-name", indexName);
         }
+    }
+
+    public enum IdPropertyType
+    {
+        Undefined,
+        String,
+        Int
     }
 }

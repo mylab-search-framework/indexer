@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
@@ -40,10 +41,14 @@ namespace MyLab.Search.Indexer.Services
 
             if (inputRequest.KickList is { Length: > 0 })
             {
-                var entities = await _dataSourceService.LoadByIdListAsync(inputRequest.IndexId, inputRequest.KickList);
+                var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
 
-                if (entities != null)
+                if (entitiesLoad is { Batches: {Length: > 0} })
                 {
+                    var entities = entitiesLoad.Batches
+                        .SelectMany(b => b.Entities)
+                        .ToArray();
+
                     if (indexOptions.IsStream)
                     {
                         idxReq.PostList = JoinEntities(idxReq.PostList, entities);
@@ -58,12 +63,12 @@ namespace MyLab.Search.Indexer.Services
             await _indexerService.IndexEntities(idxReq);
         }
 
-        IndexingRequestEntity[] JoinEntities(IndexingRequestEntity[] arr1, IndexingRequestEntity[] arr2)
+        IndexingEntity[] JoinEntities(IndexingEntity[] arr1, IndexingEntity[] arr2)
         {
             if (arr1 == null || arr1.Length == 0) return arr2;
             if (arr2 == null || arr2.Length == 0) return arr1;
 
-            var newList = new List<IndexingRequestEntity>(arr1);
+            var newList = new List<IndexingEntity>(arr1);
             newList.AddRange(arr2);
 
             return newList.ToArray();

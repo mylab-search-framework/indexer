@@ -38,9 +38,9 @@ namespace MyLab.Search.Indexer.Models
             };
         }
 
-        static IndexingRequestEntity JObjectToEntity(JObject json)
+        static IndexingEntity JObjectToEntity(JObject json)
         {
-            var res = new IndexingRequestEntity
+            var res = new IndexingEntity
             {
                 Entity = json
             };

@@ -2,7 +2,7 @@
 
 namespace MyLab.Search.Indexer.Models
 {
-    public class IndexingRequestEntity
+    public class IndexingEntity
     {
         public string Id { get; set; }
 

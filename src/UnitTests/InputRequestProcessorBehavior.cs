@@ -13,25 +13,25 @@ namespace UnitTests
 {
     public class InputRequestProcessorBehavior
     {
-        readonly IndexingRequestEntity _postEnt = new IndexingRequestEntity
+        readonly IndexingEntity _postEnt = new IndexingEntity
         {
             Id = "post-id",
             Entity = JObject.FromObject(new TestEntity("post-id", "post-data"))
         };
 
-        readonly IndexingRequestEntity _putEnt = new IndexingRequestEntity
+        readonly IndexingEntity _putEnt = new IndexingEntity
         {
             Id = "put-id",
             Entity = JObject.FromObject(new TestEntity("put-id", "put-data"))
         };
 
-        readonly IndexingRequestEntity _patchEnt = new IndexingRequestEntity
+        readonly IndexingEntity _patchEnt = new IndexingEntity
         {
             Id = "patch-id",
             Entity = JObject.FromObject(new TestEntity("patch-id", "patch-data"))
         };
 
-        readonly IndexingRequestEntity _kickEnt = new IndexingRequestEntity
+        readonly IndexingEntity _kickEnt = new IndexingEntity
         {
             Id = "kick-id",
             Entity = JObject.FromObject(new TestEntity("kick-id", "kick-data"))
@@ -113,12 +113,21 @@ namespace UnitTests
                 KickList = new []{ _kickEnt.Id }
             };
 
-            var dataSourceEntities = new[]
+            var dataSourceLoad = new DataSourceLoad
             {
-                _kickEnt
+                Batches = new[]
+                {
+                    new DataSourceLoadBatch
+                    {
+                        Entities = new []
+                        {
+                            _kickEnt
+                        }
+                    }
+                }
             };
 
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceEntities);
+            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();
 
             IndexerOptions options = new IndexerOptions
@@ -164,12 +173,21 @@ namespace UnitTests
                 KickList = new[] { _kickEnt.Id }
             };
 
-            var dataSourceEntities = new[]
+            var dataSourceLoad = new DataSourceLoad
             {
-                _kickEnt
+                Batches = new []
+                {
+                    new DataSourceLoadBatch
+                    {
+                        Entities = new []
+                        {
+                            _kickEnt
+                        }
+                    }
+                }
             };
 
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceEntities);
+            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();
 
             IndexerOptions options = new IndexerOptions
@@ -206,18 +224,18 @@ namespace UnitTests
 
         class TestDataSourceService : IDataSourceService
         {
-            private readonly IndexingRequestEntity[] _loadedEntities;
+            private readonly DataSourceLoad _load;
 
-            public TestDataSourceService(IndexingRequestEntity[] loadedEntities)
+            public TestDataSourceService(DataSourceLoad load)
             {
-                _loadedEntities = loadedEntities;
+                _load = load;
             }
-            public Task<IndexingRequestEntity[]> LoadByIdListAsync(string indexId, string[] idList)
+            public Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
             {
-                return Task.FromResult(_loadedEntities);
+                return Task.FromResult(_load);
             }
 
-            public Task<DataSourceDeltaLoad> LoadDeltaAsync(string indexId)
+            public Task<DataSourceLoad> LoadSyncAsync(string indexId)
             {
                 throw new NotImplementedException();
             }
