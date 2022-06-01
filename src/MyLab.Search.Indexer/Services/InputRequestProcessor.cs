@@ -38,35 +38,24 @@ namespace MyLab.Search.Indexer.Services
 
             var idxReq = inputRequest.Clone();
 
-            DataSourceLoad dataSourceLoad = null;
-
             if (inputRequest.KickList is { Length: > 0 })
             {
-                dataSourceLoad = await _dataSourceService.LoadEntitiesAsync(inputRequest.IndexId, inputRequest.KickList);
+                var entities = await _dataSourceService.LoadEntitiesAsync(inputRequest.IndexId, inputRequest.KickList);
 
-                if (dataSourceLoad != null)
+                if (entities != null)
                 {
                     if (indexOptions.IsStream)
                     {
-                        idxReq.PostList = JoinEntities(idxReq.PostList, dataSourceLoad.Entities);
+                        idxReq.PostList = JoinEntities(idxReq.PostList, entities);
                     }
                     else
                     {
-                        idxReq.PutList = JoinEntities(idxReq.PutList, dataSourceLoad.Entities);
+                        idxReq.PutList = JoinEntities(idxReq.PutList, entities);
                     }
                 }
             }
 
             await _indexerService.IndexEntities(idxReq);
-
-            if (dataSourceLoad is {Entities:{ Length: > 0 } })
-            {
-                if (dataSourceLoad.SeedSaver == null)
-                    throw new InvalidOperationException("Seed saver not found")
-                        .AndFactIs("index-id", inputRequest.IndexId);
-
-                await dataSourceLoad.SeedSaver.SaveAsync();
-            }
         }
 
         IndexingRequestEntity[] JoinEntities(IndexingRequestEntity[] arr1, IndexingRequestEntity[] arr2)

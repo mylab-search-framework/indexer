@@ -113,15 +113,12 @@ namespace UnitTests
                 KickList = new []{ _kickEnt.Id }
             };
 
-            var dataSourceLoad = new DataSourceLoad { 
-                Entities = new[]
-                {
-                    _kickEnt
-                },
-                SeedSaver = new TestSeedSaver()
+            var dataSourceEntities = new[]
+            {
+                _kickEnt
             };
 
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
+            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceEntities);
             TestIndexerService indexerService = new TestIndexerService();
 
             IndexerOptions options = new IndexerOptions
@@ -167,16 +164,12 @@ namespace UnitTests
                 KickList = new[] { _kickEnt.Id }
             };
 
-            var dataSourceLoad = new DataSourceLoad
+            var dataSourceEntities = new[]
             {
-                Entities = new[]
-                {
-                    _kickEnt
-                },
-                SeedSaver = new TestSeedSaver()
+                _kickEnt
             };
 
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
+            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceEntities);
             TestIndexerService indexerService = new TestIndexerService();
 
             IndexerOptions options = new IndexerOptions
@@ -211,140 +204,17 @@ namespace UnitTests
             Assert.Equal(_kickEnt, actualReq.PutList[1]);
         }
 
-        [Fact]
-        public async Task ShouldFailIfDataSourceEntitiesExistAndSeedSaverIsNull()
-        {
-            //Arrange
-            var inputRequest = new InputIndexingRequest
-            {
-                IndexId = "index-id",
-                KickList = new[] { _kickEnt.Id }
-            };
-
-            var dataSourceLoad = new DataSourceLoad
-            {
-                Entities = new[]
-                {
-                    _kickEnt
-                },
-                SeedSaver = null
-            };
-
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
-            TestIndexerService indexerService = new TestIndexerService();
-
-            IndexerOptions options = new IndexerOptions
-            {
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id"
-                    }
-                }
-            };
-
-            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
-
-            //Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => inputReqProcessor.IndexAsync(inputRequest));
-        }
-
-        [Fact]
-        public async Task ShouldNotFailIfDataSourceEntitiesDoesNotExistAndSeedSaverIsNull()
-        {
-            //Arrange
-            var inputRequest = new InputIndexingRequest
-            {
-                IndexId = "index-id",
-                KickList = new[] { _kickEnt.Id }
-            };
-
-            var dataSourceLoad = new DataSourceLoad
-            {
-                Entities = Array.Empty<IndexingRequestEntity>(),
-                SeedSaver = null
-            };
-
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
-            TestIndexerService indexerService = new TestIndexerService();
-
-            IndexerOptions options = new IndexerOptions
-            {
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id"
-                    }
-                }
-            };
-
-            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
-
-            //Act & Assert
-            await inputReqProcessor.IndexAsync(inputRequest);
-        }
-
-        [Fact]
-        public async Task ShouldCallSeedSaverIfDataSourceEntitiesExist()
-        {
-            //Arrange
-            var inputRequest = new InputIndexingRequest
-            {
-                IndexId = "index-id",
-                KickList = new[] { _kickEnt.Id }
-            };
-
-            var seedSaver = new TestSeedSaver();
-
-            var dataSourceLoad = new DataSourceLoad
-            {
-                Entities = new[]
-                {
-                    _kickEnt
-                },
-                SeedSaver = seedSaver
-            };
-
-            IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
-            TestIndexerService indexerService = new TestIndexerService();
-
-            IndexerOptions options = new IndexerOptions
-            {
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id",
-                        IsStream = true
-                    }
-                }
-            };
-
-            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
-
-            //Act
-            await inputReqProcessor.IndexAsync(inputRequest);
-
-            var actualReq = indexerService.LastRequest;
-
-            //Assert
-            Assert.NotNull(actualReq);
-            Assert.True(seedSaver.HasCalled);
-        }
-
         class TestDataSourceService : IDataSourceService
         {
-            private readonly DataSourceLoad _dataSourceLoad;
+            private readonly IndexingRequestEntity[] _loadedEntities;
 
-            public TestDataSourceService(DataSourceLoad dataSourceLoad)
+            public TestDataSourceService(IndexingRequestEntity[] loadedEntities)
             {
-                _dataSourceLoad = dataSourceLoad;
+                _loadedEntities = loadedEntities;
             }
-            public Task<DataSourceLoad?> LoadEntitiesAsync(string indexId, string[] idList)
+            public Task<IndexingRequestEntity[]?> LoadEntitiesAsync(string indexId, string[] idList)
             {
-                return Task.FromResult(_dataSourceLoad);
+                return Task.FromResult(_loadedEntities);
             }
         }
 
@@ -356,17 +226,6 @@ namespace UnitTests
             {
                 LastRequest = indexingRequest;
 
-                return Task.CompletedTask;
-            }
-        }
-
-        class TestSeedSaver : ISeedSaver
-        {
-            public bool HasCalled { get; set; }
-
-            public Task SaveAsync()
-            {
-                HasCalled = true;
                 return Task.CompletedTask;
             }
         }
