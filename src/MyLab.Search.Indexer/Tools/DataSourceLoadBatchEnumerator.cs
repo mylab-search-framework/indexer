@@ -4,42 +4,44 @@ using System.Threading;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
+using MyLab.Db;
 using MyLab.Search.Indexer.Models;
 
 namespace MyLab.Search.Indexer.Tools
 {
-    class DataSourceEnumerator : IAsyncEnumerator<DataSourceLoadBatch>
+    class DataSourceLoadBatchEnumerator : IAsyncEnumerator<DataSourceLoadBatch>
     {
+        private readonly IDbManager _dbManager;
         private readonly string _sql;
         private readonly DataParameter _seedParameter;
-        private readonly DataConnection _connection;
         private readonly int _pageSize;
         private int _pageIndex;
         private readonly CancellationToken _cancellationToken;
 
         public DataSourceLoadBatch Current { get; set; }
         
-        public DataSourceEnumerator(
+        public DataSourceLoadBatchEnumerator(
+            IDbManager dbManager,
             string sql,
             DataParameter seedParameter,
-            DataConnection connection,
             int pageSize,
             CancellationToken cancellationToken)
         {
+            _dbManager = dbManager;
             _sql = sql;
             _seedParameter = seedParameter;
-            _connection = connection;
             _pageSize = pageSize;
             _cancellationToken = cancellationToken;
         }
 
-        public async ValueTask DisposeAsync()
+        public ValueTask DisposeAsync()
         {
-            await _connection.DisposeAsync(_cancellationToken);
             _pageIndex = 0;
+
+            return ValueTask.CompletedTask;
         }
 
-        public ValueTask<bool> MoveNextAsync()
+        public async ValueTask<bool> MoveNextAsync()
         {
             var queryParams = new []
             {
@@ -48,19 +50,19 @@ namespace MyLab.Search.Indexer.Tools
                 _seedParameter
             };
 
-            var entities = _connection.Query(IndexingEntityDataReader.Read, _sql, queryParams).ToArray();
+            await using var conn = _dbManager.Use();
+
+            var entities = await conn.QueryToArrayAsync(IndexingEntityDataReader.Read, _sql, _cancellationToken, queryParams);
 
             Current = new DataSourceLoadBatch
             {
                 Entities = entities,
-                Query = _connection.LastQuery
+                Query = conn.LastQuery
             };
-
-            var res = Current.Entities.Length != 0;
-
+            
             _pageIndex += 1;
 
-            return new ValueTask<bool>(res);
+            return Current.Entities.Length != 0;
         }
     }
 }

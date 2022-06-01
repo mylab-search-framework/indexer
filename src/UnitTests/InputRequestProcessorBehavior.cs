@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
@@ -115,14 +116,11 @@ namespace UnitTests
 
             var dataSourceLoad = new DataSourceLoad
             {
-                Batches = new[]
+                Batch = new DataSourceLoadBatch
                 {
-                    new DataSourceLoadBatch
+                    Entities = new []
                     {
-                        Entities = new []
-                        {
-                            _kickEnt
-                        }
+                        _kickEnt
                     }
                 }
             };
@@ -175,14 +173,11 @@ namespace UnitTests
 
             var dataSourceLoad = new DataSourceLoad
             {
-                Batches = new []
+                Batch = new DataSourceLoadBatch
                 {
-                    new DataSourceLoadBatch
+                    Entities = new []
                     {
-                        Entities = new []
-                        {
-                            _kickEnt
-                        }
+                        _kickEnt
                     }
                 }
             };
@@ -235,7 +230,7 @@ namespace UnitTests
                 return Task.FromResult(_load);
             }
 
-            public Task<DataSourceLoad> LoadSyncAsync(string indexId)
+            public Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)
             {
                 throw new NotImplementedException();
             }

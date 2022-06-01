@@ -4,7 +4,7 @@ namespace MyLab.Search.Indexer.Models
 {
     public class DataSourceLoad
     {
-        public DataSourceLoadBatch[] Batches { get; set; }
+        public DataSourceLoadBatch Batch{ get; set; }
         public ISeedSaver SeedSaver { get; set; }
     }
 

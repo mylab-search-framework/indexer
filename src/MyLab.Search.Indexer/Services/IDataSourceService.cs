@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
 
 namespace MyLab.Search.Indexer.Services
@@ -7,6 +8,6 @@ namespace MyLab.Search.Indexer.Services
     {
         Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList);
 
-        Task<DataSourceLoad> LoadSyncAsync(string indexId);
+        Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId);
     }
 }

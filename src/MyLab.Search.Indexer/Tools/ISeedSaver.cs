@@ -12,10 +12,10 @@ namespace MyLab.Search.Indexer.Tools
     class IdSeedSaver : ISeedSaver
     {
         private readonly string _indexId;
-        private readonly ulong _idSeed;
+        private readonly long _idSeed;
         private readonly ISeedService _seedService;
 
-        public IdSeedSaver(string indexId, ulong idSeed, ISeedService seedService)
+        public IdSeedSaver(string indexId, long idSeed, ISeedService seedService)
         {
             _indexId = indexId;
             _idSeed = idSeed;

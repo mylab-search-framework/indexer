@@ -35,32 +35,34 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(InputIndexingRequest inputRequest)
         {
-            var indexOptions = _options.GetIndexOptions(inputRequest.IndexId);
+            //var indexOptions = _options.GetIndexOptions(inputRequest.IndexId);
 
-            var idxReq = inputRequest.Clone();
+            //var idxReq = inputRequest.Clone();
 
-            if (inputRequest.KickList is { Length: > 0 })
-            {
-                var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
+            //if (inputRequest.KickList is { Length: > 0 })
+            //{
+            //    var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
 
-                if (entitiesLoad is { Batches: {Length: > 0} })
-                {
-                    var entities = entitiesLoad.Batches
-                        .SelectMany(b => b.Entities)
-                        .ToArray();
+            //    if (entitiesLoad is { Batches: {Length: > 0} })
+            //    {
+            //        var entities = entitiesLoad.Batches
+            //            .SelectMany(b => b.Entities)
+            //            .ToArray();
 
-                    if (indexOptions.IsStream)
-                    {
-                        idxReq.PostList = JoinEntities(idxReq.PostList, entities);
-                    }
-                    else
-                    {
-                        idxReq.PutList = JoinEntities(idxReq.PutList, entities);
-                    }
-                }
-            }
+            //        if (indexOptions.IsStream)
+            //        {
+            //            idxReq.PostList = JoinEntities(idxReq.PostList, entities);
+            //        }
+            //        else
+            //        {
+            //            idxReq.PutList = JoinEntities(idxReq.PutList, entities);
+            //        }
+            //    }
+            //}
 
-            await _indexerService.IndexEntities(idxReq);
+            //await _indexerService.IndexEntities(idxReq);
+
+            throw new NotImplementedException();
         }
 
         IndexingEntity[] JoinEntities(IndexingEntity[] arr1, IndexingEntity[] arr2)
