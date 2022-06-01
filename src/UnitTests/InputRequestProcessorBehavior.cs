@@ -212,9 +212,14 @@ namespace UnitTests
             {
                 _loadedEntities = loadedEntities;
             }
-            public Task<IndexingRequestEntity[]?> LoadEntitiesAsync(string indexId, string[] idList)
+            public Task<IndexingRequestEntity[]> LoadByIdListAsync(string indexId, string[] idList)
             {
                 return Task.FromResult(_loadedEntities);
+            }
+
+            public Task<DataSourceDeltaLoad> LoadDeltaAsync(string indexId)
+            {
+                throw new NotImplementedException();
             }
         }
 

@@ -40,7 +40,7 @@ namespace MyLab.Search.Indexer.Services
 
             if (inputRequest.KickList is { Length: > 0 })
             {
-                var entities = await _dataSourceService.LoadEntitiesAsync(inputRequest.IndexId, inputRequest.KickList);
+                var entities = await _dataSourceService.LoadByIdListAsync(inputRequest.IndexId, inputRequest.KickList);
 
                 if (entities != null)
                 {

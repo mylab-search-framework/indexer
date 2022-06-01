@@ -5,6 +5,8 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IDataSourceService
     {
-        Task<IndexingRequestEntity[]> LoadEntitiesAsync(string indexId, string[] idList);
+        Task<IndexingRequestEntity[]> LoadByIdListAsync(string indexId, string[] idList);
+
+        Task<DataSourceDeltaLoad> LoadDeltaAsync(string indexId);
     }
 }
