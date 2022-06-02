@@ -43,10 +43,27 @@ namespace MyLab.Search.Indexer.Services
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
             var idxOpts = _options.GetIndexOptions(indexId);
-
             idxOpts.ValidateIdPropertyType();
 
-            throw new NotImplementedException();
+            var kickQueryPattern = await _indexResourceProvider.ProvideKickQueryAsync(indexId);
+
+            await using var conn = _dbManager.Use();
+
+            var kickQuery = KickQuery.Build(kickQueryPattern, idList, idxOpts.IdPropertyType);
+            
+            var entities = await conn.QueryToArrayAsync(
+                IndexingEntityDataReader.Read, 
+                kickQuery.Query, 
+                kickQuery.Parameters);
+
+            return new DataSourceLoad
+            {
+                Batch = new DataSourceLoadBatch
+                {
+                    Entities = entities,
+                    Query = conn.LastQuery
+                }
+            };
         }
 
         public async Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)

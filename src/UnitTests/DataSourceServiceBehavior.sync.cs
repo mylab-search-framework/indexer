@@ -11,7 +11,7 @@ namespace UnitTests
     public partial class DataSourceServiceBehavior : IClassFixture<TmpDbFixture<DataSourceServiceBehavior.DbInitializer>>
     {
         [Fact]
-        public async Task ShouldNotLoadFromStreamIfEmpty()
+        public async Task ShouldNotLoadSyncFromStreamIfEmpty()
         {
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
@@ -41,7 +41,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldNotLoadFromHeapIfEmpty()
+        public async Task ShouldNotLoadSyncFromHeapIfEmpty()
         {
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
@@ -68,7 +68,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadAllDataFromStream()
+        public async Task ShouldLoadAllSyncDataFromStream()
         {
             //Arrange
 
@@ -110,7 +110,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadAllDataFromHeap()
+        public async Task ShouldLoadAllSyncDataFromHeap()
         {
             //Arrange
 
@@ -152,7 +152,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadDeltaFromStream()
+        public async Task ShouldLoadDeltaSyncFromStream()
         {
             //Arrange
             const long lastProcessedEntityId = 0;
@@ -195,7 +195,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadDeltaFromHeap()
+        public async Task ShouldLoadDeltaSyncFromHeap()
         {
             //Arrange
             var lastIndexedDt = DateTime.Now;

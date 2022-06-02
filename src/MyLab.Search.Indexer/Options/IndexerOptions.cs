@@ -25,7 +25,7 @@ namespace MyLab.Search.Indexer.Options
     public class IndexOptions
     {
         public string Id { get; set; }
-        public IndexType IndexType { get; set; }
+        public IndexType IndexType { get; set; } = IndexType.Heap;
 
         public string KickDbQuery { get; set; }
         public string SyncDbQuery { get; set; }
