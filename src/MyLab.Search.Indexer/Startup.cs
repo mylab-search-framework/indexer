@@ -1,11 +1,16 @@
+using LinqToDB.DataProvider;
+using LinqToDB.DataProvider.MySql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using MyLab.Db;
 using MyLab.Log;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
+using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using MyLab.WebErrors;
 
 namespace MyLab.Search.Indexer
@@ -28,7 +33,11 @@ namespace MyLab.Search.Indexer
             services.Configure<ExceptionProcessingOptions>(opt => opt.HideError = false);
 #endif
 
-            services.Configure<IndexerOptions>(Configuration.GetSection("Indexer"));
+            services.Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
+                .AddSingleton<IDataSourceService, DbDataSourceService>()
+                .AddSingleton<ISeedService, FileSeedService>()
+                .AddDbTools<ConfiguredDataProviderSource>(Configuration);
+            
             services.AddLogging(l => l.AddMyLabConsole());
             services
                 .AddRabbit()

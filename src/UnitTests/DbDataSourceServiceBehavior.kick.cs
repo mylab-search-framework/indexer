@@ -6,7 +6,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public partial class DataSourceServiceBehavior
+    public partial class DbDataSourceServiceBehavior
     {
         [Fact]
         public async Task ShouldProvideSingleKickedEntityByIntField()
@@ -33,7 +33,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             //Act
             var load = await srv.LoadKickAsync("foo-index", new[] { "1" });
@@ -70,7 +70,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             //Act
             var load = await srv.LoadKickAsync("foo-index", new[] { "0", "2" });
@@ -108,7 +108,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             //Act
             var load = await srv.LoadKickAsync("foo-index", new[] { "1-content" });
@@ -145,7 +145,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             //Act
             var load = await srv.LoadKickAsync("foo-index", new[] { "0-content", "2-content" });

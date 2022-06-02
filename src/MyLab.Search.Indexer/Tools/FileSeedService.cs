@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using MyLab.Log;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -9,7 +11,13 @@ namespace MyLab.Search.Indexer.Tools
     class FileSeedService : ISeedService
     {
         private readonly string _basePath;
-        
+
+        public FileSeedService(IOptions<IndexerOptions> opts)
+            :this(opts.Value.SeedPath)
+        {
+
+        }
+
         public FileSeedService(string basePath)
         {
             if(string.IsNullOrWhiteSpace(basePath))

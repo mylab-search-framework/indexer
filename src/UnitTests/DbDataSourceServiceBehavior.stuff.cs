@@ -13,11 +13,11 @@ using Xunit.Abstractions;
 
 namespace UnitTests
 {
-    public partial class DataSourceServiceBehavior
+    public partial class DbDataSourceServiceBehavior
     {
         private readonly TmpDbFixture<DbInitializer> _dbFxt;
 
-        public DataSourceServiceBehavior(TmpDbFixture<DbInitializer> dbFxt, ITestOutputHelper output)
+        public DbDataSourceServiceBehavior(TmpDbFixture<DbInitializer> dbFxt, ITestOutputHelper output)
         {
             _dbFxt = dbFxt;
             _dbFxt.Output = output;

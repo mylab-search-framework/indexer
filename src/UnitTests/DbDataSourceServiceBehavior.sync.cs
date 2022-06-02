@@ -8,7 +8,7 @@ using Xunit;
 
 namespace UnitTests
 {
-    public partial class DataSourceServiceBehavior : IClassFixture<TmpDbFixture<DataSourceServiceBehavior.DbInitializer>>
+    public partial class DbDataSourceServiceBehavior : IClassFixture<TmpDbFixture<DbDataSourceServiceBehavior.DbInitializer>>
     {
         [Fact]
         public async Task ShouldNotLoadSyncFromStreamIfEmpty()
@@ -29,7 +29,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
@@ -56,7 +56,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
@@ -93,7 +93,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
@@ -135,7 +135,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
@@ -180,7 +180,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
@@ -223,7 +223,7 @@ namespace UnitTests
 
             var indexResProvider = new TestIndexResourceProvider(indexOpts);
 
-            IDataSourceService srv = new DataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 

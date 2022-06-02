@@ -9,6 +9,8 @@ namespace MyLab.Search.Indexer.Options
     {
         public IndexOptions[] Indexes { get; set; }
 
+        public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
+
         public string MqQueue { get; set; }
         
         public IndexOptions GetIndexOptions(string indexName)
