@@ -1,45 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Tools;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace UnitTests
 {
-    public class InputRequestProcessorBehavior
+    public partial class InputRequestProcessorBehavior
     {
-        readonly IndexingEntity _postEnt = new IndexingEntity
-        {
-            Id = "post-id",
-            Entity = JObject.FromObject(new TestEntity("post-id", "post-data"))
-        };
-
-        readonly IndexingEntity _putEnt = new IndexingEntity
-        {
-            Id = "put-id",
-            Entity = JObject.FromObject(new TestEntity("put-id", "put-data"))
-        };
-
-        readonly IndexingEntity _patchEnt = new IndexingEntity
-        {
-            Id = "patch-id",
-            Entity = JObject.FromObject(new TestEntity("patch-id", "patch-data"))
-        };
-
-        readonly IndexingEntity _kickEnt = new IndexingEntity
-        {
-            Id = "kick-id",
-            Entity = JObject.FromObject(new TestEntity("kick-id", "kick-data"))
-        };
-
-        string _deleteId = "delete-id";
-
         [Fact]
         public async Task ShouldFailIfIndexNotFound()
         {
@@ -51,10 +20,8 @@ namespace UnitTests
 
             IDataSourceService dataSourceService = new TestDataSourceService(null);
             TestIndexerService indexerService = new TestIndexerService();
-
-            IndexerOptions options = new IndexerOptions();
-
-            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
+            
+            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, new IndexerOptions());
 
             //Act & Assert
             await Assert.ThrowsAsync<IndexOptionsNotFoundException>(() => inputReqProcessor.IndexAsync(inputRequest));
@@ -76,16 +43,8 @@ namespace UnitTests
             IDataSourceService dataSourceService = new TestDataSourceService(null);
             TestIndexerService indexerService = new TestIndexerService();
 
-            IndexerOptions options = new IndexerOptions
-            {
-                Indexes = new []
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id"
-                    }
-                }
-            };
+            var indexOpts = new IndexOptions { Id = "index-id" };
+            IndexerOptions options = new IndexerOptions { Indexes = new [] { indexOpts } };
 
             var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
 
@@ -114,31 +73,17 @@ namespace UnitTests
                 KickList = new []{ _kickEnt.Id }
             };
 
-            var dataSourceLoad = new DataSourceLoad
-            {
-                Batch = new DataSourceLoadBatch
-                {
-                    Entities = new []
-                    {
-                        _kickEnt
-                    }
-                }
-            };
+            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new[] { _kickEnt } } };
 
             IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();
 
-            IndexerOptions options = new IndexerOptions
+            var indexOpts = new IndexOptions
             {
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id",
-                        IndexType = IndexType.Stream
-                    }
-                }
+                Id = "index-id",
+                IndexType = IndexType.Stream
             };
+            IndexerOptions options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
             var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
 
@@ -171,31 +116,17 @@ namespace UnitTests
                 KickList = new[] { _kickEnt.Id }
             };
 
-            var dataSourceLoad = new DataSourceLoad
-            {
-                Batch = new DataSourceLoadBatch
-                {
-                    Entities = new []
-                    {
-                        _kickEnt
-                    }
-                }
-            };
+            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new [] { _kickEnt } } };
 
             IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();
 
-            IndexerOptions options = new IndexerOptions
+            var indexOpts = new IndexOptions
             {
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "index-id",
-                        IndexType = IndexType.Heap
-                    }
-                }
+                Id = "index-id",
+                IndexType = IndexType.Heap
             };
+            IndexerOptions options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
             var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, options);
 
@@ -215,64 +146,6 @@ namespace UnitTests
             Assert.Equal(2, actualReq.PutList.Length);
             Assert.Equal(_putEnt, actualReq.PutList[0]);
             Assert.Equal(_kickEnt, actualReq.PutList[1]);
-        }
-
-        class TestDataSourceService : IDataSourceService
-        {
-            private readonly DataSourceLoad _load;
-
-            public TestDataSourceService(DataSourceLoad load)
-            {
-                _load = load;
-            }
-            public Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
-            {
-                return Task.FromResult(_load);
-            }
-
-            public Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        class TestIndexerService : IIndexerService
-        {
-            public IndexingRequest LastRequest { get; set; }
-
-            public Task IndexEntities(IndexingRequest indexingRequest)
-            {
-                LastRequest = indexingRequest;
-
-                return Task.CompletedTask;
-            }
-        }
-
-        class TestEntity
-        {
-            [JsonProperty("id")]
-            public string Id { get; set; }
-            public string Content { get; set; }
-
-            public TestEntity()
-            {
-
-            }
-
-            public TestEntity(string id, string content)
-            {
-                Id = id;
-                Content = content;
-            }
-
-            public static TestEntity Generate()
-            {
-                return new TestEntity
-                {
-                    Id = Guid.NewGuid().ToString("N"),
-                    Content = Guid.NewGuid().ToString("N")
-                };
-            }
         }
     }
 }
