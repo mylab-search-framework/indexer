@@ -56,21 +56,27 @@ namespace MyLab.Search.Indexer.Services
             var syncQuery = await _indexResourceProvider.ProvideSyncQueryAsync(indexId);
             
             DataParameter seedParameter;
-
-            if (idxOpts.IsStream)
+            switch (idxOpts.IndexType)
             {
-                var idSeed = await _seedService.LoadIdSeedAsync(indexId);
-                seedParameter = new DataParameter(QueryParameterNames.Seed, idSeed, DataType.Int64);
-            }
-            else
-            {
-                var dtSeed = await _seedService.LoadDtSeedAsync(indexId);
-                seedParameter = new DataParameter(QueryParameterNames.Seed, dtSeed, DataType.DateTime);
+                case IndexType.Heap:
+                    {
+                        var dtSeed = await _seedService.LoadDtSeedAsync(indexId);
+                        seedParameter = new DataParameter(QueryParameterNames.Seed, dtSeed, DataType.DateTime);
+                    }
+                    break;
+                case IndexType.Stream:
+                    {
+                        var idSeed = await _seedService.LoadIdSeedAsync(indexId);
+                        seedParameter = new DataParameter(QueryParameterNames.Seed, idSeed, DataType.Int64);
+                    }
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
             
             var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, idxOpts.SyncPageSize);
 
-            return new DataSourceLoadEnumerable(indexId, idxOpts.IsStream, _seedService, batchEnumerable);
+            return new DataSourceLoadEnumerable(indexId, idxOpts.IndexType, _seedService, batchEnumerable);
         }
     }
 }

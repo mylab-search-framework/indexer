@@ -25,7 +25,7 @@ namespace MyLab.Search.Indexer.Options
     public class IndexOptions
     {
         public string Id { get; set; }
-        public bool IsStream { get; set; }
+        public IndexType IndexType { get; set; }
 
         public string KickDbQuery { get; set; }
         public string SyncDbQuery { get; set; }
@@ -58,5 +58,12 @@ namespace MyLab.Search.Indexer.Options
         Undefined,
         String,
         Int
+    }
+
+    public enum IndexType
+    {
+        Undefined,
+        Heap,
+        Stream
     }
 }

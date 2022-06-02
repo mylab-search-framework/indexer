@@ -2,6 +2,7 @@
 using System.Threading;
 using MyLab.Db;
 using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools
@@ -10,25 +11,25 @@ namespace MyLab.Search.Indexer.Tools
     {
         private readonly string _indexId;
         private readonly DataSourceLoadBatchEnumerable _batchEnumerable;
-        private readonly bool _indexIsStream;
+        private readonly IndexType _indexType;
         private readonly ISeedService _seedService;
 
         public DataSourceLoadEnumerable(
             string indexId,
-            bool indexIsStream,
+            IndexType indexType,
             ISeedService seedService,
             DataSourceLoadBatchEnumerable batchEnumerable)
         {
             _indexId = indexId;
             _batchEnumerable = batchEnumerable;
-            _indexIsStream = indexIsStream;
+            _indexType = indexType;
             _seedService = seedService;
         }
 
         public IAsyncEnumerator<DataSourceLoad> GetAsyncEnumerator(CancellationToken cancellationToken = default)
         {
             var batchEnumerator = _batchEnumerable.GetAsyncEnumerator(cancellationToken);
-            return new DataSourceLoadEnumerator(_indexId, _indexIsStream, _seedService, batchEnumerator);
+            return new DataSourceLoadEnumerator(_indexId, _indexType, _seedService, batchEnumerator);
         }
     }
 }

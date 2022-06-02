@@ -135,7 +135,7 @@ namespace UnitTests
                     new IndexOptions
                     {
                         Id = "index-id",
-                        IsStream = true
+                        IndexType = IndexType.Stream
                     }
                 }
             };
@@ -161,7 +161,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldAddDataSourceEntitiesToPutListIfIndexIsNotStream()
+        public async Task ShouldAddDataSourceEntitiesToPutListIfIndexIsHeap()
         {
             //Arrange
             var inputRequest = new InputIndexingRequest
@@ -192,7 +192,7 @@ namespace UnitTests
                     new IndexOptions
                     {
                         Id = "index-id",
-                        IsStream = false
+                        IndexType = IndexType.Heap
                     }
                 }
             };

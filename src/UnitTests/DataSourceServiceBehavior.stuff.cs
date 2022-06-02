@@ -108,7 +108,7 @@ namespace UnitTests
         [Table("entities")]
         private class TestEntity
         {
-            [PrimaryKey, Column("id")] public int Id { get; set; }
+            [PrimaryKey, Column("id")] public long Id { get; set; }
             [Column("content")] public string Content { get; set; }
             [Column("last_change_dt")] public DateTime LastChangeDt { get; set; }
         }

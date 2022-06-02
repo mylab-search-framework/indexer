@@ -35,34 +35,37 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(InputIndexingRequest inputRequest)
         {
-            //var indexOptions = _options.GetIndexOptions(inputRequest.IndexId);
+            var indexOptions = _options.GetIndexOptions(inputRequest.IndexId);
 
-            //var idxReq = inputRequest.Clone();
+            var idxReq = inputRequest.Clone();
 
-            //if (inputRequest.KickList is { Length: > 0 })
-            //{
-            //    var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
+            if (inputRequest.KickList is { Length: > 0 })
+            {
+                var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
 
-            //    if (entitiesLoad is { Batches: {Length: > 0} })
-            //    {
-            //        var entities = entitiesLoad.Batches
-            //            .SelectMany(b => b.Entities)
-            //            .ToArray();
+                if (entitiesLoad is { Batch: { Entities: { Length: > 0 } } })
+                {
+                    var entities = entitiesLoad.Batch.Entities.ToArray();
 
-            //        if (indexOptions.IsStream)
-            //        {
-            //            idxReq.PostList = JoinEntities(idxReq.PostList, entities);
-            //        }
-            //        else
-            //        {
-            //            idxReq.PutList = JoinEntities(idxReq.PutList, entities);
-            //        }
-            //    }
-            //}
+                    switch (indexOptions.IndexType)
+                    {
+                        case IndexType.Heap:
+                            {
+                                idxReq.PutList = JoinEntities(idxReq.PutList, entities);
+                            }
+                            break;
+                        case IndexType.Stream:
+                            {
+                                idxReq.PostList = JoinEntities(idxReq.PostList, entities);
+                            }
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                }
+            }
 
-            //await _indexerService.IndexEntities(idxReq);
-
-            throw new NotImplementedException();
+            await _indexerService.IndexEntities(idxReq);
         }
 
         IndexingEntity[] JoinEntities(IndexingEntity[] arr1, IndexingEntity[] arr2)
