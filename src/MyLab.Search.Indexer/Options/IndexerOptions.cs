@@ -10,7 +10,7 @@ namespace MyLab.Search.Indexer.Options
         public IndexOptions[] Indexes { get; set; }
 
         public string MqQueue { get; set; }
-
+        
         public IndexOptions GetIndexOptions(string indexName)
         {
             var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexName);
