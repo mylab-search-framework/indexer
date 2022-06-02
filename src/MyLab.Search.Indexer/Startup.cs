@@ -6,12 +6,16 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MyLab.Db;
+using MyLab.HttpMetrics;
 using MyLab.Log;
+using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
+using MyLab.StatusProvider;
 using MyLab.WebErrors;
+using Prometheus;
 
 namespace MyLab.Search.Indexer
 {
@@ -29,20 +33,29 @@ namespace MyLab.Search.Indexer
         {
             services.AddControllers(opt => opt.AddExceptionProcessing());
 
-#if DEBUG
-            services.Configure<ExceptionProcessingOptions>(opt => opt.HideError = false);
-#endif
-
-            services.Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
+            services
+                .AddSingleton<IIndexResourceProvider, FileIndexResourceProvider>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
-                .AddDbTools<ConfiguredDataProviderSource>(Configuration);
-            
-            services.AddLogging(l => l.AddMyLabConsole());
-            services
                 .AddRabbit()
+                .AddRabbitConsumers<IndexerRabbitRegistrar>()
+                .AddDbTools<ConfiguredDataProviderSource>(Configuration)
+                .AddAppStatusProviding()
+                .AddEsTools(Configuration, "ES")
+                .AddLogging(l => l.AddMyLabConsole())
+                .AddUrlBasedHttpMetrics();
+
+            services
                 .ConfigureRabbit(Configuration)
-                .AddRabbitConsumers<IndexerRabbitRegistrar>();
+                .Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
+                .Configure<IndexerDbOptions>(Configuration.GetSection("DB"))
+
+#if DEBUG
+                .Configure<ExceptionProcessingOptions>(opt => opt.HideError = false);
+#else
+                ;
+#endif
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -58,9 +71,11 @@ namespace MyLab.Search.Indexer
             app.UseAuthorization();
 
             app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+                {
+                    endpoints.MapControllers();
+                    endpoints.MapMetrics();
+                })
+                .UseStatusApi();
         }
     }
 }

@@ -3,7 +3,7 @@ using MyLab.Search.Indexer;
 using MyLab.Search.IndexerClient;
 using Xunit.Abstractions;
 
-namespace FuncTests
+namespace UnitTests
 {
     public partial class IncomingRequestApiProcessingBehavior
     {

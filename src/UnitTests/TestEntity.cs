@@ -1,7 +1,7 @@
 using System;
 using Newtonsoft.Json;
 
-namespace FuncTests
+namespace UnitTests
 {
     class TestEntity
     {

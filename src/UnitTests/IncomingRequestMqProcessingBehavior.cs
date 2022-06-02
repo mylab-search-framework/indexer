@@ -7,12 +7,11 @@ using MyLab.RabbitClient.Publishing;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace FuncTests
+namespace UnitTests
 {
     public class IncomingRequestMqProcessingBehavior
     {
