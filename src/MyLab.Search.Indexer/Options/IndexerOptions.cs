@@ -8,11 +8,10 @@ namespace MyLab.Search.Indexer.Options
     public class IndexerOptions
     {
         public IndexOptions[] Indexes { get; set; }
-
         public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
-
+        public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string MqQueue { get; set; }
-        
+
         public IndexOptions GetIndexOptions(string indexName)
         {
             var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexName);
@@ -28,7 +27,7 @@ namespace MyLab.Search.Indexer.Options
     {
         public string Id { get; set; }
         public IndexType IndexType { get; set; } = IndexType.Heap;
-
+        public string EsIndex { get; set; }
         public string KickDbQuery { get; set; }
         public string SyncDbQuery { get; set; }
 

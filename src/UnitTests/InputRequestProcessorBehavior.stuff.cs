@@ -60,9 +60,9 @@ namespace UnitTests
         {
             public IndexingRequest LastRequest { get; set; }
 
-            public Task IndexEntities(IndexingRequest indexingRequest)
+            public Task IndexEntities(IndexingRequest req)
             {
-                LastRequest = indexingRequest;
+                LastRequest = req;
 
                 return Task.CompletedTask;
             }
