@@ -2,7 +2,7 @@ using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
 
-namespace UnitTests
+namespace IntegrationTests
 {
     class TestInputRequestProcessor : IInputRequestProcessor
     {

@@ -5,6 +5,6 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface IIndexerService
     {
-        Task IndexEntities(IndexingRequest indexingRequest);
+        Task IndexEntities(IndexingRequest req);
     }
 }

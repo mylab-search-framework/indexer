@@ -19,7 +19,7 @@
     <PackageReference Include="MyLab.Log" Version="3.3.12" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
     <PackageReference Include="MyLab.RabbitClient" Version="2.9.16" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="1.5.21" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="1.6.21" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
     <PackageReference Include="MyLab.WebErrors" Version="1.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />

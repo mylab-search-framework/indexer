@@ -6,7 +6,7 @@ using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace UnitTests
+namespace IntegrationTests
 {
     public partial class IncomingRequestApiProcessingBehavior : IDisposable
     {
