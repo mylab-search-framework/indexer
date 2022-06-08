@@ -65,7 +65,7 @@ namespace MyLab.Search.Indexer.Services
                 }
             }
 
-            await _indexerService.IndexEntities(idxReq);
+            await _indexerService.IndexAsync(idxReq);
         }
 
         IndexingEntity[] JoinEntities(IndexingEntity[] arr1, IndexingEntity[] arr2)

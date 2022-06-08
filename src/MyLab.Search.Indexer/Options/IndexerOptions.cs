@@ -12,12 +12,15 @@ namespace MyLab.Search.Indexer.Options
         public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string MqQueue { get; set; }
 
-        public IndexOptions GetIndexOptions(string indexName)
+        public IndexOptions GetIndexOptions(string indexId)
         {
-            var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexName);
+            if (string.IsNullOrEmpty(indexId))
+                throw new InvalidOperationException("Index id not specified");
+
+            var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexId);
 
             if (foundOptions == null)
-                throw new IndexOptionsNotFoundException(indexName);
+                throw new IndexOptionsNotFoundException(indexId);
 
             return foundOptions;
         }

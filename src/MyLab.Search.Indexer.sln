@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "UnitTests", "UnitTests\Unit
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.Search.IndexerClient", "MyLab.Search.IndexerClient\MyLab.Search.IndexerClient.csproj", "{D198E1D2-C965-4103-AC08-B2766B9165F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{55084B38-B38A-4A2D-833A-56F8CACFD8A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IntegrationTests", "IntegrationTests\IntegrationTests.csproj", "{55084B38-B38A-4A2D-833A-56F8CACFD8A1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyLab.Search.EsAdapter", "..\..\es-adapter\src\MyLab.Search.EsAdapter\MyLab.Search.EsAdapter.csproj", "{4D8B690C-CAF0-49E1-AEF7-1668BD8286BD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{55084B38-B38A-4A2D-833A-56F8CACFD8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{55084B38-B38A-4A2D-833A-56F8CACFD8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{55084B38-B38A-4A2D-833A-56F8CACFD8A1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4D8B690C-CAF0-49E1-AEF7-1668BD8286BD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4D8B690C-CAF0-49E1-AEF7-1668BD8286BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4D8B690C-CAF0-49E1-AEF7-1668BD8286BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4D8B690C-CAF0-49E1-AEF7-1668BD8286BD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -3,7 +3,7 @@ using Newtonsoft.Json;
 
 namespace IntegrationTests
 {
-    class TestEntity
+    public class TestEntity
     {
         [JsonProperty("id")]
         public string Id { get; set; }

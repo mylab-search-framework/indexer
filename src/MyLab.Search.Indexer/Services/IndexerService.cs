@@ -22,12 +22,17 @@ namespace MyLab.Search.Indexer.Services
         }
 
         public IndexerService(IEsClientProvider clientProvider, IndexerOptions indexerOptions)
+            :this(clientProvider.Provide(), indexerOptions)
         {
-            _indexerOptions = indexerOptions;
-            _client = clientProvider.Provide();
         }
 
-        public Task IndexEntities(IndexingRequest req)
+        public IndexerService(ElasticClient elasticClient, IndexerOptions indexerOptions)
+        {
+            _indexerOptions = indexerOptions;
+            _client = elasticClient;
+        }
+
+        public Task IndexAsync(IndexingRequest req)
         {
             var idxOpts = _indexerOptions.GetIndexOptions(req.IndexId);
 
