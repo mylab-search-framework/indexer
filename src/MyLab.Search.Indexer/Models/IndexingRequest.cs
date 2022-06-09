@@ -1,4 +1,7 @@
-﻿namespace MyLab.Search.Indexer.Models
+﻿using MyLab.Search.EsAdapter.Indexing;
+using Newtonsoft.Json.Linq;
+
+namespace MyLab.Search.Indexer.Models
 {
     public class IndexingRequest
     {
@@ -18,6 +21,11 @@
                 PatchList = PatchList,
                 IndexId = IndexId
             };
+        }
+
+        public EsBulkIndexingRequest<JObject> ToEsBulkRequest()
+        {
+            var res = new EsBulkIndexingRequest<JObject>();
         }
     }
 }

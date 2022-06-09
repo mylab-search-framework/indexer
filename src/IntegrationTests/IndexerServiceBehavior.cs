@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
@@ -11,16 +12,14 @@ using Xunit.Abstractions;
 
 namespace IntegrationTests
 {
-    public class IndexerServiceBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public class IndexerServiceBehavior : IClassFixture<EsIndexFixture<TestEntity, TestEsFixtureStrategy>>, IAsyncLifetime
     {
-        private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
-        private readonly IEsSearcher<TestEntity> _searcher;
+        private readonly EsIndexFixture<TestEntity, TestEsFixtureStrategy> _fxt;
 
-        public IndexerServiceBehavior(EsFixture<TestEsFixtureStrategy> esFixture, ITestOutputHelper output)
+        public IndexerServiceBehavior(EsIndexFixture<TestEntity, TestEsFixtureStrategy> fxt, ITestOutputHelper output)
         {
-            _esFxt = esFixture;
-            _searcher = _esFxt.CreateSearcher<TestEntity>();
-            _esFxt.Output = output;
+            _fxt = fxt;
+            _fxt.Output = output;
         }
 
         [Fact]
@@ -358,12 +357,11 @@ namespace IntegrationTests
 
         public async Task InitializeAsync()
         {
-            await _esFxt.InitializeAsync();
         }
 
         public async Task DisposeAsync()
         {
-            await _esFxt.DisposeAsync();
+            await _fxt.IndexTools.PruneIndexAsync();
         }
     }
 }
