@@ -7,6 +7,7 @@ using MyLab.RabbitClient.Publishing;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
@@ -26,10 +27,10 @@ namespace IntegrationTests
         public void ShouldGetRequestThroughQueue()
         {
             //Arrange
-            var postWithoutIdEnt = new TestEntity(){Content = Guid.NewGuid().ToString("N")};
-            var postEnt = TestEntity.Generate();
-            var putEnt = TestEntity.Generate();
-            var patchEnt = TestEntity.Generate();
+            var postWithoutIdEnt = new TestDoc(){Content = Guid.NewGuid().ToString("N")};
+            var postEnt = TestDoc.Generate();
+            var putEnt = TestDoc.Generate();
+            var patchEnt = TestDoc.Generate();
 
             var deleteId = Guid.NewGuid().ToString("N");
                 
@@ -82,39 +83,39 @@ namespace IntegrationTests
 
             var actualRequest = inputSrvProc.LastRequest;
 
-            var actualPostIndexEnt = actualRequest.PostList?.FirstOrDefault(e => e.Id == postEnt.Id);
-            var actualPostIndexEntWithoutId = actualRequest.PostList?.FirstOrDefault(e => e.Id == null);
-            var actualPutIndexEnt = actualRequest.PutList?.FirstOrDefault(e => e.Id == putEnt.Id);
-            var actualPatchIndexEnt = actualRequest.PatchList?.FirstOrDefault(e => e.Id == patchEnt.Id);
+            var actualPostIndexEnt = actualRequest.PostList?.FirstOrDefault(e => e.GetIdProperty() == postEnt.Id);
+            var actualPostIndexEntWithoutId = actualRequest.PostList?.FirstOrDefault(e => e.GetIdProperty() == null);
+            var actualPutIndexEnt = actualRequest.PutList?.FirstOrDefault(e => e.GetIdProperty() == putEnt.Id);
+            var actualPatchIndexEnt = actualRequest.PatchList?.FirstOrDefault(e => e.GetIdProperty() == patchEnt.Id);
 
-            var actualPostEnt = actualPostIndexEnt?.Entity?.ToObject<TestEntity>();
-            var actualPutEnt = actualPutIndexEnt?.Entity?.ToObject<TestEntity>();
-            var actualPatchEnt = actualPatchIndexEnt?.Entity?.ToObject<TestEntity>();
-            var actualPostEntWithoutId = actualPostIndexEntWithoutId?.Entity?.ToObject<TestEntity>();
+            var actualPostEnt = actualPostIndexEnt?.ToObject<TestDoc>();
+            var actualPutEnt = actualPutIndexEnt?.ToObject<TestDoc>();
+            var actualPatchEnt = actualPatchIndexEnt?.ToObject<TestDoc>();
+            var actualPostEntWithoutId = actualPostIndexEntWithoutId?.ToObject<TestDoc>();
 
             //Assert
             Assert.Equal("foo-index", actualRequest.IndexId);
             
             Assert.NotNull(actualPostIndexEnt);
-            Assert.Equal(postEnt.Id, actualPostIndexEnt.Id);
+            Assert.Equal(postEnt.Id, actualPostIndexEnt.GetIdProperty());
             Assert.NotNull(actualPostEnt);
             Assert.Equal(postEnt.Id, actualPostEnt.Id);
             Assert.Equal(postEnt.Content, actualPostEnt.Content);
 
             Assert.NotNull(actualPostIndexEntWithoutId);
-            Assert.Equal(postWithoutIdEnt.Id, actualPostIndexEntWithoutId.Id);
+            Assert.Equal(postWithoutIdEnt.Id, actualPostIndexEntWithoutId.GetIdProperty());
             Assert.NotNull(actualPostEntWithoutId);
             Assert.Null(actualPostEntWithoutId.Id);
             Assert.Equal(postWithoutIdEnt.Content, actualPostEntWithoutId.Content);
 
             Assert.NotNull(actualPutIndexEnt);
-            Assert.Equal(putEnt.Id, actualPutIndexEnt.Id);
+            Assert.Equal(putEnt.Id, actualPutIndexEnt.GetIdProperty());
             Assert.NotNull(actualPutEnt);
             Assert.Equal(putEnt.Id, actualPutEnt.Id);
             Assert.Equal(putEnt.Content, actualPutEnt.Content);
 
             Assert.NotNull(actualPatchIndexEnt);
-            Assert.Equal(patchEnt.Id, actualPatchIndexEnt.Id);
+            Assert.Equal(patchEnt.Id, actualPatchIndexEnt.GetIdProperty());
             Assert.NotNull(actualPatchEnt);
             Assert.Equal(patchEnt.Id, actualPatchEnt.Id);
             Assert.Equal(patchEnt.Content, actualPatchEnt.Content);

@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using MyLab.Search.Indexer.Services;
+using LinqToDB.Common;
+using MyLab.Search.Indexer.Tools;
 using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Models
@@ -12,16 +12,19 @@ namespace MyLab.Search.Indexer.Models
             if (string.IsNullOrEmpty(msg.IndexId))
                 throw new ValidationException("'indexId' must be specified");
 
-            if (msg.Put != null)
-            {
-                if (!msg.Put.All(HasIdProperty))
-                    throw new ValidationException("Put entity must have an `id` property");
-            }
+            CheckList(msg.Post);
+            CheckList(msg.Put);
+            CheckList(msg.Patch);
 
-            if (msg.Patch != null)
+            void CheckList(JObject[] list)
             {
-                if (!msg.Patch.All(HasIdProperty))
-                    throw new ValidationException("Patch entity must have an `id` property");
+                if (!list.IsNullOrEmpty())
+                {
+                    foreach (var obj in list)
+                    {
+                        obj.CheckIdProperty();
+                    }
+                }
             }
         }
 
@@ -29,43 +32,13 @@ namespace MyLab.Search.Indexer.Models
         {
             return new InputIndexingRequest
             {
-                PostList = msg.Post.Select(JObjectToEntity).ToArray(),
-                PutList = msg.Put.Select(JObjectToEntity).ToArray(),
-                PatchList = msg.Patch.Select(JObjectToEntity).ToArray(),
+                PostList = msg.Post,
+                PutList = msg.Put,
+                PatchList = msg.Patch,
                 IndexId = msg.IndexId,
                 DeleteList = msg.Delete,
                 KickList = msg.Kick
             };
-        }
-
-        static IndexingEntity JObjectToEntity(JObject json)
-        {
-            var res = new IndexingEntity
-            {
-                Entity = json
-            };
-
-            var idValueProp = json.Property("id");
-
-            if (idValueProp is
-                    {
-                        HasValues: true, 
-                        Value:
-                        {
-                            Type: not JTokenType.Null
-                        }
-                    }
-                )
-            {
-                res.Id = idValueProp.Value.ToString();
-            }
-
-            return res;
-        }
-
-        static bool HasIdProperty(JObject arg)
-        {
-            return arg.Property("id") != null;
         }
     }
 }

@@ -58,8 +58,8 @@ namespace MyLab.Search.Indexer.Tools
                             var allLoadIds = batchEntities
                                 .Select(e => new
                                 {
-                                    OriginId = e.Id,
-                                    ParsedId = long.TryParse(e.Id, out long parsedId)
+                                    OriginId = e.GetIdProperty(),
+                                    ParsedId = long.TryParse(e.GetIdProperty(), out long parsedId)
                                         ? (long?)parsedId
                                         : null
                                 })
@@ -70,7 +70,7 @@ namespace MyLab.Search.Indexer.Tools
                                 .ToArray();
 
                             if (badIds.Length > 0)
-                                throw new InvalidOperationException("Can't parse entity identifiers as 'long'")
+                                throw new InvalidOperationException("Can't parse doc identifiers as 'long'")
                                     .AndFactIs("bad-id-list", badIds.Select(id => id.OriginId).ToArray());
 
                             var maxId = allLoadIds.Max(id => id.ParsedId.GetValueOrDefault());

@@ -11,33 +11,33 @@ namespace MyLab.Search.IndexerClient
     public interface IIndexerV2
     {
         /// <summary>
-        /// Index new entity
+        /// Index new doc
         /// </summary>
         [Post("{indexId}")]
-        Task PostAsync([Path] string indexId, [JsonContent] JObject entity);
+        Task PostAsync([Path] string indexId, [JsonContent] JObject doc);
 
         /// <summary>
-        /// Index new entity or reindex if already indexed
+        /// Index new doc or reindex if already indexed
         /// </summary>
         [Put("{indexId}")]
-        Task PutAsync([Path] string indexId, [JsonContent] JObject entity);
+        Task PutAsync([Path] string indexId, [JsonContent] JObject doc);
 
         /// <summary>
-        /// Merge specified partial data with indexed entity
+        /// Merge specified partial data with indexed doc
         /// </summary>
         [Patch("{indexId}")]
-        Task PatchAsync([Path] string indexId, [JsonContent] JObject entity);
+        Task PatchAsync([Path] string indexId, [JsonContent] JObject doc);
 
         /// <summary>
-        /// Remove specified entity from index
+        /// Remove specified doc from index
         /// </summary>
-        [Delete("{indexId}/{entityId}")]
-        Task DeleteAsync([Path] string indexId, [Path] string entityId);
+        [Delete("{indexId}/{docId}")]
+        Task DeleteAsync([Path] string indexId, [Path] string docId);
 
         /// <summary>
-        /// Kick to index an entity with specified id from data source
+        /// Kick to index an doc with specified id from data source
         /// </summary>
-        [Post("{indexId}/{entityId}/kicker")]
-        Task KickAsync([Path] string indexId, [Path] string entityId);
+        [Post("{indexId}/{docId}/kicker")]
+        Task KickAsync([Path] string indexId, [Path] string docId);
     }
 }

@@ -52,7 +52,7 @@ namespace MyLab.Search.Indexer.Tools
 
             await using var conn = _dbManager.Use();
 
-            var entities = await conn.QueryToArrayAsync(IndexingEntityDataReader.Read, _sql, _cancellationToken, queryParams);
+            var entities = await conn.QueryToArrayAsync(IndexingDocDataReader.Read, _sql, _cancellationToken, queryParams);
 
             Current = new DataSourceLoadBatch
             {

@@ -42,12 +42,13 @@ namespace MyLab.Search.Indexer
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
                 .AddDbTools<ConfiguredDataProviderSource>(Configuration)
                 .AddAppStatusProviding()
-                .AddEsTools(Configuration, "ES")
+                .AddEsTools()
                 .AddLogging(l => l.AddMyLabConsole())
                 .AddUrlBasedHttpMetrics();
 
             services
                 .ConfigureRabbit(Configuration)
+                .ConfigureEsTools(Configuration)
                 .Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
                 .Configure<IndexerDbOptions>(Configuration.GetSection("DB"))
 

@@ -3,26 +3,26 @@ using Newtonsoft.Json;
 
 namespace UnitTests
 {
-    class TestEntity
+    class TestDoc
     {
         [JsonProperty("id")]
         public string Id { get; set; }
         public string Content { get; set; }
 
-        public TestEntity()
+        public TestDoc()
         {
             
         }
 
-        public TestEntity(string id, string content)
+        public TestDoc(string id, string content)
         {
             Id = id;
             Content = content;
         }
         
-        public static TestEntity Generate()
+        public static TestDoc Generate()
         {
-            return new TestEntity
+            return new TestDoc
             {
                 Id = Guid.NewGuid().ToString("N"),
                 Content = Guid.NewGuid().ToString("N")

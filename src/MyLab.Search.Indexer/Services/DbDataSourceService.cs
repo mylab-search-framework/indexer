@@ -52,7 +52,7 @@ namespace MyLab.Search.Indexer.Services
             var kickQuery = KickQuery.Build(kickQueryPattern, idList, idxOpts.IdPropertyType);
             
             var entities = await conn.QueryToArrayAsync(
-                IndexingEntityDataReader.Read, 
+                IndexingDocDataReader.Read, 
                 kickQuery.Query, 
                 kickQuery.Parameters);
 

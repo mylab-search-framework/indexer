@@ -10,29 +10,10 @@ namespace UnitTests
 {
     public partial class InputRequestProcessorBehavior
     {
-        private readonly IndexingEntity _postEnt = new IndexingEntity
-        {
-            Id = "post-id",
-            Entity = JObject.FromObject(new TestEntity("post-id", "post-data"))
-        };
-
-        private readonly IndexingEntity _putEnt = new IndexingEntity
-        {
-            Id = "put-id",
-            Entity = JObject.FromObject(new TestEntity("put-id", "put-data"))
-        };
-
-        private readonly IndexingEntity _patchEnt = new IndexingEntity
-        {
-            Id = "patch-id",
-            Entity = JObject.FromObject(new TestEntity("patch-id", "patch-data"))
-        };
-
-        private readonly IndexingEntity _kickEnt = new IndexingEntity
-        {
-            Id = "kick-id",
-            Entity = JObject.FromObject(new TestEntity("kick-id", "kick-data"))
-        };
+        private readonly JObject _postEnt = JObject.FromObject(new TestDoc("post-id", "post-data"));
+        private readonly JObject _putEnt = JObject.FromObject(new TestDoc("put-id", "put-data"));
+        private readonly JObject _patchEnt = JObject.FromObject(new TestDoc("patch-id", "patch-data"));
+        private readonly JObject _kickEnt = JObject.FromObject(new TestDoc("kick-id", "kick-data"));
 
         private string _deleteId = "delete-id";
 
@@ -68,24 +49,24 @@ namespace UnitTests
             }
         }
 
-        private class TestEntity
+        private class TestDoc
         {
             [JsonProperty("id")] public string Id { get; set; }
             public string Content { get; set; }
 
-            public TestEntity()
+            public TestDoc()
             {
             }
 
-            public TestEntity(string id, string content)
+            public TestDoc(string id, string content)
             {
                 Id = id;
                 Content = content;
             }
 
-            public static TestEntity Generate()
+            public static TestDoc Generate()
             {
-                return new TestEntity
+                return new TestDoc
                 {
                     Id = Guid.NewGuid().ToString("N"),
                     Content = Guid.NewGuid().ToString("N")

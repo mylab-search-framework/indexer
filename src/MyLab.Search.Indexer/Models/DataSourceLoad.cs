@@ -1,4 +1,5 @@
 ﻿using MyLab.Search.Indexer.Tools;
+using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Models
 {
@@ -10,7 +11,7 @@ namespace MyLab.Search.Indexer.Models
 
     public class DataSourceLoadBatch
     {
-        public IndexingEntity[] Entities { get; set; }
+        public JObject[] Entities { get; set; }
         public string Query { get; set; }
     }
 }

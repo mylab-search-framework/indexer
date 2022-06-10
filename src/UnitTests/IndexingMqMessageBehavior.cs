@@ -2,6 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Tools;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -19,15 +20,15 @@ namespace UnitTests
                 IndexId = "bar",
                 Post = new[]
                 {
-                    JObject.FromObject(new TestEntity())
+                    JObject.FromObject(new TestDoc())
                 },
                 Put = new[]
                 {
-                    JObject.FromObject(new TestIdEntity())
+                    JObject.FromObject(new TestIdDoc())
                 },
                 Patch = new[]
                 {
-                    JObject.FromObject(new TestIdEntity())
+                    JObject.FromObject(new TestIdDoc())
                 },
                 Kick = new[]
                 {
@@ -65,7 +66,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void ShouldNotValidateIfPutEntityWithoutIdProperty()
+        public void ShouldNotValidateIfPutDocWithoutIdProperty()
         {
             //Arrange
             var request = new IndexingMqMessage
@@ -73,15 +74,15 @@ namespace UnitTests
                 IndexId = "bar",
                 Post = new[]
                 {
-                    JObject.FromObject(new TestEntity())
+                    JObject.FromObject(new TestDoc())
                 },
                 Put = new[]
                 {
-                    JObject.FromObject(new TestEntity()),
+                    JObject.FromObject(new TestDoc()),
                 },
                 Patch = new[]
                 {
-                    JObject.FromObject(new TestIdEntity())
+                    JObject.FromObject(new TestIdDoc())
                 },
                 Kick = new[]
                 {
@@ -94,7 +95,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public void ShouldNotValidateIfPatchEntityWithoutIdProperty()
+        public void ShouldNotValidateIfPatchDocWithoutIdProperty()
         {
             //Arrange
             var request = new IndexingMqMessage
@@ -102,15 +103,15 @@ namespace UnitTests
                 IndexId = "bar",
                 Post = new[]
                 {
-                    JObject.FromObject(new TestEntity()),
+                    JObject.FromObject(new TestDoc()),
                 },
                 Put = new[]
                 {
-                    JObject.FromObject(new TestIdEntity())
+                    JObject.FromObject(new TestIdDoc())
                 },
                 Patch = new[]
                 {
-                    JObject.FromObject(new TestEntity()),
+                    JObject.FromObject(new TestDoc()),
                 },
                 Kick = new[]
                 {
@@ -148,14 +149,14 @@ namespace UnitTests
         {
             //Arrange
 
-            var postEntWithoutId = new TestEntity
+            var postEntWithoutId = new TestDoc
             {
                 Content = Guid.NewGuid().ToString("N")
             };
 
-            var postEnt = TestIdEntity.Generate();
-            var putEnt = TestIdEntity.Generate();
-            var patchEnt = TestIdEntity.Generate();
+            var postEnt = TestIdDoc.Generate();
+            var putEnt = TestIdDoc.Generate();
+            var patchEnt = TestIdDoc.Generate();
             var deleteId = Guid.NewGuid().ToString("N");
             var kickId = Guid.NewGuid().ToString("N");
 
@@ -192,18 +193,18 @@ namespace UnitTests
             Assert.Equal("foo", indexingRequest.IndexId);
 
             Assert.Equal(2, indexingRequest.PostList.Length);
-            Assert.Null(indexingRequest.PostList[0].Id);
-            Assert.Equal(postEntWithoutId.Content, indexingRequest.PostList[0]?.Entity?.ToObject<TestEntity>()?.Content);
-            Assert.Equal(postEnt.Id, indexingRequest.PostList[1].Id);
-            Assert.Equal(postEnt.Content, indexingRequest.PostList[1]?.Entity?.ToObject<TestIdEntity>()?.Content);
+            Assert.Null(indexingRequest.PostList[0].GetIdProperty());
+            Assert.Equal(postEntWithoutId.Content, indexingRequest.PostList[0]?.ToObject<TestDoc>()?.Content);
+            Assert.Equal(postEnt.Id, indexingRequest.PostList[1].GetIdProperty());
+            Assert.Equal(postEnt.Content, indexingRequest.PostList[1]?.ToObject<TestIdDoc>()?.Content);
 
             Assert.Single(indexingRequest.PutList);
-            Assert.Equal(putEnt.Id, indexingRequest.PutList[0].Id);
-            Assert.Equal(putEnt.Content, indexingRequest.PutList[0]?.Entity?.ToObject<TestIdEntity>()?.Content);
+            Assert.Equal(putEnt.Id, indexingRequest.PutList[0].GetIdProperty());
+            Assert.Equal(putEnt.Content, indexingRequest.PutList[0]?.ToObject<TestIdDoc>()?.Content);
 
             Assert.Single(indexingRequest.PatchList);
-            Assert.Equal(patchEnt.Id, indexingRequest.PatchList[0].Id);
-            Assert.Equal(patchEnt.Content, indexingRequest.PatchList[0]?.Entity?.ToObject<TestIdEntity>()?.Content);
+            Assert.Equal(patchEnt.Id, indexingRequest.PatchList[0].GetIdProperty());
+            Assert.Equal(patchEnt.Content, indexingRequest.PatchList[0]?.ToObject<TestIdDoc>()?.Content);
 
             Assert.Single(indexingRequest.DeleteList);
             Assert.Equal(deleteId, indexingRequest.DeleteList[0]);
@@ -212,12 +213,12 @@ namespace UnitTests
             Assert.Equal(kickId, indexingRequest.KickList[0]);
         }
 
-        class TestEntity
+        class TestDoc
         {
             public string Content { get; set; }
         }
 
-        class TestIdEntity
+        class TestIdDoc
         {
             [JsonProperty("id")]
             public string Id { get; set; }
@@ -225,9 +226,9 @@ namespace UnitTests
             [JsonProperty("content")]
             public string Content { get; set; }
 
-            public static TestIdEntity Generate()
+            public static TestIdDoc Generate()
             {
-                return new TestIdEntity
+                return new TestIdDoc
                 {
                     Id = Guid.NewGuid().ToString("N"),
                     Content = Guid.NewGuid().ToString("N")

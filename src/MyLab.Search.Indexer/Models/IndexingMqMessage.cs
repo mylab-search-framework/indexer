@@ -33,12 +33,12 @@ namespace MyLab.Search.IndexerClient
         [JsonProperty("patch")]
         public JObject[] Patch { get; set; }
         /// <summary>
-        /// Delete-list, which contains an entity identifiers for removing from index
+        /// Delete-list, which contains an doc identifiers for removing from index
         /// </summary>
         [JsonProperty("delete")]
         public string[] Delete { get; set; }
         /// <summary>
-        /// Kick-list, which contains an entity identifiers for indexing from database
+        /// Kick-list, which contains an doc identifiers for indexing from database
         /// </summary>
         [JsonProperty("kick")]
         public string[] Kick { get; set; }

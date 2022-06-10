@@ -1,8 +1,9 @@
 using System;
 using Elasticsearch.Net;
-using MyLab.Search.EsAdapter.Serialization;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsTest;
 using Nest;
+using Newtonsoft.Json.Linq;
 
 namespace IntegrationTests
 {
@@ -15,7 +16,8 @@ namespace IntegrationTests
 
         public override ConnectionSettings CreateConnectionSettings(IConnectionPool connection)
         {
-            return new ConnectionSettings(connection, (builtin, settings) => new NewtonJsonEsSerializer());
+            return new ConnectionSettings(connection, (_, _) => new NewtonJsonEsSerializer())
+                .DefaultMappingFor(typeof(JObject), m => m.IdProperty("id"));
         }
     }
 }

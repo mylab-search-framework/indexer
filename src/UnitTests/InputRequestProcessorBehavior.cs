@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Xunit;
 
 namespace UnitTests
@@ -70,7 +71,7 @@ namespace UnitTests
             {
                 PostList = new[] { _postEnt },
                 IndexId = "index-id",
-                KickList = new []{ _kickEnt.Id }
+                KickList = new []{ _kickEnt.GetIdProperty() }
             };
 
             var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new[] { _kickEnt } } };
@@ -113,7 +114,7 @@ namespace UnitTests
             {
                 PutList = new[] { _putEnt },
                 IndexId = "index-id",
-                KickList = new[] { _kickEnt.Id }
+                KickList = new[] { _kickEnt.GetIdProperty() }
             };
 
             var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new [] { _kickEnt } } };

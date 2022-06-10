@@ -2,6 +2,7 @@
 using LinqToDB.Async;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Xunit;
 
 namespace UnitTests
@@ -9,12 +10,12 @@ namespace UnitTests
     public partial class DbDataSourceServiceBehavior
     {
         [Fact]
-        public async Task ShouldProvideSingleKickedEntityByIntField()
+        public async Task ShouldProvideSingleKickedDocByIntField()
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -40,8 +41,7 @@ namespace UnitTests
 
             //Assert
             Assert.Single(load.Batch.Entities);
-            Assert.Equal("1", load.Batch.Entities[0].Id);
-            AssertEntity(ent1, load.Batch.Entities[0].Entity);
+            AssertDoc(ent1, load.Batch.Entities[0]);
         }
 
         [Fact]
@@ -49,9 +49,9 @@ namespace UnitTests
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
-            var ent2 = new TestEntity { Id = 2, Content = "2-content" };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
+            var ent2 = new TestDoc { Id = 2, Content = "2-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1, ent2 });
 
@@ -77,19 +77,17 @@ namespace UnitTests
 
             //Assert
             Assert.Equal(2, load.Batch.Entities.Length);
-            Assert.Equal("0", load.Batch.Entities[0].Id);
-            AssertEntity(ent0, load.Batch.Entities[0].Entity);
-            Assert.Equal("2", load.Batch.Entities[1].Id);
-            AssertEntity(ent2, load.Batch.Entities[1].Entity);
+            AssertDoc(ent0, load.Batch.Entities[0]);
+            AssertDoc(ent2, load.Batch.Entities[1]);
         }
 
         [Fact]
-        public async Task ShouldProvideSingleKickedEntityByStringField()
+        public async Task ShouldProvideSingleKickedDocByStringField()
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -115,8 +113,7 @@ namespace UnitTests
 
             //Assert
             Assert.Single(load.Batch.Entities);
-            Assert.Equal("1", load.Batch.Entities[0].Id);
-            AssertEntity(ent1, load.Batch.Entities[0].Entity);
+            AssertDoc(ent1, load.Batch.Entities[0]);
         }
 
         [Fact]
@@ -124,9 +121,9 @@ namespace UnitTests
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
-            var ent2 = new TestEntity { Id = 2, Content = "2-content" };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
+            var ent2 = new TestDoc { Id = 2, Content = "2-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1, ent2 });
 
@@ -152,10 +149,8 @@ namespace UnitTests
 
             //Assert
             Assert.Equal(2, load.Batch.Entities.Length);
-            Assert.Equal("0", load.Batch.Entities[0].Id);
-            AssertEntity(ent0, load.Batch.Entities[0].Entity);
-            Assert.Equal("2", load.Batch.Entities[1].Id);
-            AssertEntity(ent2, load.Batch.Entities[1].Entity);
+            AssertDoc(ent0, load.Batch.Entities[0]);
+            AssertDoc(ent2, load.Batch.Entities[1]);
         }
     }
 }

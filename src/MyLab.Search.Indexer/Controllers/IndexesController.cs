@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using MyLab.WebErrors;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -28,19 +29,17 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Post([FromRoute] string indexId)
         {
-            var entity = await ReadEntityFromRequestBodyAsync();
+            var doc = await ReadDocFromRequestBodyAsync();
 
             ValidateIndexId(indexId);
-            ValidateEntity(entity);
-
-            var indexingEntity = ToIndexingRequestEntity(entity, false);
+            ValidateDoc(doc);
 
             var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PostList = new []
                 {
-                    indexingEntity
+                    doc
                 }
             };
 
@@ -54,19 +53,17 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Put([FromRoute] string indexId)
         {
-            var entity = await ReadEntityFromRequestBodyAsync();
+            var doc = await ReadDocFromRequestBodyAsync();
 
             ValidateIndexId(indexId);
-            ValidateEntity(entity);
-
-            var indexingEntity = ToIndexingRequestEntity(entity);
+            ValidateDoc(doc);
 
             var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PutList = new[]
                 {
-                    indexingEntity
+                    doc
                 }
             };
 
@@ -80,19 +77,17 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Patch([FromRoute] string indexId)
         {
-            var entity = await ReadEntityFromRequestBodyAsync();
+            var doc = await ReadDocFromRequestBodyAsync();
 
             ValidateIndexId(indexId);
-            ValidateEntity(entity);
-
-            var indexingEntity = ToIndexingRequestEntity(entity);
-
+            ValidateDoc(doc);
+            
             var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 PatchList = new[]
                 {
-                    indexingEntity
+                    doc
                 }
             };
 
@@ -101,20 +96,20 @@ namespace MyLab.Search.Indexer.Controllers
             return Ok();
         }
 
-        [HttpDelete("{indexId}/{entityId}")]
+        [HttpDelete("{indexId}/{docId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
-        public async Task<IActionResult> Delete([FromRoute] string indexId, [FromRoute] string entityId)
+        public async Task<IActionResult> Delete([FromRoute] string indexId, [FromRoute] string docId)
         {
             ValidateIndexId(indexId);
-            ValidateEntityId(entityId);
+            ValidateDocId(docId);
 
             var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 DeleteList = new[]
                 {
-                    entityId
+                    docId
                 }
             };
 
@@ -123,20 +118,20 @@ namespace MyLab.Search.Indexer.Controllers
             return Ok();
         }
 
-        [HttpPost("{indexId}/{entityId}/kicker")]
+        [HttpPost("{indexId}/{docId}/kicker")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
-        public async Task<IActionResult> Kick([FromRoute] string indexId, [FromRoute] string entityId)
+        public async Task<IActionResult> Kick([FromRoute] string indexId, [FromRoute] string docId)
         {
             ValidateIndexId(indexId);
-            ValidateEntityId(entityId);
+            ValidateDocId(docId);
 
             var indexingReq = new InputIndexingRequest
             {
                 IndexId = indexId,
                 KickList = new[]
                 {
-                    entityId
+                    docId
                 }
             };
 
@@ -153,50 +148,35 @@ namespace MyLab.Search.Indexer.Controllers
                 throw new ValidationException("An index identifier id empty");
         }
 
-        void ValidateEntityId(string entId)
+        void ValidateDocId(string entId)
         {
             if (entId == null)
-                throw new ValidationException("An entity identifier was not specified");
+                throw new ValidationException("An doc identifier was not specified");
             if (string.IsNullOrWhiteSpace(entId))
-                throw new ValidationException("An entity identifier id empty");
+                throw new ValidationException("An doc identifier id empty");
         }
 
-        IndexingEntity ToIndexingRequestEntity(JObject entity, bool idRequired = true)
+        void ValidateDoc(JObject doc)
         {
-            var idProperty = entity.Property("id");
-            var entId = idProperty?.Value.ToString();
+            if (doc == null)
+                throw new ValidationException("An doc was not specified");
 
-            if (idRequired)
-                ValidateEntityId(entId);
+            if(doc.Count == 0)
+                throw new ValidationException("An doc is empty");
 
-            var result = new IndexingEntity
-            {
-                Entity = entity,
-                Id = string.IsNullOrWhiteSpace(entId) ? null : entId
-            };
-
-            return result;
+            doc.CheckIdProperty();
         }
-
-        void ValidateEntity(JObject entity)
+        private async Task<JObject> ReadDocFromRequestBodyAsync()
         {
-            if (entity == null)
-                throw new ValidationException("An entity was not specified");
-
-            if(entity.Count == 0)
-                throw new ValidationException("An entity is empty");
-        }
-        private async Task<JObject> ReadEntityFromRequestBodyAsync()
-        {
-            JObject entity;
+            JObject doc;
 
             using (TextReader txtRdr = new StreamReader(Request.Body))
             using (JsonReader jsonRdr = new JsonTextReader(txtRdr))
             {
-                entity = await JObject.LoadAsync(jsonRdr);
+                doc = await JObject.LoadAsync(jsonRdr);
             }
 
-            return entity;
+            return doc;
         }
     }
 }

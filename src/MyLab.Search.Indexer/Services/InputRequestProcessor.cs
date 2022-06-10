@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MyLab.Log;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
+using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -68,12 +69,12 @@ namespace MyLab.Search.Indexer.Services
             await _indexerService.IndexAsync(idxReq);
         }
 
-        IndexingEntity[] JoinEntities(IndexingEntity[] arr1, IndexingEntity[] arr2)
+        JObject[] JoinEntities(JObject[] arr1, JObject[] arr2)
         {
             if (arr1 == null || arr1.Length == 0) return arr2;
             if (arr2 == null || arr2.Length == 0) return arr1;
 
-            var newList = new List<IndexingEntity>(arr1);
+            var newList = new List<JObject>(arr1);
             newList.AddRange(arr2);
 
             return newList.ToArray();

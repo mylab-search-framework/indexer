@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
@@ -20,23 +21,20 @@ namespace IntegrationTests
                     srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
                 );
 
-            var testEntity = new TestEntity(null, "foo-content");
-
-            TestEntity actualEntity = null;
+            var testDoc = new TestDoc(null, "foo-content");
 
             //Act
-            await api.PostAsync("foo-index", JObject.FromObject(testEntity));
+            await api.PostAsync("foo-index", JObject.FromObject(testDoc));
 
             var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
-
-            if (item?.Entity != null)
-                actualEntity = item.Entity.ToObject<TestEntity>();
+            
+            var actualDoc = item?.ToObject<TestDoc>();
 
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualEntity);
-            Assert.Null(item.Id);
-            Assert.Equal(testEntity.Content, actualEntity.Content);
+            Assert.NotNull(actualDoc);
+            Assert.Null(item.GetIdProperty());
+            Assert.Equal(testDoc.Content, actualDoc.Content);
         }
 
         [Fact]
@@ -49,23 +47,20 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id", "foo-content");
-
-            TestEntity actualEntity = null;
+            var testDoc = new TestDoc("foo-id", "foo-content");
 
             //Act
-            await api.PostAsync("foo-index", JObject.FromObject(testEntity));
+            await api.PostAsync("foo-index", JObject.FromObject(testDoc));
 
             var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
-
-            if (item?.Entity != null)
-                actualEntity = item.Entity.ToObject<TestEntity>();
+            
+            var actualDoc = item?.ToObject<TestDoc>();
 
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualEntity);
-            Assert.Equal("foo-id", item.Id);
-            Assert.Equal("foo-content", actualEntity.Content);
+            Assert.NotNull(actualDoc);
+            Assert.Equal("foo-id", item.GetIdProperty());
+            Assert.Equal("foo-content", actualDoc.Content);
         }
 
         [Fact]
@@ -78,23 +73,21 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id", "foo-content");
+            var testDoc = new TestDoc("foo-id", "foo-content");
 
-            TestEntity actualEntity = null;
-
+            
             //Act
-            await api.PutAsync("foo-index", JObject.FromObject(testEntity));
+            await api.PutAsync("foo-index", JObject.FromObject(testDoc));
 
             var item = inputSrvProc.LastRequest?.PutList?.FirstOrDefault();
 
-            if (item?.Entity != null)
-                actualEntity = item.Entity.ToObject<TestEntity>();
+            var actualDoc = item?.ToObject<TestDoc>();
 
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualEntity);
-            Assert.Equal("foo-id", item.Id);
-            Assert.Equal("foo-content", actualEntity.Content);
+            Assert.NotNull(actualDoc);
+            Assert.Equal("foo-id", item.GetIdProperty());
+            Assert.Equal("foo-content", actualDoc.Content);
         }
 
         [Fact]
@@ -107,25 +100,22 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testEntity = new TestEntity("foo-id", "foo-content");
-
-            TestEntity actualEntity = null;
-
+            var testDoc = new TestDoc("foo-id", "foo-content");
+            
             //Act
-            await api.PatchAsync("foo-index", JObject.FromObject(testEntity));
+            await api.PatchAsync("foo-index", JObject.FromObject(testDoc));
 
             var item = inputSrvProc.LastRequest?.PatchList?.FirstOrDefault();
 
-            if (item?.Entity != null)
-                actualEntity = item.Entity.ToObject<TestEntity>();
+            var actualDoc = item?.ToObject<TestDoc>();
 
             //Assert
 
             Assert.NotNull(inputSrvProc.LastRequest);
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualEntity);
-            Assert.Equal("foo-id", item.Id);
-            Assert.Equal("foo-content", actualEntity.Content);
+            Assert.NotNull(actualDoc);
+            Assert.Equal("foo-id", item.GetIdProperty());
+            Assert.Equal("foo-content", actualDoc.Content);
         }
 
         [Fact]

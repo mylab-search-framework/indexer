@@ -1,24 +1,35 @@
 using System;
 using System.Threading.Tasks;
-using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using Nest;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 
 namespace IntegrationTests
 {
-    public class IndexerServiceBehavior : IClassFixture<EsIndexFixture<TestEntity, TestEsFixtureStrategy>>, IAsyncLifetime
+    public class IndexerServiceBehavior : 
+        IClassFixture<EsIndexFixture<TestDoc, TestEsFixtureStrategy>>, 
+        IClassFixture<EsFixture<TestEsFixtureStrategy>>, 
+        IAsyncLifetime
     {
-        private readonly EsIndexFixture<TestEntity, TestEsFixtureStrategy> _fxt;
+        private readonly EsIndexFixture<TestDoc, TestEsFixtureStrategy> _idxFxt;
+        private readonly EsFixture<TestEsFixtureStrategy> _fxt;
 
-        public IndexerServiceBehavior(EsIndexFixture<TestEntity, TestEsFixtureStrategy> fxt, ITestOutputHelper output)
+        public IndexerServiceBehavior(
+            EsIndexFixture<TestDoc, TestEsFixtureStrategy> idxFxt, 
+            EsFixture<TestEsFixtureStrategy> fxt, 
+            ITestOutputHelper output)
         {
+            _idxFxt = idxFxt;
             _fxt = fxt;
+            _idxFxt.Output = output;
             _fxt.Output = output;
         }
 
@@ -26,11 +37,6 @@ namespace IntegrationTests
         public async Task ShouldPostEntities()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new []
@@ -38,49 +44,44 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
 
+            var doc = TestDoc.Generate();
             var req = new IndexingRequest
             {
                 IndexId = "foo",
                 PostList = new []
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "baz"))
-                    }
+                    JObject.FromObject(doc)
                 }
             };
 
             //Act
             await indexer.IndexAsync(req);
-            await Task.Delay(500);
+            await Task.Delay(1000);
             
-            var resp = await _searcher.SearchAsync(esIndexName, new SearchParams<TestEntity>(d => d.Ids(idQDesc => idQDesc.Values("bar"))));
+            var resp = await _idxFxt.Searcher.SearchAsync(
+                new EsSearchParams<TestDoc>(
+                        d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
+                    )
+                );
 
             //Assert
             Assert.NotNull(resp);
             Assert.Single(resp);
-            Assert.Equal("bar", resp[0].Id);
-            Assert.Equal("baz", resp[0].Content);
+            Assert.Equal(doc, resp[0]);
         }
 
         [Fact]
         public async Task ShouldDeleteEntities()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new[]
@@ -88,24 +89,21 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
 
+            var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PostList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "baz"))
-                    }
+                    JObject.FromObject(doc)
                 }
             };
 
@@ -114,7 +112,7 @@ namespace IntegrationTests
                 IndexId = "foo",
                 DeleteList = new[]
                 {
-                    "bar"
+                    doc.Id
                 }
             };
 
@@ -124,7 +122,11 @@ namespace IntegrationTests
             await indexer.IndexAsync(delReq);
             await Task.Delay(1000);
 
-            var resp = await _searcher.SearchAsync(esIndexName, new SearchParams<TestEntity>(d => d.Ids(idQDesc => idQDesc.Values("bar"))));
+            var resp = await _idxFxt.Searcher.SearchAsync(
+                    new EsSearchParams<TestDoc>(
+                            d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
+                        )
+                );
 
             //Assert
             Assert.NotNull(resp);
@@ -135,11 +137,6 @@ namespace IntegrationTests
         public async Task ShouldPutNewEntities()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new[]
@@ -147,24 +144,21 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
 
+            var doc = TestDoc.Generate();
             var req = new IndexingRequest
             {
                 IndexId = "foo",
                 PutList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "baz"))
-                    }
+                    JObject.FromObject(doc)
                 }
             };
 
@@ -172,24 +166,22 @@ namespace IntegrationTests
             await indexer.IndexAsync(req);
             await Task.Delay(500);
 
-            var resp = await _searcher.SearchAsync(esIndexName, new SearchParams<TestEntity>(d => d.Ids(idQDesc => idQDesc.Values("bar"))));
+            var resp = await _idxFxt.Searcher.SearchAsync(
+                new EsSearchParams<TestDoc>(
+                    d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
+                )
+            );
 
             //Assert
             Assert.NotNull(resp);
             Assert.Single(resp);
-            Assert.Equal("bar", resp[0].Id);
-            Assert.Equal("baz", resp[0].Content);
+            Assert.Equal(doc, resp[0]);
         }
 
         [Fact]
         public async Task ShouldPutEditEntities()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new[]
@@ -197,37 +189,31 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
 
+            var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PostList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "baz"))
-                    }
+                    JObject.FromObject(doc)
                 }
             };
 
+            var docPatcher = new TestDoc(doc.Id, "patched");
             var putReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PutList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "edited-baz"))
-                    }
+                    JObject.FromObject(docPatcher)
                 }
             };
 
@@ -237,24 +223,22 @@ namespace IntegrationTests
             await indexer.IndexAsync(putReq);
             await Task.Delay(1000);
 
-            var resp = await _searcher.SearchAsync(esIndexName, new SearchParams<TestEntity>(d => d.Ids(idQDesc => idQDesc.Values("bar"))));
+            var resp = await _idxFxt.Searcher.SearchAsync(
+                new EsSearchParams<TestDoc>(
+                    d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
+                )
+            );
 
             //Assert
             Assert.NotNull(resp);
             Assert.Single(resp);
-            Assert.Equal("bar", resp[0].Id);
-            Assert.Equal("edited-baz", resp[0].Content);
+            Assert.Equal(docPatcher, resp[0]);
         }
 
         [Fact]
         public async Task ShouldPatchEntities()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new[]
@@ -262,37 +246,31 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
 
+            var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PostList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "baz"))
-                    }
+                    JObject.FromObject(doc)
                 }
             };
 
+            var dockPatcher = new TestDoc(doc.Id, "patched");
             var patchReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PatchList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "patched-baz"))
-                    }
+                    JObject.FromObject(dockPatcher)
                 }
             };
 
@@ -302,24 +280,22 @@ namespace IntegrationTests
             await indexer.IndexAsync(patchReq);
             await Task.Delay(1000);
 
-            var resp = await _searcher.SearchAsync(esIndexName, new SearchParams<TestEntity>(d => d.Ids(idQDesc => idQDesc.Values("bar"))));
+            var resp = await _idxFxt.Searcher.SearchAsync(
+                new EsSearchParams<TestDoc>(
+                    d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
+                )
+            );
 
             //Assert
             Assert.NotNull(resp);
             Assert.Single(resp);
-            Assert.Equal("bar", resp[0].Id);
-            Assert.Equal("patched-baz", resp[0].Content);
+            Assert.Equal(dockPatcher, resp[0]);
         }
 
         [Fact]
         public async Task ShouldNotPatchEntitiesIfNotExists()
         {
             //Arrange
-            var esIndexName = Guid.NewGuid().ToString("N");
-
-            await _esFxt.Manager.CreateIndexAsync(esIndexName);
-            await Task.Delay(500);
-
             var opts = new IndexerOptions
             {
                 Indexes = new[]
@@ -327,41 +303,52 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = esIndexName,
+                        EsIndex = _idxFxt.IndexName,
                         IdPropertyType = IdPropertyType.String
                     }
                 }
             };
 
-            var indexer = new IndexerService(_esFxt.EsClient, opts);
+            var indexer = new IndexerService(_fxt.Indexer, opts);
             
             var patchReq = new IndexingRequest
             {
                 IndexId = "foo",
                 PatchList = new[]
                 {
-                    new IndexingEntity
-                    {
-                        Id = "bar",
-                        Entity = JObject.FromObject(new TestEntity("bar", "patched-baz"))
-                    }
+                    JObject.FromObject(TestDoc.Generate())
                 }
             };
 
+            BulkResponse expectedFailedResp = null;
+            EsException expectedEsException = null;
+
             //Act
-            await indexer.IndexAsync(patchReq);
-            
+            try
+            {
+                await indexer.IndexAsync(patchReq);
+            }
+            catch (EsException e)
+            {
+                expectedEsException = e;
+                expectedFailedResp = e.Response as BulkResponse;
+            }
+
             //Assert
-            
+            Assert.NotNull(expectedEsException);
+            Assert.NotNull(expectedFailedResp);
+
+            Assert.Contains(expectedFailedResp.ItemsWithErrors, itm => itm.Status == 404);
         }
 
-        public async Task InitializeAsync()
+        public Task InitializeAsync()
         {
+            return Task.CompletedTask;
         }
 
         public async Task DisposeAsync()
         {
-            await _fxt.IndexTools.PruneIndexAsync();
+            await _idxFxt.IndexTools.PruneIndexAsync();
         }
     }
 }

@@ -7,33 +7,23 @@ using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Tools
 {
-    static class IndexingEntityDataReader
+    static class IndexingDocDataReader
     {
         private static readonly string[] DoubleCases = new[] { "decimal", "double", "float", "single", "real" };
 
-        public static IndexingEntity Read(IDataReader reader)
+        public static JObject Read(IDataReader reader)
         {
-            JObject jsonEntity = new JObject();
-            string id = null;
-
+            JObject jsonDoc = new JObject();
+            
             for (var index = 0; index < reader.FieldCount; index++)
             {
                 var name = reader.GetName(index);
                 var typeName = reader.GetDataTypeName(index);
 
-                jsonEntity.Add(name, ConvertValue(index, typeName));
-
-                if (name.ToLower() == "id")
-                {
-                    id = reader.GetString(index);
-                }
+                jsonDoc.Add(name, ConvertValue(index, typeName));
             }
 
-            return new IndexingEntity
-            {
-                Id = id,
-                Entity = jsonEntity
-            };
+            return jsonDoc;
 
             JToken ConvertValue(int index, string typeName)
             {

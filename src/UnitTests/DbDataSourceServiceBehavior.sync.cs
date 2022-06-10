@@ -4,6 +4,7 @@ using LinqToDB.Async;
 using MyLab.DbTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Tools;
 using Xunit;
 
 namespace UnitTests
@@ -72,8 +73,8 @@ namespace UnitTests
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -103,10 +104,10 @@ namespace UnitTests
             //Assert
             Assert.Equal(2, loads.Length);
             Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("0", loads[0].Batch.Entities[0].Id);
+            Assert.Equal("0", loads[0].Batch.Entities[0].GetIdProperty());
 
-            AssertEntity(ent0, loads[0].Batch.Entities[0].Entity);
-            AssertEntity(ent1, loads[1].Batch.Entities[0].Entity);
+            AssertDoc(ent0, loads[0].Batch.Entities[0]);
+            AssertDoc(ent1, loads[1].Batch.Entities[0]);
         }
 
         [Fact]
@@ -114,8 +115,8 @@ namespace UnitTests
         {
             //Arrange
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content", LastChangeDt = DateTime.Now };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content", LastChangeDt = DateTime.Now };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content", LastChangeDt = DateTime.Now };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content", LastChangeDt = DateTime.Now };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -145,20 +146,20 @@ namespace UnitTests
             //Assert
             Assert.Equal(2, loads.Length);
             Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("0", loads[0].Batch.Entities[0].Id);
+            Assert.Equal("0", loads[0].Batch.Entities[0].GetIdProperty());
 
-            AssertEntity(ent0, loads[0].Batch.Entities[0].Entity);
-            AssertEntity(ent1, loads[1].Batch.Entities[0].Entity);
+            AssertDoc(ent0, loads[0].Batch.Entities[0]);
+            AssertDoc(ent1, loads[1].Batch.Entities[0]);
         }
 
         [Fact]
         public async Task ShouldLoadDeltaSyncFromStream()
         {
             //Arrange
-            const long lastProcessedEntityId = 0;
+            const long lastProcessedDocId = 0;
 
-            var ent0 = new TestEntity { Id = lastProcessedEntityId, Content = "0-content" };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content" };
+            var ent0 = new TestDoc { Id = lastProcessedDocId, Content = "0-content" };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content" };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -166,7 +167,7 @@ namespace UnitTests
 
             var seedSrv = new TestSeedService();
 
-            await seedSrv.SaveSeedAsync("foo-index", lastProcessedEntityId);
+            await seedSrv.SaveSeedAsync("foo-index", lastProcessedDocId);
 
             var indexOpts = new IndexOptions
             {
@@ -190,8 +191,8 @@ namespace UnitTests
             //Assert
             Assert.Single(loads);
             Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("1", loads[0].Batch.Entities[0].Id);
-            AssertEntity(ent1, loads[0].Batch.Entities[0].Entity);
+            Assert.Equal("1", loads[0].Batch.Entities[0].GetIdProperty());
+            AssertDoc(ent1, loads[0].Batch.Entities[0]);
         }
 
         [Fact]
@@ -200,8 +201,8 @@ namespace UnitTests
             //Arrange
             var lastIndexedDt = DateTime.Now;
 
-            var ent0 = new TestEntity { Id = 0, Content = "0-content", LastChangeDt = lastIndexedDt.AddMinutes(-1) };
-            var ent1 = new TestEntity { Id = 1, Content = "1-content", LastChangeDt = lastIndexedDt.AddMinutes(1) };
+            var ent0 = new TestDoc { Id = 0, Content = "0-content", LastChangeDt = lastIndexedDt.AddMinutes(-1) };
+            var ent1 = new TestDoc { Id = 1, Content = "1-content", LastChangeDt = lastIndexedDt.AddMinutes(1) };
 
             var tableFiller = new TableFiller(new[] { ent0, ent1 });
 
@@ -233,8 +234,8 @@ namespace UnitTests
             //Assert
             Assert.Single(loads);
             Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("1", loads[0].Batch.Entities[0].Id);
-            AssertEntity(ent1, loads[0].Batch.Entities[0].Entity);
+            Assert.Equal("1", loads[0].Batch.Entities[0].GetIdProperty());
+            AssertDoc(ent1, loads[0].Batch.Entities[0]);
         }
     }
 

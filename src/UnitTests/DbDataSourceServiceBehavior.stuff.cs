@@ -23,11 +23,11 @@ namespace UnitTests
             _dbFxt.Output = output;
         }
 
-        void AssertEntity(TestEntity entity, JObject jObject)
+        void AssertDoc(TestDoc doc, JObject jObject)
         {
             Assert.NotNull(jObject);
-            Assert.Equal(entity.Id, jObject.Property("id").Value.Value<int>());
-            Assert.Equal(entity.Content, jObject.Property("content").Value.Value<string>());
+            Assert.Equal(doc.Id, jObject.Property("id").Value.Value<int>());
+            Assert.Equal(doc.Content, jObject.Property("content").Value.Value<string>());
         }
 
         private class TestIndexResourceProvider : IIndexResourceProvider
@@ -87,15 +87,15 @@ namespace UnitTests
         {
             public async Task InitializeAsync(DataConnection dc)
             {
-                await dc.CreateTableAsync<TestEntity>();
+                await dc.CreateTableAsync<TestDoc>();
             }
         }
 
         class TableFiller : ITestDbInitializer
         {
-            private readonly TestEntity[] _initialEntities;
+            private readonly TestDoc[] _initialEntities;
 
-            public TableFiller(TestEntity[] initialEntities)
+            public TableFiller(TestDoc[] initialEntities)
             {
                 _initialEntities = initialEntities;
             }
@@ -106,7 +106,7 @@ namespace UnitTests
         }
 
         [Table("entities")]
-        private class TestEntity
+        private class TestDoc
         {
             [PrimaryKey, Column("id")] public long Id { get; set; }
             [Column("content")] public string Content { get; set; }
