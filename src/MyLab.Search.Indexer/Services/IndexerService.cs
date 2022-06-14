@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
@@ -28,7 +29,7 @@ namespace MyLab.Search.Indexer.Services
             _esIndexer = esIndexer;
         }
 
-        public async Task IndexAsync(IndexingRequest req)
+        public async Task IndexAsync(IndexingRequest req, CancellationToken cToken = default)
         {
             var idxOpts = _indexerOptions.GetIndexOptions(req.IndexId);
 
@@ -88,7 +89,7 @@ namespace MyLab.Search.Indexer.Services
                 }
             );
 
-            await _esIndexer.BulkAsync<JObject>(idxOpts.EsIndex, bulkReq);
+            await _esIndexer.BulkAsync<JObject>(idxOpts.EsIndex, bulkReq, cToken);
         }
     }
 }

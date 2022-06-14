@@ -1,0 +1,8 @@
+﻿{
+  "mappings": {
+    "properties": {
+      "Id": { "type": "integer" },
+      "Content": { "type": "text" }
+    }
+  }
+}

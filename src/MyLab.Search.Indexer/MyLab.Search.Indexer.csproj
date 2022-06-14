@@ -22,6 +22,7 @@
     <PackageReference Include="MyLab.Search.EsAdapter" Version="2.0.4" />
     <PackageReference Include="MyLab.Search.EsTest" Version="2.0.1" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
+    <PackageReference Include="MyLab.TaskApp" Version="1.4.5" />
     <PackageReference Include="MyLab.WebErrors" Version="1.1.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>

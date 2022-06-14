@@ -7,8 +7,8 @@ namespace MyLab.Search.IndexerClient
     /// <summary>
     /// MyLab.Search.Indexer contract
     /// </summary>
-    [Api("v2/indexes",Key = "indexer")]
-    public interface IIndexerV2
+    [Api("v2/indexes", Key = "indexer")]
+    public interface IIndexerV2Api
     {
         /// <summary>
         /// Index new doc

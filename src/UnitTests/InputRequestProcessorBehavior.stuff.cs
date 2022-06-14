@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
@@ -41,7 +42,7 @@ namespace UnitTests
         {
             public IndexingRequest LastRequest { get; set; }
 
-            public Task IndexAsync(IndexingRequest req)
+            public Task IndexAsync(IndexingRequest req, CancellationToken cToken)
             {
                 LastRequest = req;
 

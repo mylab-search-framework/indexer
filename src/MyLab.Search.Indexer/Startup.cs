@@ -9,11 +9,13 @@ using MyLab.Db;
 using MyLab.HttpMetrics;
 using MyLab.Log;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
+using MyLab.TaskApp;
 using MyLab.WebErrors;
 using Prometheus;
 
@@ -38,16 +40,20 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IIndexResourceProvider,FileIndexResourceProvider>()
+                .AddSingleton<IIndexerService,IndexerService>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
                 .AddDbTools<ConfiguredDataProviderSource>(Configuration)
                 .AddAppStatusProviding()
                 .AddEsTools()
                 .AddLogging(l => l.AddMyLabConsole())
-                .AddUrlBasedHttpMetrics();
+                .AddUrlBasedHttpMetrics()
+                .AddTaskLogic<SyncTaskLogic>()
+                .AddSingleton<IndexCreatorService>();
 
             services
                 .ConfigureRabbit(Configuration)
+                .ConfigureEsTools(opt => opt.SerializerFactory = new NewtonJsonEsSerializerFactory())
                 .ConfigureEsTools(Configuration)
                 .Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
                 .Configure<IndexerDbOptions>(Configuration.GetSection("DB"))
@@ -72,6 +78,7 @@ namespace MyLab.Search.Indexer
 
             app.UseAuthorization();
 
+            app.UseTaskApi();
             app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();

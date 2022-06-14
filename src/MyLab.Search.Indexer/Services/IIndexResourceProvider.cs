@@ -6,6 +6,7 @@ namespace MyLab.Search.Indexer.Services
     {
         Task<string> ProvideKickQueryAsync(string indexId);
         Task<string> ProvideSyncQueryAsync(string indexId);
+        Task<string> ProvideIndexSettingsAsync(string indexId);
     }
 
 }

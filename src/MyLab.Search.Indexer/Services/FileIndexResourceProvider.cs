@@ -41,6 +41,11 @@ namespace MyLab.Search.Indexer.Services
             return await ReadResourceFileAsync(indexId, "sync.sql");
         }
 
+        public Task<string> ProvideIndexSettingsAsync(string indexId)
+        {
+            return ReadResourceFileAsync(indexId, "index.json");
+        }
+
         async Task<string> ReadResourceFileAsync(string indexId, string filename)
         {
             var filePath = Path.Combine(_opts.ResourcePath, indexId, filename);
