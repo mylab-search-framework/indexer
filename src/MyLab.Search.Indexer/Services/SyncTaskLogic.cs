@@ -92,7 +92,7 @@ namespace MyLab.Search.Indexer.Services
 
                     syncCount += data.Batch.Entities.Length;
 
-                    _log.Debug("Sync data indexing")
+                    _log.Debug("Sync data has been indexed")
                         .AndFactIs("idx", idx.Id)
                         .AndFactIs("sql", data.Batch.Query)
                         .AndFactIs("count", data.Batch.Entities.Length)

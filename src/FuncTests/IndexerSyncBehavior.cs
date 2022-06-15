@@ -21,12 +21,14 @@ namespace FuncTests
     public class IndexerSyncBehavior : 
         IClassFixture<TmpDbFixture<TestDbInitializer>>, 
         IClassFixture<EsFixture<TestEsFixtureStrategy>>, 
-        IClassFixture<TestApi<Startup, IIndexerSyncTaskApi>>
+        IClassFixture<TestApi<Startup, IIndexerSyncTaskApi>>,
+        IAsyncLifetime
     {
         private readonly TmpDbFixture<TestDbInitializer> _dbFxt;
         private readonly TestApi<Startup, IIndexerSyncTaskApi> _apiFxt;
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
+        private readonly string _esIndexName;
 
         public IndexerSyncBehavior(
             TmpDbFixture<TestDbInitializer> dbFxt,
@@ -41,28 +43,20 @@ namespace FuncTests
             _apiFxt = apiFxtFxt;
             _output = output;
             _apiFxt.Output = output;
+            _esIndexName = Guid.NewGuid().ToString("N");
         }
 
         [Fact]
-        public async Task ShouldSync()
+        public async Task ShouldSyncHeap()
         {
             //Arrange
-            var docId = 10;
             var testDt = DateTime.Now;
 
-            var testDocOld = new TestDoc
-            {
-                Id = 50,
-                Content = "foo",
-                LastChanged = testDt.AddMinutes(-3)
-            };
+            var testDocOld = TestDoc.Generate();
+            testDocOld.LastChanged = testDt.AddMinutes(-3);
 
-            var testDoc = new TestDoc
-            {
-                Id = docId,
-                Content = "bar",
-                LastChanged = testDt.AddMinutes(-1)
-            };
+            var testDoc = TestDoc.Generate();
+            testDoc.LastChanged = testDt.AddMinutes(-1);
 
             var dbMgr = await _dbFxt.CreateDbAsync();
             await dbMgr.DoOnce().InsertAsync(testDocOld);
@@ -81,7 +75,7 @@ namespace FuncTests
                             new IndexOptions
                             {
                                 Id = "baz",
-                                EsIndex = "es-baz"
+                                EsIndex = _esIndexName
                             }
                         };
                     })
@@ -94,19 +88,82 @@ namespace FuncTests
                     .AddSingleton<ISeedService>(seedService);
             });
 
-            var searchP = new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(docId)));
+            var searchP = new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(testDoc.Id)));
 
             //Act
             await api.StartSynchronizationAsync();
             await Task.Delay(2000);
 
-            var found = await _esFxt.Searcher.SearchAsync("es-baz", searchP);
+            var found = await _esFxt.Searcher.SearchAsync(_esIndexName, searchP);
 
             //Assert
             Assert.Single(found);
-            Assert.Equal(docId, found[0].Id);
-            Assert.Equal("bar", found[0].Content);
+            Assert.Equal(testDoc.Id, found[0].Id);
+            Assert.Equal(testDoc.Content, found[0].Content);
             Assert.True(seedService.DtSeed > testDt);
+        }
+
+        [Fact]
+        public async Task ShouldSyncStream()
+        {
+            //Arrange
+            var testDocOld = TestDoc.Generate();
+            var testDoc = TestDoc.Generate(testDocOld.Id+2);
+
+            var dbMgr = await _dbFxt.CreateDbAsync();
+            await dbMgr.DoOnce().InsertAsync(testDocOld);
+            await dbMgr.DoOnce().InsertAsync(testDoc);
+
+            var seedService = new TestSeedService(testDocOld.Id+1);
+
+            var api = _apiFxt.StartWithProxy(srv =>
+            {
+                srv.AddSingleton(dbMgr)
+                    .Configure<IndexerOptions>(opt =>
+                    {
+                        opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
+                        opt.Indexes = new[]
+                        {
+                            new IndexOptions
+                            {
+                                Id = "baz",
+                                EsIndex = _esIndexName,
+                                IndexType = IndexType.Stream
+                            }
+                        };
+                    })
+                    .ConfigureEsTools(opt => opt.Url = TestTools.EsUrl)
+                    .AddLogging(l => l
+                        .ClearProviders()
+                        .AddFilter(f => true)
+                        .AddXUnit(_output)
+                    )
+                    .AddSingleton<ISeedService>(seedService);
+            });
+
+            var searchP = new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(testDoc.Id)));
+
+            //Act
+            await api.StartSynchronizationAsync();
+            await Task.Delay(2000);
+
+            var found = await _esFxt.Searcher.SearchAsync(_esIndexName, searchP);
+
+            //Assert
+            Assert.Single(found);
+            Assert.Equal(testDoc.Id, found[0].Id);
+            Assert.Equal(testDoc.Content, found[0].Content);
+            Assert.Equal(testDoc.Id, seedService.IdSeed);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public async Task DisposeAsync()
+        {
+            await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
         }
     }
 }

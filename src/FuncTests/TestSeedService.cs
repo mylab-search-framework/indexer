@@ -7,15 +7,20 @@ namespace FuncTests
     class TestSeedService : ISeedService
     {
         public DateTime DtSeed { get; private set; }
-        
+        public long IdSeed { get; set; }
+
         public TestSeedService(DateTime initialDtSeed)
         {
             DtSeed = initialDtSeed;
         }
-
+        public TestSeedService(long initialIdSeed)
+        {
+            IdSeed = initialIdSeed;
+        }
         public Task SaveSeedAsync(string indexId, long idSeed)
         {
-            throw new NotImplementedException();
+            IdSeed = idSeed;
+            return Task.CompletedTask;
         }
 
         public Task SaveSeedAsync(string indexId, DateTime dtSeed)
@@ -26,7 +31,7 @@ namespace FuncTests
 
         public Task<long> LoadIdSeedAsync(string indexId)
         {
-            throw new NotImplementedException();
+            return Task.FromResult(IdSeed);
         }
 
         public Task<DateTime> LoadDtSeedAsync(string indexId)

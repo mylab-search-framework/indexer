@@ -1,6 +1,5 @@
 ﻿using System;
 using LinqToDB.Mapping;
-using MyLab.Db;
 using Nest;
 
 namespace FuncTests
@@ -20,5 +19,19 @@ namespace FuncTests
         [Date(Index = false)]
         [Column("changed")]
         public DateTime? LastChanged { get; set; }
+
+        public static TestDoc Generate()
+        {
+            return Generate(new Random(DateTime.Now.Millisecond).Next());
+        }
+
+        public static TestDoc Generate(int id)
+        {
+            return new TestDoc
+            {
+                Id = id,
+                Content = Guid.NewGuid().ToString("N")
+            };
+        }
     }
 }

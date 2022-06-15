@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using MyLab.Log;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Tools

@@ -50,6 +50,11 @@ namespace UnitTests
             {
                 return Task.FromResult(_syncQuery);
             }
+
+            public Task<string> ProvideIndexSettingsAsync(string indexId)
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestSeedService : ISeedService

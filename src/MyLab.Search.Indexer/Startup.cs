@@ -39,7 +39,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IIndexResourceProvider, FileIndexResourceProvider>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
-                .AddSingleton<IIndexResourceProvider,FileIndexResourceProvider>()
+                .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
                 .AddSingleton<IIndexerService,IndexerService>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
