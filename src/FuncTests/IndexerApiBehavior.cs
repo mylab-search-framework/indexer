@@ -7,6 +7,7 @@ using MyLab.ApiClient.Test;
 using MyLab.DbTest;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Indexing;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
@@ -55,7 +56,10 @@ namespace FuncTests
                             }
                         };
                     })
-                    .ConfigureEsTools(opt => opt.Url = TestTools.EsUrl)
+                    .ConfigureEsTools(opt =>
+                    {
+                        opt.Url = TestTools.EsUrl;
+                    })
                     .AddLogging(l => l
                         .ClearProviders()
                         .AddFilter(f => true)
@@ -114,7 +118,7 @@ namespace FuncTests
 
             //Act
             await _api.PutAsync("foo-index", JObject.FromObject(docForPut));
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await _esFxt.Searcher.SearchAsync(_esIndexName,
                 new EsSearchParams<TestDoc>(q =>

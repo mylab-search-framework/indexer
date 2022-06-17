@@ -9,14 +9,14 @@ namespace FuncTests
     public class TestDoc
     {
         [Column("id")]
-        [Number]
+        //[Number]
         public int Id { get; set; }
 
-        [Keyword]
+        //[Keyword]
         [Column("content")]
         public string Content { get; set; }
 
-        [Date(Index = false)]
+        //[Date(Index = false)]
         [Column("changed")]
         public DateTime? LastChanged { get; set; }
 

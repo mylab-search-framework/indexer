@@ -44,7 +44,7 @@ namespace MyLab.Search.Indexer.Services
             _seedService = seedService;
             _indexResourceProvider = indexResourceProvider;
             _options = options;
-            _log = logger.Dsl();
+            _log = logger?.Dsl();
         }
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
@@ -104,7 +104,7 @@ namespace MyLab.Search.Indexer.Services
             
             var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, idxOpts.SyncPageSize);
 
-            _log.Action("Sync data loading")
+            _log?.Action("Sync data loading")
                 .AndFactIs("seed", seedStrValue)
                 .Write();
 
