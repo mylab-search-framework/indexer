@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -20,7 +21,7 @@ namespace MyLab.Search.Indexer.Services
             IOptions<IndexerOptions> opts, 
             IEsIndexTools esIndexTools, 
             IIndexResourceProvider idxResProvider,
-            ILogger<IndexCreatorService> logger)
+            ILogger<IndexCreatorService> logger = null)
             :this(opts.Value, esIndexTools, idxResProvider, logger)
         {
         }
@@ -29,7 +30,7 @@ namespace MyLab.Search.Indexer.Services
             IndexerOptions opts, 
             IEsIndexTools esIndexTools,
             IIndexResourceProvider idxResProvider,
-            ILogger<IndexCreatorService> logger)
+            ILogger<IndexCreatorService> logger = null)
         {
             _opts = opts;
             _esIndexTools = esIndexTools;
@@ -47,35 +48,50 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var idxOpts in _opts.Indexes)
             {
-                if (string.IsNullOrEmpty(idxOpts.EsIndex))
+                try
                 {
-                    _log.Warning("Configured index has no Elasticsearch index name")
-                        .AndFactIs("index", idxOpts.Id)
-                        .Write();
-                    break;
+                    await CheckIndex(stoppingToken, idxOpts);
                 }
-
-                var exists = await _esIndexTools.IsIndexExistsAsync(idxOpts.EsIndex, stoppingToken);
-
-                if (!exists)
+                catch (Exception e)
                 {
-                    var settingsStr = await _idxResProvider.ProvideSyncQueryAsync(idxOpts.EsIndex);
-                    await _esIndexTools.CreateIndexAsync(idxOpts.EsIndex, settingsStr, stoppingToken);
-
-                    _log.Action("Elasticsearch index has been created")
-                        .AndFactIs("index", idxOpts.Id)
-                        .AndFactIs("es-index", idxOpts.EsIndex)
-                        .Write();
-                }
-                else
-                {
-                    _log.Action("Elasticsearch index already exist")
+                    _log?.Error("Check index error", e)
                         .AndFactIs("index", idxOpts.Id)
                         .AndFactIs("es-index", idxOpts.EsIndex)
                         .Write();
                 }
             }
                 
+        }
+
+        private async Task CheckIndex(CancellationToken stoppingToken, IndexOptions idxOpts)
+        {
+            if (string.IsNullOrEmpty(idxOpts.EsIndex))
+            {
+                _log?.Warning("Configured index has no Elasticsearch index name")
+                    .AndFactIs("index", idxOpts.Id)
+                    .Write();
+                return;
+            }
+
+            var exists = await _esIndexTools.IsIndexExistsAsync(idxOpts.EsIndex, stoppingToken);
+
+            if (!exists)
+            {
+                var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(idxOpts.Id);
+                await _esIndexTools.CreateIndexAsync(idxOpts.EsIndex, settingsStr, stoppingToken);
+
+                _log?.Action("Elasticsearch index has been created")
+                    .AndFactIs("index", idxOpts.Id)
+                    .AndFactIs("es-index", idxOpts.EsIndex)
+                    .Write();
+            }
+            else
+            {
+                _log?.Action("Elasticsearch index already exist")
+                    .AndFactIs("index", idxOpts.Id)
+                    .AndFactIs("es-index", idxOpts.EsIndex)
+                    .Write();
+            }
         }
     }
 }

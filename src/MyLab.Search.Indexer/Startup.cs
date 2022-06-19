@@ -49,7 +49,7 @@ namespace MyLab.Search.Indexer
                 .AddLogging(l => l.AddMyLabConsole())
                 .AddUrlBasedHttpMetrics()
                 .AddTaskLogic<SyncTaskLogic>()
-                .AddSingleton<IndexCreatorService>();
+                .AddHostedService<IndexCreatorService>();
 
             services
                 .ConfigureRabbit(Configuration)
