@@ -24,5 +24,13 @@ namespace MyLab.Search.Indexer.Models
                 IndexId = IndexId
             };
         }
+
+        public bool IsEmpty()
+        {
+            return PostList is not { Length: > 0 } && 
+                   PutList is not { Length: > 0 } &&
+                   PatchList is not { Length: > 0 } && 
+                   DeleteList is not { Length: > 0 };
+        }
     }
 }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
@@ -55,7 +57,7 @@ namespace MyLab.Search.Indexer.Services
             var kickQueryPattern = await _indexResourceProvider.ProvideKickQueryAsync(indexId);
 
             await using var conn = _dbManager.Use();
-
+            
             var kickQuery = KickQuery.Build(kickQueryPattern, idList, idxOpts.IdPropertyType);
             
             var entities = await conn.QueryToArrayAsync(

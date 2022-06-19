@@ -34,8 +34,15 @@ namespace MyLab.Search.Indexer.Services
             var idxOpts = _indexerOptions.GetIndexOptions(req.IndexId);
 
             if (idxOpts.EsIndex == null)
+            {
                 throw new InvalidOperationException("ES index not specified")
                     .AndFactIs("index-id", req.IndexId);
+            }
+
+            if (req.IsEmpty())
+            {
+                throw new InvalidOperationException("Indexing request is empty");
+            }
 
             var bulkReq = new Func<BulkDescriptor, IBulkRequest>(d =>
                 {

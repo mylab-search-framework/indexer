@@ -119,6 +119,7 @@ namespace MyLab.Search.Indexer.Controllers
         }
 
         [HttpPost("{indexId}/{docId}/kicker")]
+        [ErrorToResponse(typeof(KickDocsCountMismatchException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
         public async Task<IActionResult> Kick([FromRoute] string indexId, [FromRoute] string docId)

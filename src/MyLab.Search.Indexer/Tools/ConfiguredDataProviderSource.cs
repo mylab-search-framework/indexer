@@ -33,8 +33,11 @@ namespace MyLab.Search.Indexer.Tools
                 case "sqlite": return new SQLiteDataProvider(ProviderName.SQLite);
                 case "mysql": return new MySqlDataProvider(ProviderName.MySql);
                 case "oracle": return new OracleDataProvider(ProviderName.Oracle);
+                case "":
+                case null:
+                    throw new InvalidOperationException("Data Provider is not defined");
                 default:
-                    throw new NotSupportedException("Data Provider not supported")
+                    throw new InvalidOperationException("Data Provider not supported")
                         .AndFactIs("Provider", _options.Provider);
             }
         }
