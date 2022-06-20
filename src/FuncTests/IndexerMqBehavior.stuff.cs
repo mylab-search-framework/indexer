@@ -35,6 +35,7 @@ namespace FuncTests
         private readonly TestApi<Startup, IApiKickerContract> _testApi;
         private IApiKickerContract _kickApi;
         private IDbManager _dbMgr;
+        private string _esIndexName;
 
         public IndexerMqBehavior(
             TestApi<Startup, IApiKickerContract> testApi,
@@ -62,8 +63,11 @@ namespace FuncTests
         {
             _dbMgr = await _dbFxt.CreateDbAsync();
 
-            var esIndexName = Guid.NewGuid().ToString("N");
-            var indexNameProvider = new SingleIndexNameProvider(esIndexName);
+            _esIndexName = Guid.NewGuid().ToString("N");
+
+            await _esFxt.IndexTools.CreateIndexAsync(_esIndexName);
+
+            var indexNameProvider = new SingleIndexNameProvider(_esIndexName);
 
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);
             _searcher = new EsSearcher<TestDoc>(_esFxt.Searcher, indexNameProvider);
@@ -80,7 +84,7 @@ namespace FuncTests
                         new IndexOptions
                         {
                             Id = "baz",
-                            EsIndex = esIndexName,
+                            EsIndex = _esIndexName,
                             IdPropertyType = IdPropertyType.Int
                         }
                     };
@@ -103,10 +107,10 @@ namespace FuncTests
             );
         }
 
-        public Task DisposeAsync()
+        public async Task DisposeAsync()
         {
             _queue.Remove();
-            return Task.CompletedTask;
+            await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
         }
 
         [Api]

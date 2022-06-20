@@ -4,9 +4,8 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services;
 
-namespace MyLab.Search.Indexer.Tools
+namespace MyLab.Search.Indexer.Services
 {
     class FileSeedService : ISeedService
     {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Threading.Tasks;
+using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using Xunit;
 
