@@ -1,0 +1,49 @@
+{
+	"$schema": "http://json-schema.org/schema#",
+	"description": "MyLab.Search.Indexer input MQ message",
+	"properties": {
+		"indexId": {
+			"description": "Index identifier",
+			"type": "string"
+		},
+		"post": {
+			"description": "Post-list, which contains docs for insert only",
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
+		"put": {
+			"description": "Put-list, which contains docs for insert or replace if already indexed",
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
+		"patch": {
+			"description": "Patch-list, which contains docs for change already indexed docs",
+			"type": "array",
+			"items": {
+				"type": "object"
+			}
+		},
+		"delete": {
+			"description": "Delete-list, which contains an doc identifiers for removing from index",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		},
+		"kick": {
+			"description": "Kick-list, which contains an doc identifiers for indexing from database",
+			"type": "array",
+			"items": {
+				"type": "string"
+			}
+		}
+	},
+	"required": [
+		"indexId"
+	],
+	"additionalProperties": false
+}
