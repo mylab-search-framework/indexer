@@ -40,17 +40,21 @@ namespace UnitTests
         }
 
         [Theory]
-        [InlineData("pre-", "-post", "pre-bar-post")]
-        [InlineData(null, "-post", "bar-post")]
-        [InlineData("pre-", null, "pre-bar")]
-        [InlineData(null, null, "bar")]
-        public void ShouldProvideEsIndexName(string prefix, string postfix, string expected)
+        [InlineData("pre-", "bar", "-post", "pre-bar-post")]
+        [InlineData(null, "bar", "-post", "bar-post")]
+        [InlineData("pre-", "bar", null, "pre-bar")]
+        [InlineData(null, "bar", null, "bar")]
+        [InlineData("pre-", "BAR", "-post", "pre-bar-post")]
+        [InlineData(null, "BAR", "-post", "bar-post")]
+        [InlineData("pre-", "BAR", null, "pre-bar")]
+        [InlineData(null, "BAR", null, "bar")]
+        public void ShouldProvideEsIndexName(string prefix, string value, string postfix, string expected)
         {
             //Arrange
             var indexOpt = new IndexOptions
             {
                 Id = "foo",
-                EsIndex = "bar"
+                EsIndex = value
             };
             var opts = new IndexerOptions
             {

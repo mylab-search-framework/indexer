@@ -35,7 +35,7 @@ namespace MyLab.Search.Indexer.Options
                 throw new InvalidOperationException("Elasticsearch index name is not defined")
                     .AndFactIs("idx", idxId);
 
-            return $"{EsIndexNamePrefix}{idxOpt.EsIndex}{EsIndexNamePostfix}";
+            return $"{EsIndexNamePrefix}{idxOpt.EsIndex.ToLower()}{EsIndexNamePostfix}";
         }
     }
 
