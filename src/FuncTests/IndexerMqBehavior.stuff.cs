@@ -23,8 +23,8 @@ namespace FuncTests
     public partial class IndexerMqBehavior :
         IClassFixture<EsFixture<TestEsFixtureStrategy>>,
         IClassFixture<TmpDbFixture<TestDbInitializer>>,
-        IAsyncLifetime,
-        IDisposable
+        IClassFixture<TestApi<Startup, IndexerMqBehavior.IApiKickerContract>>, 
+        IAsyncLifetime
     {
         private RabbitQueue _queue;
         private EsIndexer<TestDoc> _indexer;
@@ -32,15 +32,19 @@ namespace FuncTests
         private readonly TmpDbFixture<TestDbInitializer> _dbFxt;
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
-        private TestApi<Startup, IApiKickerContract> _testApi;
+        private readonly TestApi<Startup, IApiKickerContract> _testApi;
         private IApiKickerContract _kickApi;
         private IDbManager _dbMgr;
 
         public IndexerMqBehavior(
+            TestApi<Startup, IApiKickerContract> testApi,
             TmpDbFixture<TestDbInitializer> dbFxt,
             EsFixture<TestEsFixtureStrategy> esFxt,
             ITestOutputHelper output)
         {
+            _testApi = testApi;
+            _testApi.Output = output;
+
             _dbFxt = dbFxt;
             _output = output;
             _dbFxt.Output = output;
@@ -52,12 +56,6 @@ namespace FuncTests
         private Task<EsFound<TestDoc>> SearchByIdAsync(int id)
         {
             return _searcher.SearchAsync(new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(id))));
-        }
-
-        public void Dispose()
-        {
-            _queue.Remove();
-            _testApi.Dispose();
         }
 
         public async Task InitializeAsync()
@@ -73,52 +71,46 @@ namespace FuncTests
             var queueFactory = new RabbitQueueFactory(TestTools.RabbitChannelProvider);
             _queue = queueFactory.CreateWithRandomId();
 
-            _testApi = new TestApi<Startup, IApiKickerContract>
-            {
-                Output = _output,
-                ServiceOverrider = srv =>
+            _kickApi = _testApi.StartWithProxy(srv => 
+                srv.Configure<IndexerOptions>(opt =>
                 {
-                    srv.Configure<IndexerOptions>(opt =>
+                    opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
+                    opt.Indexes = new[]
+                    {
+                        new IndexOptions
                         {
-                            opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
-                            opt.Indexes = new[]
-                            {
-                                new IndexOptions
-                                {
-                                    Id = "baz",
-                                    EsIndex = esIndexName,
-                                    IdPropertyType = IdPropertyType.Int
-                                }
-                            };
-                            opt.MqQueue = _queue.Name;
-                        })
-                        .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
-                        .ConfigureRabbit(opt =>
-                        {
-                            opt.Host = "localhost";
-                            opt.User = "guest";
-                            opt.Password = "guest";
-                        })
-                        .AddLogging(l => l
-                            .ClearProviders()
-                            .AddFilter(f => true)
-                            .AddXUnit(_output)
-                        )
-                        .Configure<IndexerDbOptions>(opt => opt.Provider = "sqlite")
-                        .AddSingleton(_dbMgr);
-                }
-            };
-
-            _kickApi = _testApi.StartWithProxy();
+                            Id = "baz",
+                            EsIndex = esIndexName,
+                            IdPropertyType = IdPropertyType.Int
+                        }
+                    };
+                    opt.MqQueue = _queue.Name;
+                })
+                .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
+                .ConfigureRabbit(opt =>
+                {
+                    opt.Host = "localhost";
+                    opt.User = "guest";
+                    opt.Password = "guest";
+                })
+                .AddLogging(l => l
+                    .ClearProviders()
+                    .AddFilter(f => true)
+                    .AddXUnit(_output)
+                )
+                .Configure<IndexerDbOptions>(opt => opt.Provider = "sqlite")
+                .AddSingleton(_dbMgr)
+            );
         }
 
         public Task DisposeAsync()
         {
+            _queue.Remove();
             return Task.CompletedTask;
         }
 
         [Api]
-        private interface IApiKickerContract
+        public interface IApiKickerContract
         {
             [Post]
             [ExpectedCode(HttpStatusCode.NotFound)]
