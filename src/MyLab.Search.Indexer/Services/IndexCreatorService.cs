@@ -75,6 +75,8 @@ namespace MyLab.Search.Indexer.Services
 
             var exists = await _esIndexTools.IsIndexExistsAsync(idxOpts.EsIndex, stoppingToken);
 
+            await Task.Delay(500, stoppingToken);
+
             if (!exists)
             {
                 var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(idxOpts.Id);
