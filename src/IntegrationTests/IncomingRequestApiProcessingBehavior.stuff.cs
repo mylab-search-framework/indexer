@@ -8,12 +8,12 @@ namespace IntegrationTests
     public partial class IncomingRequestApiProcessingBehavior
     {
         private readonly ITestOutputHelper _output;
-        private readonly TestApi<Startup, Api> _testApi;
+        private readonly TestApi<Startup, IIndexerV2Api> _testApi;
 
         public IncomingRequestApiProcessingBehavior(ITestOutputHelper output)
         {
             _output = output;
-            _testApi = new TestApi<Startup, Api>
+            _testApi = new TestApi<Startup, IIndexerV2Api>
             {
                 Output = output
             };

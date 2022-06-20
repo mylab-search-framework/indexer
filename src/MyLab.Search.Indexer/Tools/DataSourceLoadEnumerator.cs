@@ -40,11 +40,11 @@ namespace MyLab.Search.Indexer.Tools
             var hasResult = await _batchEnumerator.MoveNextAsync();
             if (!hasResult) return false;
 
-            var batchEntities = _batchEnumerator.Current.Entities;
+            var batchDocs = _batchEnumerator.Current.Docs;
 
             ISeedSaver seedSaver = null;
 
-            if (batchEntities is { Length: > 0 })
+            if (batchDocs is { Length: > 0 })
             {
                 switch (_indexType)
                 {
@@ -55,7 +55,7 @@ namespace MyLab.Search.Indexer.Tools
                         break;
                     case IndexType.Stream:
                         {
-                            var allLoadIds = batchEntities
+                            var allLoadIds = batchDocs
                                 .Select(e => new
                                 {
                                     OriginId = e.GetIdProperty(),

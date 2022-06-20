@@ -98,19 +98,19 @@ namespace UnitTests
 
         class TableFiller : ITestDbInitializer
         {
-            private readonly TestDoc[] _initialEntities;
+            private readonly TestDoc[] _initialDocs;
 
-            public TableFiller(TestDoc[] initialEntities)
+            public TableFiller(TestDoc[] initialDocs)
             {
-                _initialEntities = initialEntities;
+                _initialDocs = initialDocs;
             }
             public async Task InitializeAsync(DataConnection dc)
             {
-                await dc.BulkCopyAsync(_initialEntities);
+                await dc.BulkCopyAsync(_initialDocs);
             }
         }
 
-        [Table("entities")]
+        [Table("docs")]
         private class TestDoc
         {
             [PrimaryKey, Column("id")] public long Id { get; set; }

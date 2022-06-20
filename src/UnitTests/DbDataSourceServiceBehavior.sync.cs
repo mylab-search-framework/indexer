@@ -23,7 +23,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from entities where id > @seed"
+                SyncDbQuery = "select id, content from docs where id > @seed"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
@@ -51,7 +51,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from entities where last_change_dt > @seed"
+                SyncDbQuery = "select id, content from docs where last_change_dt > @seed"
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
@@ -86,7 +86,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from entities where id > @seed limit @offset, @limit",
+                SyncDbQuery = "select id, content from docs where id > @seed limit @offset, @limit",
                 SyncPageSize = 1
             };
 
@@ -103,11 +103,11 @@ namespace UnitTests
 
             //Assert
             Assert.Equal(2, loads.Length);
-            Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("0", loads[0].Batch.Entities[0].GetIdProperty());
+            Assert.Single(loads[0].Batch.Docs);
+            Assert.Equal("0", loads[0].Batch.Docs[0].GetIdProperty());
 
-            AssertDoc(ent0, loads[0].Batch.Entities[0]);
-            AssertDoc(ent1, loads[1].Batch.Entities[0]);
+            AssertDoc(ent0, loads[0].Batch.Docs[0]);
+            AssertDoc(ent1, loads[1].Batch.Docs[0]);
         }
 
         [Fact]
@@ -128,7 +128,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from entities where last_change_dt > @seed limit @offset, @limit",
+                SyncDbQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit",
                 SyncPageSize = 1
             };
 
@@ -145,11 +145,11 @@ namespace UnitTests
 
             //Assert
             Assert.Equal(2, loads.Length);
-            Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("0", loads[0].Batch.Entities[0].GetIdProperty());
+            Assert.Single(loads[0].Batch.Docs);
+            Assert.Equal("0", loads[0].Batch.Docs[0].GetIdProperty());
 
-            AssertDoc(ent0, loads[0].Batch.Entities[0]);
-            AssertDoc(ent1, loads[1].Batch.Entities[0]);
+            AssertDoc(ent0, loads[0].Batch.Docs[0]);
+            AssertDoc(ent1, loads[1].Batch.Docs[0]);
         }
 
         [Fact]
@@ -173,7 +173,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from entities where id > @seed limit @offset, @limit",
+                SyncDbQuery = "select id, content from docs where id > @seed limit @offset, @limit",
                 SyncPageSize = 1
             };
 
@@ -190,9 +190,9 @@ namespace UnitTests
 
             //Assert
             Assert.Single(loads);
-            Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("1", loads[0].Batch.Entities[0].GetIdProperty());
-            AssertDoc(ent1, loads[0].Batch.Entities[0]);
+            Assert.Single(loads[0].Batch.Docs);
+            Assert.Equal("1", loads[0].Batch.Docs[0].GetIdProperty());
+            AssertDoc(ent1, loads[0].Batch.Docs[0]);
         }
 
         [Fact]
@@ -216,7 +216,7 @@ namespace UnitTests
             {
                 Id = "foo-index",
                 IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from entities where last_change_dt > @seed limit @offset, @limit",
+                SyncDbQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit",
                 SyncPageSize = 1
             };
 
@@ -233,9 +233,9 @@ namespace UnitTests
 
             //Assert
             Assert.Single(loads);
-            Assert.Single(loads[0].Batch.Entities);
-            Assert.Equal("1", loads[0].Batch.Entities[0].GetIdProperty());
-            AssertDoc(ent1, loads[0].Batch.Entities[0]);
+            Assert.Single(loads[0].Batch.Docs);
+            Assert.Equal("1", loads[0].Batch.Docs[0].GetIdProperty());
+            AssertDoc(ent1, loads[0].Batch.Docs[0]);
         }
     }
 

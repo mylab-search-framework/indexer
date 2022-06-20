@@ -29,7 +29,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldSendAsIsIfNoDataSourceEntities()
+        public async Task ShouldSendAsIsIfNoDataSourceDocs()
         {
             //Arrange
             var inputRequest = new InputIndexingRequest
@@ -64,7 +64,7 @@ namespace UnitTests
         }
         
         [Fact]
-        public async Task ShouldAddDataSourceEntitiesToPostListIfIndexIsStream()
+        public async Task ShouldAddDataSourceDocsToPostListIfIndexIsStream()
         {
             //Arrange
             var inputRequest = new InputIndexingRequest
@@ -74,7 +74,7 @@ namespace UnitTests
                 KickList = new []{ _kickEnt.GetIdProperty() }
             };
 
-            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new[] { _kickEnt } } };
+            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Docs = new[] { _kickEnt } } };
 
             IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();
@@ -107,7 +107,7 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldAddDataSourceEntitiesToPutListIfIndexIsHeap()
+        public async Task ShouldAddDataSourceDocsToPutListIfIndexIsHeap()
         {
             //Arrange
             var inputRequest = new InputIndexingRequest
@@ -117,7 +117,7 @@ namespace UnitTests
                 KickList = new[] { _kickEnt.GetIdProperty() }
             };
 
-            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Entities = new [] { _kickEnt } } };
+            var dataSourceLoad = new DataSourceLoad { Batch = new DataSourceLoadBatch { Docs = new [] { _kickEnt } } };
 
             IDataSourceService dataSourceService = new TestDataSourceService(dataSourceLoad);
             TestIndexerService indexerService = new TestIndexerService();

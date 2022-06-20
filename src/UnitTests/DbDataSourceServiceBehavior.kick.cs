@@ -26,7 +26,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions 
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from entities where id in (@id)",
+                KickDbQuery = "select id, content from docs where id in (@id)",
                 IdPropertyType = IdPropertyType.Int
             };
 
@@ -40,12 +40,12 @@ namespace UnitTests
             var load = await srv.LoadKickAsync("foo-index", new[] { "1" });
 
             //Assert
-            Assert.Single(load.Batch.Entities);
-            AssertDoc(ent1, load.Batch.Entities[0]);
+            Assert.Single(load.Batch.Docs);
+            AssertDoc(ent1, load.Batch.Docs[0]);
         }
 
         [Fact]
-        public async Task ShouldProvideMultipleKickedEntitiesByIntField()
+        public async Task ShouldProvideMultipleKickedDocsByIntField()
         {
             //Arrange
 
@@ -62,7 +62,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from entities where id in (@id)",
+                KickDbQuery = "select id, content from docs where id in (@id)",
                 IdPropertyType = IdPropertyType.Int
             };
 
@@ -76,9 +76,9 @@ namespace UnitTests
             var load = await srv.LoadKickAsync("foo-index", new[] { "0", "2" });
 
             //Assert
-            Assert.Equal(2, load.Batch.Entities.Length);
-            AssertDoc(ent0, load.Batch.Entities[0]);
-            AssertDoc(ent2, load.Batch.Entities[1]);
+            Assert.Equal(2, load.Batch.Docs.Length);
+            AssertDoc(ent0, load.Batch.Docs[0]);
+            AssertDoc(ent2, load.Batch.Docs[1]);
         }
 
         [Fact]
@@ -98,7 +98,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from entities where content in (@id)",
+                KickDbQuery = "select id, content from docs where content in (@id)",
                 IdPropertyType = IdPropertyType.Int
             };
 
@@ -112,12 +112,12 @@ namespace UnitTests
             var load = await srv.LoadKickAsync("foo-index", new[] { "1-content" });
 
             //Assert
-            Assert.Single(load.Batch.Entities);
-            AssertDoc(ent1, load.Batch.Entities[0]);
+            Assert.Single(load.Batch.Docs);
+            AssertDoc(ent1, load.Batch.Docs[0]);
         }
 
         [Fact]
-        public async Task ShouldProvideMultipleKickedEntitiesByStringField()
+        public async Task ShouldProvideMultipleKickedDocsByStringField()
         {
             //Arrange
 
@@ -134,7 +134,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from entities where content in (@id)",
+                KickDbQuery = "select id, content from docs where content in (@id)",
                 IdPropertyType = IdPropertyType.Int
             };
 
@@ -148,9 +148,9 @@ namespace UnitTests
             var load = await srv.LoadKickAsync("foo-index", new[] { "0-content", "2-content" });
 
             //Assert
-            Assert.Equal(2, load.Batch.Entities.Length);
-            AssertDoc(ent0, load.Batch.Entities[0]);
-            AssertDoc(ent2, load.Batch.Entities[1]);
+            Assert.Equal(2, load.Batch.Docs.Length);
+            AssertDoc(ent0, load.Batch.Docs[0]);
+            AssertDoc(ent2, load.Batch.Docs[1]);
         }
     }
 }

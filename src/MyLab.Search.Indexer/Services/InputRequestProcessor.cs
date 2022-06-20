@@ -49,18 +49,18 @@ namespace MyLab.Search.Indexer.Services
 
             if (inputRequest.KickList is { Length: > 0 })
             {
-                var entitiesLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
+                var docsLoad = await _dataSourceService.LoadKickAsync(inputRequest.IndexId, inputRequest.KickList);
 
                 _log?.Debug("Kick list has been loaded")
-                    .AndFactIs("count", entitiesLoad.Batch.Entities.Length)
-                    .AndFactIs("query", entitiesLoad.Batch.Query)
+                    .AndFactIs("count", docsLoad.Batch.Docs.Length)
+                    .AndFactIs("query", docsLoad.Batch.Query)
                     .Write();
 
-                if (entitiesLoad is { Batch: { Entities: { Length: > 0 } } })
+                if (docsLoad is { Batch: { Docs: { Length: > 0 } } })
                 {
-                    var entities = entitiesLoad.Batch.Entities.ToArray();
+                    var docs = docsLoad.Batch.Docs.ToArray();
 
-                    if (entities.Length != inputRequest.KickList.Length)
+                    if (docs.Length != inputRequest.KickList.Length)
                     {
                         throw new KickDocsCountMismatchException();
                     }
@@ -69,12 +69,12 @@ namespace MyLab.Search.Indexer.Services
                     {
                         case IndexType.Heap:
                             {
-                                idxReq.PutList = JoinEntities(idxReq.PutList, entities);
+                                idxReq.PutList = JoinDocs(idxReq.PutList, docs);
                             }
                             break;
                         case IndexType.Stream:
                             {
-                                idxReq.PostList = JoinEntities(idxReq.PostList, entities);
+                                idxReq.PostList = JoinDocs(idxReq.PostList, docs);
                             }
                             break;
                         default:
@@ -86,7 +86,7 @@ namespace MyLab.Search.Indexer.Services
             await _indexerService.IndexAsync(idxReq);
         }
 
-        JObject[] JoinEntities(JObject[] arr1, JObject[] arr2)
+        JObject[] JoinDocs(JObject[] arr1, JObject[] arr2)
         {
             if (arr1 == null || arr1.Length == 0) return arr2;
             if (arr2 == null || arr2.Length == 0) return arr1;

@@ -11,7 +11,7 @@ namespace MyLab.Search.Indexer.Models
 
     public class DataSourceLoadBatch
     {
-        public JObject[] Entities { get; set; }
+        public JObject[] Docs { get; set; }
         public string Query { get; set; }
     }
 }

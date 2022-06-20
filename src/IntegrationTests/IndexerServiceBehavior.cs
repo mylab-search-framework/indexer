@@ -34,7 +34,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldPostEntities()
+        public async Task ShouldPostDocs()
         {
             //Arrange
             var opts = new IndexerOptions
@@ -79,7 +79,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldDeleteEntities()
+        public async Task ShouldDeleteDocs()
         {
             //Arrange
             var opts = new IndexerOptions
@@ -134,7 +134,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldPutNewEntities()
+        public async Task ShouldPutNewDocs()
         {
             //Arrange
             var opts = new IndexerOptions
@@ -179,7 +179,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldPutEditEntities()
+        public async Task ShouldPutEditDocs()
         {
             //Arrange
             var opts = new IndexerOptions
@@ -236,7 +236,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldPatchEntities()
+        public async Task ShouldPatchDocs()
         {
             //Arrange
             var opts = new IndexerOptions
@@ -293,7 +293,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldNotPatchEntitiesIfNotExists()
+        public async Task ShouldNotPatchDocsIfNotExists()
         {
             //Arrange
             var opts = new IndexerOptions

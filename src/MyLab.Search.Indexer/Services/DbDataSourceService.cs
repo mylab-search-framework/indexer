@@ -60,7 +60,7 @@ namespace MyLab.Search.Indexer.Services
             
             var kickQuery = KickQuery.Build(kickQueryPattern, idList, idxOpts.IdPropertyType);
             
-            var entities = await conn.QueryToArrayAsync(
+            var docs = await conn.QueryToArrayAsync(
                 IndexingDocDataReader.Read, 
                 kickQuery.Query, 
                 kickQuery.Parameters);
@@ -69,7 +69,7 @@ namespace MyLab.Search.Indexer.Services
             {
                 Batch = new DataSourceLoadBatch
                 {
-                    Entities = entities,
+                    Docs = docs,
                     Query = conn.LastQuery
                 }
             };

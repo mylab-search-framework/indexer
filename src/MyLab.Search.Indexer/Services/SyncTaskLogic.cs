@@ -74,12 +74,12 @@ namespace MyLab.Search.Indexer.Services
                     {
                         case IndexType.Heap:
                         {
-                            idxReq.PutList = data.Batch.Entities;
+                            idxReq.PutList = data.Batch.Docs;
                         }
                             break;
                         case IndexType.Stream:
                         {
-                            idxReq.PostList = data.Batch.Entities;
+                            idxReq.PostList = data.Batch.Docs;
                         }
                             break;
                         default:
@@ -90,12 +90,12 @@ namespace MyLab.Search.Indexer.Services
 
                     await data.SeedSaver.SaveAsync();
 
-                    syncCount += data.Batch.Entities.Length;
+                    syncCount += data.Batch.Docs.Length;
 
                     _log.Debug("Sync data has been indexed")
                         .AndFactIs("idx", idx.Id)
                         .AndFactIs("sql", data.Batch.Query)
-                        .AndFactIs("count", data.Batch.Entities.Length)
+                        .AndFactIs("count", data.Batch.Docs.Length)
                         .Write();
                 }
             }
