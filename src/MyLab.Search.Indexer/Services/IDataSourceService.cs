@@ -1,14 +1,13 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using LinqToDB.Data;
-using MyLab.Search.Indexer.DataContract;
+using MyLab.Search.Indexer.Models;
 
 namespace MyLab.Search.Indexer.Services
 {
     public interface IDataSourceService
     {
-        IAsyncEnumerable<DataSourceBatch> Read(string nsId, string query, DataParameter seedParameter);
+        Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList);
 
-        Task<DataSourceBatch> ReadByIdAsync(string query, DataParameter idParameter);
+        Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId);
     }
 }

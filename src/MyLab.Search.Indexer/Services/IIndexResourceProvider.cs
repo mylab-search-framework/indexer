@@ -1,11 +1,12 @@
 ﻿using System.Threading.Tasks;
-using MyLab.Search.EsAdapter;
 
 namespace MyLab.Search.Indexer.Services
 {
     public interface IIndexResourceProvider
     {
-        Task<string> ReadFileAsync(string idxId, string filename);
-        Task<string> ReadDefaultFileAsync(string filename);
+        Task<string> ProvideKickQueryAsync(string indexId);
+        Task<string> ProvideSyncQueryAsync(string indexId);
+        Task<string> ProvideIndexSettingsAsync(string indexId);
     }
+
 }

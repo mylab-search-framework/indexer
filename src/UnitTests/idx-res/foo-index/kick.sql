@@ -1,0 +1,1 @@
+﻿-- kick query from file

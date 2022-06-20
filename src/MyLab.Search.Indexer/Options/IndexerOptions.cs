@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MyLab.Log;
 
@@ -6,56 +7,79 @@ namespace MyLab.Search.Indexer.Options
 {
     public class IndexerOptions
     {
-        public string NamespacesPath { get; set; } = "/etc/mylab-indexer/namespaces";
-        public string IndexPath { get; set; } = "/etc/mylab-indexer/indexes";
-        public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
+        public IndexOptions[] Indexes { get; set; }
+        public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
+        public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
+        public string MqQueue { get; set; }
         public string EsIndexNamePrefix { get; set; }
-        [Obsolete]
-        public string IndexNamePrefix { get; set; }
         public string EsIndexNamePostfix { get; set; }
-        [Obsolete]
-        public string IndexNamePostfix { get; set; }
 
-        [Obsolete]
-        public NsOptions[] Namespaces { get; set; }
-        public IdxOptions[] Indexes { get; set; }
-
-        public IdxOptions GetIndexOptions(string indexId)
+        public IndexOptions GetIndexOptions(string indexId)
         {
-            var indexOptions = Indexes?.FirstOrDefault(n => n.Id == indexId);
-            if (indexOptions == null)
-            {
-                var nsOptions = Namespaces?.FirstOrDefault(n => n.NsId == indexId);
+            if (string.IsNullOrEmpty(indexId))
+                throw new InvalidOperationException("Index id not specified");
 
-                if (nsOptions == null)
-                {
-                    throw new IndexOptionsNotFoundException(indexId)
-                        .AndFactIs("index-id", indexId);
-                }
+            var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexId);
 
-                indexOptions = new IdxOptions(nsOptions);
+            if (foundOptions == null)
+                throw new IndexOptionsNotFoundException(indexId);
 
-                throw new NamespaceConfigException(indexOptions)
-                    .AndFactIs("index-id", indexId);
-            }
-
-            return indexOptions;
+            return foundOptions;
         }
 
-        public string CreateEsIndexName(string idxId)
+        public string GetEsIndexName(string idxId)
         {
-            IdxOptions idxOptions;
+            var idxOpt = GetIndexOptions(idxId);
 
-            try
-            {
-                idxOptions = GetIndexOptions(idxId);
-            }
-            catch (NamespaceConfigException e)
-            {
-                idxOptions = e.IndexOptionsFromNamespaceOptions;
-            }
+            if (string.IsNullOrEmpty(idxOpt.EsIndex))
+                throw new InvalidOperationException("Elasticsearch index name is not defined")
+                    .AndFactIs("idx", idxId);
 
-            return $"{EsIndexNamePrefix ?? IndexNamePrefix ?? string.Empty}{idxOptions.EsIndex}{EsIndexNamePostfix ?? IndexNamePostfix ?? string.Empty}";
+            return $"{EsIndexNamePrefix?.ToLower()}{idxOpt.EsIndex.ToLower()}{EsIndexNamePostfix?.ToLower()}";
         }
+    }
+
+    public class IndexOptions
+    {
+        public string Id { get; set; }
+        public IndexType IndexType { get; set; } = IndexType.Heap;
+        public string EsIndex { get; set; }
+        public string KickDbQuery { get; set; }
+        public string SyncDbQuery { get; set; }
+        public IdPropertyType IdPropertyType { get; set; }
+        public bool EnableSync { get; set; } = true;
+        public int SyncPageSize { get; set; } = 500;
+
+        public void ValidateIdPropertyType()
+        {
+            if (IdPropertyType == IdPropertyType.Undefined)
+                throw new ValidationException("'" + nameof(IdPropertyType) + " index option is not defined")
+                    .AndFactIs("index-id", Id);
+        }
+    }
+
+    public class IndexOptionsNotFoundException : Exception
+    {
+        public string IndexName { get; }
+
+        public IndexOptionsNotFoundException(string indexName)
+        {
+            IndexName = indexName;
+            this.AndFactIs("index-name", indexName);
+        }
+    }
+
+    public enum IdPropertyType
+    {
+        Undefined,
+        String,
+        Int
+    }
+
+    public enum IndexType
+    {
+        Undefined,
+        Heap,
+        Stream
     }
 }

@@ -1,16 +1,17 @@
+using LinqToDB.DataProvider;
+using LinqToDB.DataProvider.MySql;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using MyLab.Db;
 using MyLab.HttpMetrics;
+using MyLab.Log;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
@@ -22,51 +23,46 @@ namespace MyLab.Search.Indexer
 {
     public class Startup
     {
-        private readonly IConfiguration _configuration;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="Startup"/>
-        /// </summary>
         public Startup(IConfiguration configuration)
         {
-            _configuration = configuration;
+            Configuration = configuration;
         }
 
+        public IConfiguration Configuration { get; }
+
         // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddSingleton(_configuration)
-                .AddTaskLogic<IndexerTaskLogic>()
-                .AddAppStatusProviding()
-                .AddDbTools<ConfiguredDataProviderSource>(_configuration)
-                .AddEsTools(_configuration, "ES")
-                .AddLogging(l => l.AddConsole())
-                .AddSingleton<IIndexResourceProvider, IndexResourceProvider>()
-                .AddSingleton<ISeedService, FileSeedService>()
-                .AddSingleton<IDataIndexer, DataIndexer>()
-                .AddSingleton<IDataSourceService, DbDataSourceService>()
-                .AddSingleton<IIndexMappingService, IndexMappingService>()
-                .AddSingleton<IPushIndexer, PushIndexer>()
-                .AddSingleton<IKickIndexer, KickIndexer>()
-                .AddSingleton<IEsIndexToucher, EsIndexToucher>()
-                .AddRabbit()
-                .AddRabbitConsumers<IndexerConsumerRegistrar>()
-                .AddUrlBasedHttpMetrics()
-                .AddControllers(c => c.AddExceptionProcessing());
+            services.AddControllers(opt => opt.AddExceptionProcessing());
 
             services
-                .Configure<IndexerOptions>(_configuration.GetSection("Indexer"))
-                .Configure<IndexerDbOptions>(_configuration.GetSection("DB"))
-                .ConfigureRabbit(_configuration)
-                .Configure<ExceptionProcessingOptions>(o => o.HideError =
+                .AddSingleton<IIndexResourceProvider, FileIndexResourceProvider>()
+                .AddSingleton<IDataSourceService, DbDataSourceService>()
+                .AddSingleton<ISeedService, FileSeedService>()
+                .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
+                .AddSingleton<IIndexerService,IndexerService>()
+                .AddRabbit()
+                .AddRabbitConsumers<IndexerRabbitRegistrar>()
+                .AddDbTools<ConfiguredDataProviderSource>(Configuration)
+                .AddAppStatusProviding()
+                .AddEsTools()
+                .AddLogging(l => l.AddMyLabConsole())
+                .AddUrlBasedHttpMetrics()
+                .AddTaskLogic<SyncTaskLogic>()
+                .AddHostedService<IndexCreatorService>();
+
+            services
+                .ConfigureRabbit(Configuration)
+                .ConfigureEsTools(opt => opt.SerializerFactory = new NewtonJsonEsSerializerFactory())
+                .ConfigureEsTools(Configuration)
+                .Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
+                .Configure<IndexerDbOptions>(Configuration.GetSection("DB"))
+
 #if DEBUG
-                false
+                .Configure<ExceptionProcessingOptions>(opt => opt.HideError = false);
 #else
-                true
+                ;
 #endif
-                );
 
         }
 
@@ -78,16 +74,17 @@ namespace MyLab.Search.Indexer
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouting()
-                .UseHttpMetrics()
-                .UseTaskApi()
-                .UseEndpoints(endpoints =>
+            app.UseRouting();
+
+            app.UseAuthorization();
+
+            app.UseTaskApi();
+            app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
                     endpoints.MapMetrics();
                 })
                 .UseStatusApi();
-
         }
     }
 }
