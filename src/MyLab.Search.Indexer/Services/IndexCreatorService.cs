@@ -50,7 +50,9 @@ namespace MyLab.Search.Indexer.Services
             {
                 try
                 {
-                    await CheckIndex(stoppingToken, idxOpts);
+                    var indexName = _opts.GetEsIndexName(idxOpts.Id);
+
+                    await CheckIndex(stoppingToken, idxOpts.Id, indexName);
                 }
                 catch (Exception e)
                 {
@@ -63,35 +65,35 @@ namespace MyLab.Search.Indexer.Services
                 
         }
 
-        private async Task CheckIndex(CancellationToken stoppingToken, IndexOptions idxOpts)
+        private async Task CheckIndex(CancellationToken stoppingToken, string indexId, string esIndexName)
         {
-            if (string.IsNullOrEmpty(idxOpts.EsIndex))
+            if (string.IsNullOrEmpty(esIndexName))
             {
                 _log?.Warning("Configured index has no Elasticsearch index name")
-                    .AndFactIs("index", idxOpts.Id)
+                    .AndFactIs("index", indexId)
                     .Write();
                 return;
             }
 
-            var exists = await _esIndexTools.IsIndexExistsAsync(idxOpts.EsIndex, stoppingToken);
+            var exists = await _esIndexTools.IsIndexExistsAsync(esIndexName, stoppingToken);
 
             await Task.Delay(500, stoppingToken);
 
             if (!exists)
             {
-                var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(idxOpts.Id);
-                await _esIndexTools.CreateIndexAsync(idxOpts.EsIndex, settingsStr, stoppingToken);
+                var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(indexId);
+                await _esIndexTools.CreateIndexAsync(esIndexName, settingsStr, stoppingToken);
 
                 _log?.Action("Elasticsearch index has been created")
-                    .AndFactIs("index", idxOpts.Id)
-                    .AndFactIs("es-index", idxOpts.EsIndex)
+                    .AndFactIs("index", indexId)
+                    .AndFactIs("es-index", esIndexName)
                     .Write();
             }
             else
             {
                 _log?.Action("Elasticsearch index already exist")
-                    .AndFactIs("index", idxOpts.Id)
-                    .AndFactIs("es-index", idxOpts.EsIndex)
+                    .AndFactIs("index", indexId)
+                    .AndFactIs("es-index", esIndexName)
                     .Write();
             }
         }

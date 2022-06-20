@@ -31,14 +31,6 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(IndexingRequest req, CancellationToken cToken = default)
         {
-            var idxOpts = _indexerOptions.GetIndexOptions(req.IndexId);
-
-            if (idxOpts.EsIndex == null)
-            {
-                throw new InvalidOperationException("ES index not specified")
-                    .AndFactIs("index-id", req.IndexId);
-            }
-
             if (req.IsEmpty())
             {
                 throw new InvalidOperationException("Indexing request is empty");
@@ -96,7 +88,9 @@ namespace MyLab.Search.Indexer.Services
                 }
             );
 
-            await _esIndexer.BulkAsync<JObject>(idxOpts.EsIndex, bulkReq, cToken);
+            var esIdxName = _indexerOptions.GetEsIndexName(req.IndexId);
+
+            await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
         }
     }
 }

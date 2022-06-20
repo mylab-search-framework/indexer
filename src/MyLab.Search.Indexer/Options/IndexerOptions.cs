@@ -11,6 +11,8 @@ namespace MyLab.Search.Indexer.Options
         public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
         public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string MqQueue { get; set; }
+        public string EsIndexNamePrefix { get; set; }
+        public string EsIndexNamePostfix { get; set; }
 
         public IndexOptions GetIndexOptions(string indexId)
         {
@@ -23,6 +25,17 @@ namespace MyLab.Search.Indexer.Options
                 throw new IndexOptionsNotFoundException(indexId);
 
             return foundOptions;
+        }
+
+        public string GetEsIndexName(string idxId)
+        {
+            var idxOpt = GetIndexOptions(idxId);
+
+            if (string.IsNullOrEmpty(idxOpt.EsIndex))
+                throw new InvalidOperationException("Elasticsearch index name is not defined")
+                    .AndFactIs("idx", idxId);
+
+            return $"{EsIndexNamePrefix}{idxOpt.EsIndex}{EsIndexNamePostfix}";
         }
     }
 
