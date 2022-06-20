@@ -34,6 +34,9 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task Perform(CancellationToken cancellationToken)
         {
+            _log.Action("Indexes sync started")
+                .Write();
+
             if (_opts.Indexes is not { Length: > 0 })
             {
                 _log.Warning("Configured indexes not found")
@@ -43,6 +46,13 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var idx in _opts.Indexes)
             {
+                if (!idx.EnableSync)
+                {
+                    _log.Action("Index sync is disabled")
+                        .AndFactIs("idx", idx.Id)
+                        .Write();
+                }
+
                 try
                 {
                     await SyncIndexAsync(cancellationToken, idx);
@@ -54,10 +64,17 @@ namespace MyLab.Search.Indexer.Services
                         .Write();
                 }
             }
+
+            _log.Action("Indexes sync completed")
+                .Write();
         }
 
         private async Task SyncIndexAsync(CancellationToken cancellationToken, IndexOptions idx)
         {
+            _log.Action("Index sync started")
+                .AndFactIs("idx", idx.Id)
+                .Write();
+
             int syncCount = 0;
 
             var dataEnum = await _dataSource.LoadSyncAsync(idx.Id);
