@@ -41,12 +41,12 @@ namespace UnitTests
 
         [Theory]
         [InlineData("pre-", "bar", "-post", "pre-bar-post")]
-        [InlineData(null, "bar", "-post", "bar-post")]
-        [InlineData("pre-", "bar", null, "pre-bar")]
+        [InlineData(null, "bar", "-Post", "bar-post")]
+        [InlineData("PRE-", "bar", null, "pre-bar")]
         [InlineData(null, "bar", null, "bar")]
         [InlineData("pre-", "BAR", "-post", "pre-bar-post")]
-        [InlineData(null, "BAR", "-post", "bar-post")]
-        [InlineData("pre-", "BAR", null, "pre-bar")]
+        [InlineData(null, "BAR", "-POST", "bar-post")]
+        [InlineData("pRe-", "BAR", null, "pre-bar")]
         [InlineData(null, "BAR", null, "bar")]
         public void ShouldProvideEsIndexName(string prefix, string value, string postfix, string expected)
         {
