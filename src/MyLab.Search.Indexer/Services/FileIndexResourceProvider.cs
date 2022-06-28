@@ -3,6 +3,8 @@ using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Options;
 using MyLab.Search.Indexer.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -41,9 +43,40 @@ namespace MyLab.Search.Indexer.Services
             return await ReadResourceFileAsync(indexId, "sync.sql");
         }
 
-        public Task<string> ProvideIndexSettingsAsync(string indexId)
+        public async Task<string> ProvideIndexSettingsAsync(string indexId)
         {
-            return ReadResourceFileAsync(indexId, "index.json");
+            string indexJson = null, commonIndexJson = null;
+
+            var indexJsonPath = Path.Combine(_opts.ResourcePath, indexId, "index.json");
+            if (File.Exists(indexJsonPath))
+            {
+                indexJson = await File.ReadAllTextAsync(indexJsonPath);
+            }
+
+            var commonIndexJsonPath = Path.Combine(_opts.ResourcePath, "index.json");
+            if (File.Exists(commonIndexJsonPath))
+            {
+                commonIndexJson = await File.ReadAllTextAsync(commonIndexJsonPath);
+            }
+
+            if (indexJson == null && commonIndexJson == null)
+                throw new FileNotFoundException("Resource not found")
+                    .AndFactIs("index-id", indexId)
+                    .AndFactIs("index-file", indexJsonPath)
+                    .AndFactIs("common-file", commonIndexJsonPath);
+
+            if (commonIndexJson == null)
+                return indexJson;
+
+            if (indexJson == null)
+                return commonIndexJson;
+
+            var indexJObj = JObject.Parse(indexJson);
+            var resultJson = JObject.Parse(commonIndexJson);
+
+            resultJson.Merge(indexJObj);
+
+            return resultJson.ToString(Formatting.None);
         }
 
         async Task<string> ReadResourceFileAsync(string indexId, string filename)

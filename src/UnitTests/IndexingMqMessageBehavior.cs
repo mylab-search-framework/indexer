@@ -20,7 +20,7 @@ namespace UnitTests
                 IndexId = "bar",
                 Post = new[]
                 {
-                    JObject.FromObject(new TestDoc())
+                    JObject.FromObject(new TestIdDoc())
                 },
                 Put = new[]
                 {
