@@ -1,9 +1,0 @@
-{
-  "mappings": {
-    "properties": {
-      "Id": { "type": "integer" },
-      "Value": { "type": "text" },
-      "Bool": { "type": "boolean" }
-    }
-  }
-}
