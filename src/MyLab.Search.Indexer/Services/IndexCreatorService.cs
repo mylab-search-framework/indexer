@@ -7,7 +7,6 @@ using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer.Options;
-using RabbitMQ.Client.Exceptions;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -49,33 +48,19 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var idxOpts in _opts.Indexes)
             {
-                bool isBrokerUnreachableException = false;
-
-                do
+                try
                 {
+                    var indexName = _opts.GetEsIndexName(idxOpts.Id);
 
-                    try
-                    {
-                        var indexName = _opts.GetEsIndexName(idxOpts.Id);
-
-                        await CheckIndex(stoppingToken, idxOpts.Id, indexName);
-                    }
-                    catch (Exception e)
-                    {
-                        isBrokerUnreachableException = e is BrokerUnreachableException;
-
-                        _log?.Error("Check index error", e)
-                            .AndFactIs("index", idxOpts.Id)
-                            .AndFactIs("es-index", idxOpts.EsIndex)
-                            .Write();
-                    }
-
-                    if (isBrokerUnreachableException)
-                    {
-                        await Task.Delay(1000, stoppingToken);
-                    }
-
-                } while (isBrokerUnreachableException);
+                    await CheckIndex(stoppingToken, idxOpts.Id, indexName);
+                }
+                catch (Exception e)
+                {
+                    _log?.Error("Check index error", e)
+                        .AndFactIs("index", idxOpts.Id)
+                        .AndFactIs("es-index", idxOpts.EsIndex)
+                        .Write();
+                }
             }
                 
         }
