@@ -27,13 +27,14 @@ namespace MyLab.Search.Indexer.Options
 
         public string GetEsIndexName(string idxId)
         {
-            var idxOpt = GetIndexOptions(idxId);
+            if (string.IsNullOrEmpty(idxId))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
 
-            if (string.IsNullOrEmpty(idxOpt.EsIndex))
-                throw new InvalidOperationException("Elasticsearch index name is not defined")
-                    .AndFactIs("idx", idxId);
+            var idxOpt = GetIndexOptionsCore(idxId);
 
-            return $"{EsIndexNamePrefix?.ToLower()}{idxOpt.EsIndex.ToLower()}{EsIndexNamePostfix?.ToLower()}";
+            var totalIdxName = idxOpt?.EsIndex ?? idxId;
+
+            return $"{EsIndexNamePrefix?.ToLower()}{totalIdxName.ToLower()}{EsIndexNamePostfix?.ToLower()}";
         }
 
         public IdPropertyType GetTotalIdPropertyType(string idxId)

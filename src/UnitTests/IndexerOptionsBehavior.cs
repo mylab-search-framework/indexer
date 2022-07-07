@@ -48,6 +48,13 @@ namespace UnitTests
         [InlineData(null, "BAR", "-POST", "bar-post")]
         [InlineData("pRe-", "BAR", null, "pre-bar")]
         [InlineData(null, "BAR", null, "bar")]
+
+        [InlineData("pre-", null, "-post", "pre-foo-post")]
+        [InlineData(null, null, "-Post", "foo-post")]
+        [InlineData("PRE-", null, null, "pre-foo")]
+        [InlineData(null, null, null, "foo")]
+        [InlineData(null, null, "-POST", "foo-post")]
+        [InlineData("pRe-", null, null, "pre-foo")]
         public void ShouldProvideEsIndexName(string prefix, string value, string postfix, string expected)
         {
             //Arrange
