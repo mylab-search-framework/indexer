@@ -51,14 +51,13 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
-            var idxOpts = _options.GetIndexOptions(indexId);
-            idxOpts.ValidateIdPropertyType();
-
             var kickQueryPattern = await _indexResourceProvider.ProvideKickQueryAsync(indexId);
 
             await using var conn = _dbManager.Use();
-            
-            var kickQuery = KickQuery.Build(kickQueryPattern, idList, idxOpts.IdPropertyType);
+
+            var totalIdPropertyType = _options.GetTotalIdPropertyType(indexId);
+
+            var kickQuery = KickQuery.Build(kickQueryPattern, idList, totalIdPropertyType);
             
             var docs = await conn.QueryToArrayAsync(
                 IndexingDocDataReader.Read, 
@@ -83,8 +82,10 @@ namespace MyLab.Search.Indexer.Services
             
             DataParameter seedParameter;
             string seedStrValue;
+
+            var totalIndexType = _options.GetTotalIndexType(indexId);
             
-            switch (idxOpts.IndexType)
+            switch (totalIndexType)
             {
                 case IndexType.Heap:
                     {
@@ -110,7 +111,7 @@ namespace MyLab.Search.Indexer.Services
                 .AndFactIs("seed", seedStrValue)
                 .Write();
 
-            return new DataSourceLoadEnumerable(indexId, idxOpts.IndexType, _seedService, batchEnumerable);
+            return new DataSourceLoadEnumerable(indexId, totalIndexType, _seedService, batchEnumerable);
         }
     }
 }

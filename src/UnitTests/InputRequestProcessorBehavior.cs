@@ -10,23 +10,6 @@ namespace UnitTests
 {
     public partial class InputRequestProcessorBehavior
     {
-        [Fact]
-        public async Task ShouldFailIfIndexNotFound()
-        {
-            //Arrange
-            var inputRequest = new InputIndexingRequest
-            {
-                IndexId = "index-id"
-            };
-
-            IDataSourceService dataSourceService = new TestDataSourceService(null);
-            TestIndexerService indexerService = new TestIndexerService();
-            
-            var inputReqProcessor = new InputRequestProcessor(dataSourceService, indexerService, new IndexerOptions());
-
-            //Act & Assert
-            await Assert.ThrowsAsync<IndexOptionsNotFoundException>(() => inputReqProcessor.IndexAsync(inputRequest));
-        }
 
         [Fact]
         public async Task ShouldSendAsIsIfNoDataSourceDocs()

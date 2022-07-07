@@ -43,8 +43,6 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task IndexAsync(InputIndexingRequest inputRequest)
         {
-            var indexOptions = _options.GetIndexOptions(inputRequest.IndexId);
-
             var idxReq = inputRequest.Clone();
 
             if (inputRequest.KickList is { Length: > 0 })
@@ -65,7 +63,9 @@ namespace MyLab.Search.Indexer.Services
                         throw new KickDocsCountMismatchException();
                     }
 
-                    switch (indexOptions.IndexType)
+                    var totalIndexType = _options.GetTotalIndexType(inputRequest.IndexId);
+
+                    switch (totalIndexType)
                     {
                         case IndexType.Heap:
                             {

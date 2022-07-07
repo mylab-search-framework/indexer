@@ -8,6 +8,7 @@ namespace MyLab.Search.Indexer.Options
     public class IndexerOptions
     {
         public IndexOptions[] Indexes { get; set; }
+        public IndexOptionsBase DefaultIndexOptions { get; set; }
         public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
         public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string MqQueue { get; set; }
@@ -16,10 +17,7 @@ namespace MyLab.Search.Indexer.Options
 
         public IndexOptions GetIndexOptions(string indexId)
         {
-            if (string.IsNullOrEmpty(indexId))
-                throw new InvalidOperationException("Index id not specified");
-
-            var foundOptions = Indexes?.FirstOrDefault(i => i.Id == indexId);
+            var foundOptions = GetIndexOptionsCore(indexId);
 
             if (foundOptions == null)
                 throw new IndexOptionsNotFoundException(indexId);
@@ -37,49 +35,40 @@ namespace MyLab.Search.Indexer.Options
 
             return $"{EsIndexNamePrefix?.ToLower()}{idxOpt.EsIndex.ToLower()}{EsIndexNamePostfix?.ToLower()}";
         }
-    }
 
-    public class IndexOptions
-    {
-        public string Id { get; set; }
-        public IndexType IndexType { get; set; } = IndexType.Heap;
-        public string EsIndex { get; set; }
-        public string KickDbQuery { get; set; }
-        public string SyncDbQuery { get; set; }
-        public IdPropertyType IdPropertyType { get; set; }
-        public bool EnableSync { get; set; } = true;
-        public int SyncPageSize { get; set; } = 500;
-
-        public void ValidateIdPropertyType()
+        public IdPropertyType GetTotalIdPropertyType(string idxId)
         {
-            if (IdPropertyType == IdPropertyType.Undefined)
-                throw new ValidationException("'" + nameof(IdPropertyType) + " index option is not defined")
-                    .AndFactIs("index-id", Id);
+            var idxOpts = GetIndexOptionsCore(idxId);
+
+            if (idxOpts != null)
+                return idxOpts.IdPropertyType;
+
+            if (DefaultIndexOptions == null)
+                throw new InvalidOperationException("Unable to determine index id property type")
+                    .AndFactIs("idx", idxId);
+
+            return DefaultIndexOptions.IdPropertyType;
         }
-    }
 
-    public class IndexOptionsNotFoundException : Exception
-    {
-        public string IndexName { get; }
-
-        public IndexOptionsNotFoundException(string indexName)
+        public IndexType GetTotalIndexType(string idxId)
         {
-            IndexName = indexName;
-            this.AndFactIs("index-name", indexName);
+            var idxOpts = GetIndexOptionsCore(idxId);
+
+            if (idxOpts != null)
+                return idxOpts.IndexType;
+
+            if (DefaultIndexOptions == null)
+                return IndexType.Heap;
+
+            return DefaultIndexOptions.IndexType;
         }
-    }
 
-    public enum IdPropertyType
-    {
-        Undefined,
-        String,
-        Int
-    }
+        IndexOptions GetIndexOptionsCore(string indexId)
+        {
+            if (string.IsNullOrEmpty(indexId))
+                throw new InvalidOperationException("Index id not specified");
 
-    public enum IndexType
-    {
-        Undefined,
-        Heap,
-        Stream
+            return Indexes?.FirstOrDefault(i => i.Id == indexId);
+        }
     }
 }

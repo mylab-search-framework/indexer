@@ -55,7 +55,9 @@ namespace MyLab.Search.Indexer.Services
 
                 try
                 {
-                    await SyncIndexAsync(cancellationToken, idx);
+                    var totalIndexType = _opts.GetTotalIndexType(idx.Id);
+
+                    await SyncIndexAsync(cancellationToken, idx.Id, totalIndexType);
                 }
                 catch (Exception e)
                 {
@@ -69,25 +71,25 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private async Task SyncIndexAsync(CancellationToken cancellationToken, IndexOptions idx)
+        private async Task SyncIndexAsync(CancellationToken cancellationToken, string idxId, IndexType idxType)
         {
             _log.Action("Index sync started")
-                .AndFactIs("idx", idx.Id)
+                .AndFactIs("idx", idxId)
                 .Write();
 
             int syncCount = 0;
 
-            var dataEnum = await _dataSource.LoadSyncAsync(idx.Id);
+            var dataEnum = await _dataSource.LoadSyncAsync(idxId);
             if (dataEnum != null)
             {
                 await foreach (var data in dataEnum.WithCancellation(cancellationToken))
                 {
                     var idxReq = new IndexingRequest
                     {
-                        IndexId = idx.Id
+                        IndexId = idxId
                     };
 
-                    switch (idx.IndexType)
+                    switch (idxType)
                     {
                         case IndexType.Heap:
                         {
@@ -110,7 +112,7 @@ namespace MyLab.Search.Indexer.Services
                     syncCount += data.Batch.Docs.Length;
 
                     _log.Debug("Sync data has been indexed")
-                        .AndFactIs("idx", idx.Id)
+                        .AndFactIs("idx", idxId)
                         .AndFactIs("sql", data.Batch.Query)
                         .AndFactIs("count", data.Batch.Docs.Length)
                         .Write();
@@ -120,14 +122,14 @@ namespace MyLab.Search.Indexer.Services
             if (syncCount != 0)
             {
                 _log.Action("Index sync completed")
-                    .AndFactIs("idx", idx.Id)
+                    .AndFactIs("idx", idxId)
                     .AndFactIs("count", syncCount)
                     .Write();
             }
             else
             {
                 _log.Action("No sync data found")
-                    .AndFactIs("idx", idx.Id)                  
+                    .AndFactIs("idx", idxId)                  
                     .Write();
             }
         }
