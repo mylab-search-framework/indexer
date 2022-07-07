@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MyLab.Log;
 
@@ -6,56 +7,69 @@ namespace MyLab.Search.Indexer.Options
 {
     public class IndexerOptions
     {
-        public string NamespacesPath { get; set; } = "/etc/mylab-indexer/namespaces";
-        public string IndexPath { get; set; } = "/etc/mylab-indexer/indexes";
-        public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
+        public IndexOptions[] Indexes { get; set; }
+        public IndexOptionsBase DefaultIndexOptions { get; set; }
+        public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
+        public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
+        public string MqQueue { get; set; }
         public string EsIndexNamePrefix { get; set; }
-        [Obsolete]
-        public string IndexNamePrefix { get; set; }
         public string EsIndexNamePostfix { get; set; }
-        [Obsolete]
-        public string IndexNamePostfix { get; set; }
 
-        [Obsolete]
-        public NsOptions[] Namespaces { get; set; }
-        public IdxOptions[] Indexes { get; set; }
-
-        public IdxOptions GetIndexOptions(string indexId)
+        public IndexOptions GetIndexOptions(string indexId)
         {
-            var indexOptions = Indexes?.FirstOrDefault(n => n.Id == indexId);
-            if (indexOptions == null)
-            {
-                var nsOptions = Namespaces?.FirstOrDefault(n => n.NsId == indexId);
+            var foundOptions = GetIndexOptionsCore(indexId);
 
-                if (nsOptions == null)
-                {
-                    throw new IndexOptionsNotFoundException(indexId)
-                        .AndFactIs("index-id", indexId);
-                }
+            if (foundOptions == null)
+                throw new IndexOptionsNotFoundException(indexId);
 
-                indexOptions = new IdxOptions(nsOptions);
-
-                throw new NamespaceConfigException(indexOptions)
-                    .AndFactIs("index-id", indexId);
-            }
-
-            return indexOptions;
+            return foundOptions;
         }
 
-        public string CreateEsIndexName(string idxId)
+        public string GetEsIndexName(string idxId)
         {
-            IdxOptions idxOptions;
+            if (string.IsNullOrEmpty(idxId))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
 
-            try
-            {
-                idxOptions = GetIndexOptions(idxId);
-            }
-            catch (NamespaceConfigException e)
-            {
-                idxOptions = e.IndexOptionsFromNamespaceOptions;
-            }
+            var idxOpt = GetIndexOptionsCore(idxId);
 
-            return $"{EsIndexNamePrefix ?? IndexNamePrefix ?? string.Empty}{idxOptions.EsIndex}{EsIndexNamePostfix ?? IndexNamePostfix ?? string.Empty}";
+            var totalIdxName = idxOpt?.EsIndex ?? idxId;
+
+            return $"{EsIndexNamePrefix?.ToLower()}{totalIdxName.ToLower()}{EsIndexNamePostfix?.ToLower()}";
+        }
+
+        public IdPropertyType GetTotalIdPropertyType(string idxId)
+        {
+            var idxOpts = GetIndexOptionsCore(idxId);
+
+            if (idxOpts != null)
+                return idxOpts.IdPropertyType;
+
+            if (DefaultIndexOptions == null)
+                throw new InvalidOperationException("Unable to determine index id property type")
+                    .AndFactIs("idx", idxId);
+
+            return DefaultIndexOptions.IdPropertyType;
+        }
+
+        public IndexType GetTotalIndexType(string idxId)
+        {
+            var idxOpts = GetIndexOptionsCore(idxId);
+
+            if (idxOpts != null)
+                return idxOpts.IndexType;
+
+            if (DefaultIndexOptions == null)
+                return IndexType.Heap;
+
+            return DefaultIndexOptions.IndexType;
+        }
+
+        IndexOptions GetIndexOptionsCore(string indexId)
+        {
+            if (string.IsNullOrEmpty(indexId))
+                throw new InvalidOperationException("Index id not specified");
+
+            return Indexes?.FirstOrDefault(i => i.Id == indexId);
         }
     }
 }

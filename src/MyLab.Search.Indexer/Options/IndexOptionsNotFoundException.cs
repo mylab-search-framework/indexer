@@ -1,15 +1,16 @@
 ﻿using System;
+using MyLab.Log;
 
 namespace MyLab.Search.Indexer.Options
 {
-    class IndexOptionsNotFoundException : Exception
+    public class IndexOptionsNotFoundException : Exception
     {
         public string IndexName { get; }
 
         public IndexOptionsNotFoundException(string indexName)
-            :base("Index options not found")
         {
             IndexName = indexName;
+            this.AndFactIs("index-name", indexName);
         }
     }
 }
