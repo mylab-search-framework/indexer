@@ -2,9 +2,12 @@
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log;
+using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter.Indexing;
+using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
@@ -17,16 +20,28 @@ namespace MyLab.Search.Indexer.Services
     {
         private readonly IndexerOptions _indexerOptions;
         private readonly IEsIndexer _esIndexer;
+        private readonly IIndexCreator _indexerCreator;
+        private readonly IDslLogger _log;
 
-        public IndexerService(IEsIndexer esIndexer, IOptions<IndexerOptions> idxOptions)
-            :this(esIndexer, idxOptions.Value)
+        public IndexerService(
+            IEsIndexer esIndexer,
+            IOptions<IndexerOptions> idxOptions,
+            IIndexCreator indexerCreator = null,
+            ILogger<IndexerService> logger = null)
+            :this(esIndexer, idxOptions.Value, indexerCreator, logger)
         {
         }
 
-        public IndexerService(IEsIndexer esIndexer, IndexerOptions indexerOptions)
+        public IndexerService(
+            IEsIndexer esIndexer,
+            IndexerOptions indexerOptions,
+            IIndexCreator indexerCreator = null,
+            ILogger<IndexerService> logger = null)
         {
             _indexerOptions = indexerOptions;
             _esIndexer = esIndexer;
+            _indexerCreator = indexerCreator;
+            _log = logger?.Dsl();
         }
 
         public async Task IndexAsync(IndexingRequest req, CancellationToken cToken = default)
@@ -90,7 +105,26 @@ namespace MyLab.Search.Indexer.Services
 
             var esIdxName = _indexerOptions.GetEsIndexName(req.IndexId);
 
-            await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+            try
+            {
+                await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+            }
+            catch (EsException e) when (e.Response is { ServerError: {Status: 404} })
+            {
+                if (_indexerCreator == null)
+                    throw;
+
+                _log?.Warning("A 404 response has been received. Its try to create index.", e)
+                    .AndFactIs("idx-name", esIdxName)
+                    .Write();
+
+                await _indexerCreator.CreateIndex(req.IndexId, esIdxName, cToken);
+                await Task.Delay(500, cToken);
+
+                _log?.Action("Try to index docs after index created").Write();
+
+                await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+            }
         }
     }
 }

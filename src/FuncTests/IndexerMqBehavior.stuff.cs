@@ -1,10 +1,8 @@
 ﻿using System;
 using System.IO;
-using System.Net;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using MyLab.ApiClient;
 using MyLab.ApiClient.Test;
 using MyLab.Db;
 using MyLab.DbTest;
@@ -23,7 +21,7 @@ namespace FuncTests
     public partial class IndexerMqBehavior :
         IClassFixture<EsFixture<TestEsFixtureStrategy>>,
         IClassFixture<TmpDbFixture<TestDbInitializer>>,
-        IClassFixture<TestApi<Startup, IndexerMqBehavior.IApiKickerContract>>, 
+        IClassFixture<TestApi<Startup, IApiKickerContract>>, 
         IAsyncLifetime
     {
         private RabbitQueue _queue;
@@ -111,14 +109,6 @@ namespace FuncTests
         {
             _queue.Remove();
             await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
-        }
-
-        [Api]
-        public interface IApiKickerContract
-        {
-            [Post]
-            [ExpectedCode(HttpStatusCode.NotFound)]
-            Task KickAsync();
         }
     }
 }
