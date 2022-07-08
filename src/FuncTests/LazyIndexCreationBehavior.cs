@@ -97,7 +97,7 @@ namespace FuncTests
             {
                 await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
             }
-            catch (EsException e) when (e.Response is { ServerError: { Status: 404 } })
+            catch (EsException e) when (e.HasIndexNotFound())
             {
             }
         }
