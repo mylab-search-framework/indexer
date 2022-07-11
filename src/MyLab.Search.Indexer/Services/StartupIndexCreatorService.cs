@@ -10,31 +10,35 @@ using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
 {
-    class IndexCreatorService : BackgroundService
+    class StartupIndexCreatorService : BackgroundService
     {
         private readonly IndexerOptions _opts;
         private readonly IEsIndexTools _esIndexTools;
         private readonly IIndexResourceProvider _idxResProvider;
+        private readonly IIndexCreator _indexCreator;
         private readonly IDslLogger _log;
 
-        public IndexCreatorService(
+        public StartupIndexCreatorService(
             IOptions<IndexerOptions> opts, 
             IEsIndexTools esIndexTools, 
             IIndexResourceProvider idxResProvider,
-            ILogger<IndexCreatorService> logger = null)
-            :this(opts.Value, esIndexTools, idxResProvider, logger)
+            IIndexCreator indexCreator,
+            ILogger<StartupIndexCreatorService> logger = null)
+            :this(opts.Value, esIndexTools, idxResProvider, indexCreator, logger)
         {
         }
 
-        public IndexCreatorService(
+        public StartupIndexCreatorService(
             IndexerOptions opts, 
             IEsIndexTools esIndexTools,
             IIndexResourceProvider idxResProvider,
-            ILogger<IndexCreatorService> logger = null)
+            IIndexCreator indexCreator,
+            ILogger<StartupIndexCreatorService> logger = null)
         {
             _opts = opts;
             _esIndexTools = esIndexTools;
             _idxResProvider = idxResProvider;
+            _indexCreator = indexCreator;
             _log = logger.Dsl();
         }
 
@@ -81,13 +85,7 @@ namespace MyLab.Search.Indexer.Services
 
             if (!exists)
             {
-                var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(indexId);
-                await _esIndexTools.CreateIndexAsync(esIndexName, settingsStr, stoppingToken);
-
-                _log?.Action("Elasticsearch index has been created")
-                    .AndFactIs("index", indexId)
-                    .AndFactIs("es-index", esIndexName)
-                    .Write();
+                await _indexCreator.CreateIndex(indexId, esIndexName, stoppingToken);
             }
             else
             {

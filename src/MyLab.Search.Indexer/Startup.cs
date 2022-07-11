@@ -41,6 +41,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
                 .AddSingleton<IIndexerService,IndexerService>()
+                .AddSingleton<IIndexCreator,IndexCreator>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
                 .AddDbTools<ConfiguredDataProviderSource>(Configuration)
@@ -49,7 +50,7 @@ namespace MyLab.Search.Indexer
                 .AddLogging(l => l.AddMyLabConsole())
                 .AddUrlBasedHttpMetrics()
                 .AddTaskLogic<SyncTaskLogic>()
-                .AddHostedService<IndexCreatorService>();
+                .AddHostedService<StartupIndexCreatorService>();
 
             services
                 .ConfigureRabbit(Configuration)
