@@ -1,19 +1,26 @@
 using System;
+using LinqToDB.Mapping;
 using Nest;
 using Newtonsoft.Json;
 
 namespace IntegrationTests
 {
+    [Table("test_doc")]
     [ElasticsearchType(IdProperty = nameof(Id))]
     public class TestDoc
     {
+        [Column("id")]
         [Keyword(Name = "id")]
         [JsonProperty("id")]
         public string Id { get; set; }
 
+        [Column("content")]
         [Text(Name = "id")]
         [JsonProperty("content")]
         public string Content { get; set; }
+
+        [Column("changed")]
+        public DateTime? LastChanged { get; set; }
 
         public TestDoc()
         {

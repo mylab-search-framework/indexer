@@ -28,4 +28,10 @@
     <ProjectReference Include="..\MyLab.Search.Indexer\MyLab.Search.Indexer.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="resources\baz\sync.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
