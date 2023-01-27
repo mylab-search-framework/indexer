@@ -80,7 +80,8 @@ namespace MyLab.Search.Indexer
             app.UseAuthorization();
 
             app.UseTaskApi();
-            app.UseEndpoints(endpoints =>
+            app.UseUrlBasedHttpMetrics()
+                .UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllers();
                     endpoints.MapMetrics();
