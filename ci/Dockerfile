@@ -21,4 +21,6 @@ WORKDIR /app
 COPY --from=build /app /app
 EXPOSE 80
 
+VOLUME /var/lib/mylab-indexer/seeds /etc/mylab-indexer/indexes
+
 ENTRYPOINT ["sh", "-c", "dotnet /app/${PROJ_FILE}.dll"]

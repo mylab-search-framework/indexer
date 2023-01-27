@@ -9,7 +9,7 @@ namespace MyLab.Search.Indexer.Options
     {
         public IndexOptions[] Indexes { get; set; }
         public IndexOptionsBase DefaultIndexOptions { get; set; }
-        public string SeedPath { get; set; } = "/var/libs/mylab-indexer/seeds";
+        public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
         public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string MqQueue { get; set; }
         public string EsIndexNamePrefix { get; set; }
