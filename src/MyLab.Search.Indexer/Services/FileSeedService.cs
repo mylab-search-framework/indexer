@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.Options;
+using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -14,13 +15,13 @@ namespace MyLab.Search.Indexer.Services
         private readonly string _basePath;
         private readonly IDslLogger _log;
 
-        public FileSeedService(IOptions<IndexerOptions> opts, ILogger<FileSeedService> logger)
+        public FileSeedService(IOptions<IndexerOptions> opts, ILogger<FileSeedService> logger = null)
             :this(opts.Value.SeedPath, logger)
         {
 
         }
 
-        public FileSeedService(string basePath, ILogger<FileSeedService> logger)
+        public FileSeedService(string basePath, ILogger<FileSeedService> logger = null)
         {
             if(string.IsNullOrWhiteSpace(basePath))
                 throw new InvalidOperationException("Base seed path is not defined");
