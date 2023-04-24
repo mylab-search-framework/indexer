@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services
@@ -79,7 +80,7 @@ namespace MyLab.Search.Indexer.Services
                 return;
             }
 
-            var exists = await _esIndexTools.IsIndexExistsAsync(esIndexName, stoppingToken);
+            var exists = await _esIndexTools.IsIndexExistentAsync(esIndexName, stoppingToken);
 
             await Task.Delay(500, stoppingToken);
 

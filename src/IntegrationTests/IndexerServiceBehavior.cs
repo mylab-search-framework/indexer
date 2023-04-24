@@ -319,8 +319,7 @@ namespace IntegrationTests
                     JObject.FromObject(TestDoc.Generate())
                 }
             };
-
-            BulkResponse expectedFailedResp = null;
+            
             EsException expectedEsException = null;
 
             //Act
@@ -331,14 +330,11 @@ namespace IntegrationTests
             catch (EsException e)
             {
                 expectedEsException = e;
-                expectedFailedResp = e.Response as BulkResponse;
             }
 
             //Assert
             Assert.NotNull(expectedEsException);
-            Assert.NotNull(expectedFailedResp);
-
-            Assert.Contains(expectedFailedResp.ItemsWithErrors, itm => itm.Status == 404);
+            Assert.True(expectedEsException.Response.HasIndexNotFound);
         }
 
         public Task InitializeAsync()

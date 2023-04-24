@@ -109,7 +109,7 @@ namespace MyLab.Search.Indexer.Services
             {
                 await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
             }
-            catch (EsException e) when (e.HasIndexNotFound())
+            catch (EsException e) when (e.Response.HasIndexNotFound)
             {
                 if (_indexerCreator == null)
                     throw;

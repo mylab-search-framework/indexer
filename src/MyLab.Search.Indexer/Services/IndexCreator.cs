@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter;
+using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Services

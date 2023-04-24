@@ -9,7 +9,6 @@ using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using Newtonsoft.Json.Linq;
-using SQLitePCL;
 
 namespace MyLab.Search.Indexer.Services
 {

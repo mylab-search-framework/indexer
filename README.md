@@ -1,5 +1,7 @@
 # MyLab.Search.Indexer
 
+Ознакомьтесь с последними изменениями в [журнале изменений](/CHANGELOG.md).
+
 `Docker` образ: [![Docker image](https://img.shields.io/static/v1?label=docker&style=flat&logo=docker&message=image&color=blue)](https://github.com/mylab-search-fx/indexer/pkgs/container/indexer)
 
 Спецификация `API` : [![API specification](https://img.shields.io/badge/OAS3-v2%20(actual)-green)](https://app.swaggerhub.com/apis/ozzy/MyLab.Search.Indexer/2)

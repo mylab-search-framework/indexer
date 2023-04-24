@@ -76,7 +76,7 @@ namespace FuncTests
 
             await Task.Delay(1000);
 
-            var isIndexExists = await _esFxt.IndexTools.IsIndexExistsAsync(_esIndexName);
+            var isIndexExists = await _esFxt.IndexTools.IsIndexExistentAsync(_esIndexName);
 
             //Assert
             Assert.True(isIndexExists);
@@ -93,7 +93,7 @@ namespace FuncTests
             {
                 await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
             }
-            catch (EsException e) when (e.HasIndexNotFound())
+            catch (EsException e) when (e.Response.HasIndexNotFound)
             {
             }
         }
