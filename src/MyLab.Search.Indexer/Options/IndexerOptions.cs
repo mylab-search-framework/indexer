@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using MyLab.Log;
 
@@ -10,10 +9,18 @@ namespace MyLab.Search.Indexer.Options
         public IndexOptions[] Indexes { get; set; }
         public IndexOptionsBase DefaultIndexOptions { get; set; }
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
+
+        [Obsolete("Use ResourcesPath instead")]
         public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
+        public string ResourcesPath { get; set; } = "/etc/mylab-indexer";
         public string MqQueue { get; set; }
+
+        [Obsolete("Use EsNamePrefix instead")]
         public string EsIndexNamePrefix { get; set; }
+        [Obsolete("Use EsNamePostfix instead")]
         public string EsIndexNamePostfix { get; set; }
+        public string EsNamePrefix { get; set; }
+        public string EsNamePostfix { get; set; }
 
         public IndexOptions GetIndexOptions(string indexId)
         {
@@ -25,16 +32,22 @@ namespace MyLab.Search.Indexer.Options
             return foundOptions;
         }
 
+        [Obsolete]
         public string GetEsIndexName(string idxId)
         {
-            if (string.IsNullOrEmpty(idxId))
-                throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
+            return GetEsName(idxId);
+        }
 
-            var idxOpt = GetIndexOptionsCore(idxId);
+        public string GetEsName(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(name));
 
-            var totalIdxName = idxOpt?.EsIndex ?? idxId;
+            var idxOpt = GetIndexOptionsCore(name);
 
-            return $"{EsIndexNamePrefix?.ToLower()}{totalIdxName.ToLower()}{EsIndexNamePostfix?.ToLower()}";
+            var totalIdxName = idxOpt?.EsIndex ?? name;
+
+            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{totalIdxName.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
         }
 
         public IdPropertyType GetTotalIdPropertyType(string idxId)

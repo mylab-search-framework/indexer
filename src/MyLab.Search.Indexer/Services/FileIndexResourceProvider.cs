@@ -47,13 +47,13 @@ namespace MyLab.Search.Indexer.Services
         {
             string indexJson = null, commonIndexJson = null;
 
-            var indexJsonPath = Path.Combine(_opts.ResourcePath, indexId, "index.json");
+            var indexJsonPath = Path.Combine(_opts.ResourcesPath, indexId, "index.json");
             if (File.Exists(indexJsonPath))
             {
                 indexJson = await File.ReadAllTextAsync(indexJsonPath);
             }
 
-            var commonIndexJsonPath = Path.Combine(_opts.ResourcePath, "index.json");
+            var commonIndexJsonPath = Path.Combine(_opts.ResourcesPath, "index.json");
             if (File.Exists(commonIndexJsonPath))
             {
                 commonIndexJson = await File.ReadAllTextAsync(commonIndexJsonPath);
@@ -81,7 +81,7 @@ namespace MyLab.Search.Indexer.Services
 
         async Task<string> ReadResourceFileAsync(string indexId, string filename)
         {
-            var filePath = Path.Combine(_opts.ResourcePath, indexId, filename);
+            var filePath = Path.Combine(_opts.ResourcesPath, indexId, filename);
 
             if (!File.Exists(filePath))
                 throw new FileNotFoundException("Resource file not found")

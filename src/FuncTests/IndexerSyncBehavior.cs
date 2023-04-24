@@ -69,7 +69,7 @@ namespace FuncTests
                 srv.AddSingleton(dbMgr)
                     .Configure<IndexerOptions>(opt =>
                     {
-                        opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
+                        opt.ResourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
                         opt.Indexes = new[]
                         {
                             new IndexOptions
@@ -121,7 +121,7 @@ namespace FuncTests
                 srv.AddSingleton(dbMgr)
                     .Configure<IndexerOptions>(opt =>
                     {
-                        opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
+                        opt.ResourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
                         opt.Indexes = new[]
                         {
                             new IndexOptions

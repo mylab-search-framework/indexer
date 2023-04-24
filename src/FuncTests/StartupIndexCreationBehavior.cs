@@ -37,7 +37,7 @@ namespace FuncTests
             {
                 srv.Configure<IndexerOptions>(opt =>
                     {
-                        opt.ResourcePath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
+                        opt.ResourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
                     })
                     .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
                     .AddLogging(l => l

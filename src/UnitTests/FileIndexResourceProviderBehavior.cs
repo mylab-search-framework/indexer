@@ -24,7 +24,7 @@ namespace UnitTests
             //Arrange
             var indexerOpts = new IndexerOptions
             {
-                ResourcePath = _resourcePath,
+                ResourcesPath = _resourcePath,
                 Indexes = new[]
                 {
                     new IndexOptions
@@ -50,7 +50,7 @@ namespace UnitTests
             //Arrange
             var indexerOpts = new IndexerOptions
             {
-                ResourcePath = _resourcePath,
+                ResourcesPath = _resourcePath,
                 Indexes = new[]
                 {
                     new IndexOptions
@@ -76,7 +76,7 @@ namespace UnitTests
             //Arrange
             var indexerOpts = new IndexerOptions
             {
-                ResourcePath = _resourcePath,
+                ResourcesPath = _resourcePath,
                 Indexes = new[]
                 {
                     new IndexOptions
@@ -102,7 +102,7 @@ namespace UnitTests
             //Arrange
             var indexerOpts = new IndexerOptions
             {
-                ResourcePath = _resourcePath,
+                ResourcesPath = _resourcePath,
                 Indexes = new[]
                 {
                     new IndexOptions
@@ -133,7 +133,7 @@ namespace UnitTests
 
             var indexerOpts = new IndexerOptions
             {
-                ResourcePath = resPath,
+                ResourcesPath = resPath,
                 Indexes = new[]
                 {
                     new IndexOptions
