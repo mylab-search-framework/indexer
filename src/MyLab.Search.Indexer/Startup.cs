@@ -37,7 +37,7 @@ namespace MyLab.Search.Indexer
             services.AddControllers(opt => opt.AddExceptionProcessing());
 
             services
-                .AddSingleton<IIndexResourceProvider, FileIndexResourceProvider>()
+                .AddSingleton<IResourceProvider, FileResourceProvider>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()

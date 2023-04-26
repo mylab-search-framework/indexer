@@ -35,7 +35,7 @@ namespace UnitTests
                 }
             };
 
-            var service = new FileIndexResourceProvider(indexerOpts);
+            var service = new FileResourceProvider(indexerOpts);
 
             //Act
             var kickQuery = await service.ProvideKickQueryAsync("foo-index");
@@ -61,7 +61,7 @@ namespace UnitTests
                 }
             };
 
-            var service = new FileIndexResourceProvider(indexerOpts);
+            var service = new FileResourceProvider(indexerOpts);
 
             //Act
             var kickQuery = await service.ProvideKickQueryAsync("foo-index");
@@ -87,7 +87,7 @@ namespace UnitTests
                 }
             };
 
-            var service = new FileIndexResourceProvider(indexerOpts);
+            var service = new FileResourceProvider(indexerOpts);
 
             //Act
             var syncQuery = await service.ProvideSyncQueryAsync("foo-index");
@@ -113,7 +113,7 @@ namespace UnitTests
                 }
             };
 
-            var service = new FileIndexResourceProvider(indexerOpts);
+            var service = new FileResourceProvider(indexerOpts);
 
             //Act
             var syncQuery = await service.ProvideSyncQueryAsync("foo-index");
@@ -143,7 +143,7 @@ namespace UnitTests
                 }
             };
 
-            var service = new FileIndexResourceProvider(indexerOpts);
+            var service = new FileResourceProvider(indexerOpts);
 
             //Act
             var indexJson = await service.ProvideIndexSettingsAsync("foo-index");

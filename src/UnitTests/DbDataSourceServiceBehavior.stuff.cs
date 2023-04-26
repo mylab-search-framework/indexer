@@ -30,12 +30,12 @@ namespace UnitTests
             Assert.Equal(doc.Content, jObject.Property("content").Value.Value<string>());
         }
 
-        private class TestIndexResourceProvider : IIndexResourceProvider
+        private class TestResourceProvider : IResourceProvider
         {
             private readonly string _kickQuery;
             private readonly string _syncQuery;
 
-            public TestIndexResourceProvider(IndexOptions options)
+            public TestResourceProvider(IndexOptions options)
             {
                 _kickQuery = options.KickDbQuery;
                 _syncQuery = options.SyncDbQuery;

@@ -28,7 +28,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -55,7 +55,7 @@ namespace UnitTests
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -92,7 +92,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -134,7 +134,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -179,7 +179,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -222,7 +222,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestIndexResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider(indexOpts);
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 

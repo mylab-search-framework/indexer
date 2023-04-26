@@ -11,14 +11,14 @@ namespace MyLab.Search.Indexer.Services
 {
     class IndexCreator : IIndexCreator
     {
-        private readonly IIndexResourceProvider _idxResProvider;
+        private readonly IResourceProvider _idxResProvider;
         private readonly IEsTools _esTools;
         private readonly IDslLogger _log;
         private readonly IndexerOptions _opts;
 
         public IndexCreator(
             IOptions<IndexerOptions> opts,
-            IIndexResourceProvider idxResProvider,
+            IResourceProvider idxResProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
             :this(opts.Value, idxResProvider, esTools, logger)
@@ -27,7 +27,7 @@ namespace MyLab.Search.Indexer.Services
 
         public IndexCreator(
             IndexerOptions opts,
-            IIndexResourceProvider idxResProvider,
+            IResourceProvider idxResProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
         {

@@ -13,7 +13,7 @@
     <PackageReference Include="MyLab.Db" Version="1.3.5" />
     <PackageReference Include="MyLab.DbTest" Version="1.0.2" />
     <PackageReference Include="MyLab.RabbitClient" Version="2.9.22" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.9" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.10" />
     <PackageReference Include="MyLab.Search.EsTest" Version="2.1.3" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">

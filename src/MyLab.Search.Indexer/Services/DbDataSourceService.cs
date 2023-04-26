@@ -17,38 +17,38 @@ namespace MyLab.Search.Indexer.Services
     {
         private readonly IDbManager _dbManager;
         private readonly ISeedService _seedService;
-        private readonly IIndexResourceProvider _indexResourceProvider;
+        private readonly IResourceProvider _resourceProvider;
         private readonly IndexerOptions _options;
         private readonly IDslLogger _log;
 
         public DbDataSourceService(
             IDbManager dbManager,
             ISeedService seedService,
-            IIndexResourceProvider indexResourceProvider,
+            IResourceProvider resourceProvider,
             IOptions<IndexerOptions> options,
             ILogger<DbDataSourceService> logger = null)
-        : this(dbManager, seedService, indexResourceProvider, options.Value, logger)
+        : this(dbManager, seedService, resourceProvider, options.Value, logger)
         {
         }
 
         public DbDataSourceService(
             IDbManager dbManager,
             ISeedService seedService,
-            IIndexResourceProvider indexResourceProvider,
+            IResourceProvider resourceProvider,
             IndexerOptions options,
             ILogger<DbDataSourceService> logger = null
         )
         {
             _dbManager = dbManager;
             _seedService = seedService;
-            _indexResourceProvider = indexResourceProvider;
+            _resourceProvider = resourceProvider;
             _options = options;
             _log = logger?.Dsl();
         }
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
-            var kickQueryPattern = await _indexResourceProvider.ProvideKickQueryAsync(indexId);
+            var kickQueryPattern = await _resourceProvider.ProvideKickQueryAsync(indexId);
 
             await using var conn = _dbManager.Use();
 
@@ -75,7 +75,7 @@ namespace MyLab.Search.Indexer.Services
         {
             var idxOpts = _options.GetIndexOptions(indexId);
 
-            var syncQuery = await _indexResourceProvider.ProvideSyncQueryAsync(indexId);
+            var syncQuery = await _resourceProvider.ProvideSyncQueryAsync(indexId);
             
             DataParameter seedParameter;
             string seedStrValue;
