@@ -80,7 +80,7 @@ namespace FuncTests
             await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
             await Task.Delay(1000);
 
-            var isIndexExists = await _esFxt.IndexTools.IsIndexExistentAsync(_esIndexName);
+            var isIndexExists = await _esFxt.Tools.Index(_esIndexName).ExistsAsync();
 
             //Assert
             Assert.True(isIndexExists);
@@ -95,7 +95,7 @@ namespace FuncTests
         {
             try
             {
-                await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
+                await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
             }
             catch (EsException e) when (e.Response.HasIndexNotFound)
             {

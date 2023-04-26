@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -14,30 +15,30 @@ namespace MyLab.Search.Indexer.Services
     class StartupIndexCreatorService : BackgroundService
     {
         private readonly IndexerOptions _opts;
-        private readonly IEsIndexTools _esIndexTools;
+        private readonly IEsTools _esTools;
         private readonly IIndexResourceProvider _idxResProvider;
         private readonly IIndexCreator _indexCreator;
         private readonly IDslLogger _log;
 
         public StartupIndexCreatorService(
-            IOptions<IndexerOptions> opts, 
-            IEsIndexTools esIndexTools, 
+            IOptions<IndexerOptions> opts,
+            IEsTools esTools, 
             IIndexResourceProvider idxResProvider,
             IIndexCreator indexCreator,
             ILogger<StartupIndexCreatorService> logger = null)
-            :this(opts.Value, esIndexTools, idxResProvider, indexCreator, logger)
+            :this(opts.Value, esTools, idxResProvider, indexCreator, logger)
         {
         }
 
         public StartupIndexCreatorService(
-            IndexerOptions opts, 
-            IEsIndexTools esIndexTools,
+            IndexerOptions opts,
+            IEsTools esTools,
             IIndexResourceProvider idxResProvider,
             IIndexCreator indexCreator,
             ILogger<StartupIndexCreatorService> logger = null)
         {
             _opts = opts;
-            _esIndexTools = esIndexTools;
+            _esTools = esTools;
             _idxResProvider = idxResProvider;
             _indexCreator = indexCreator;
             _log = logger.Dsl();
@@ -80,7 +81,7 @@ namespace MyLab.Search.Indexer.Services
                 return;
             }
 
-            var exists = await _esIndexTools.IsIndexExistentAsync(esIndexName, stoppingToken);
+            var exists = await _esTools.Index(esIndexName).ExistsAsync(stoppingToken);
 
             await Task.Delay(500, stoppingToken);
 

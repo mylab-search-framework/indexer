@@ -163,7 +163,7 @@ namespace FuncTests
 
         public async Task DisposeAsync()
         {
-            await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
+            await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
         }
     }
 }

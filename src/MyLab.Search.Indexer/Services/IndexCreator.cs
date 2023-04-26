@@ -12,27 +12,27 @@ namespace MyLab.Search.Indexer.Services
     class IndexCreator : IIndexCreator
     {
         private readonly IIndexResourceProvider _idxResProvider;
-        private readonly IEsIndexTools _esIndexTools;
+        private readonly IEsTools _esTools;
         private readonly IDslLogger _log;
         private readonly IndexerOptions _opts;
 
         public IndexCreator(
             IOptions<IndexerOptions> opts,
             IIndexResourceProvider idxResProvider,
-            IEsIndexTools esIndexTools,
+            IEsTools esTools,
             ILogger<IndexCreator> logger = null)
-            :this(opts.Value, idxResProvider, esIndexTools, logger)
+            :this(opts.Value, idxResProvider, esTools, logger)
         {
         }
 
         public IndexCreator(
             IndexerOptions opts,
             IIndexResourceProvider idxResProvider,
-            IEsIndexTools esIndexTools,
+            IEsTools esTools,
             ILogger<IndexCreator> logger = null)
         {
             _idxResProvider = idxResProvider;
-            _esIndexTools = esIndexTools;
+            _esTools = esTools;
             _log = logger?.Dsl();
             _opts = opts;
         }
@@ -40,7 +40,7 @@ namespace MyLab.Search.Indexer.Services
         public async Task CreateIndex(string idxId, string esIndexName, CancellationToken stoppingToken)
         {
             var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(idxId);
-            await _esIndexTools.CreateIndexAsync(esIndexName, settingsStr, stoppingToken);
+            await _esTools.Index(esIndexName).CreateAsync(settingsStr, stoppingToken);
 
             _log?.Action("Elasticsearch index has been created")
                 .AndFactIs("index", idxId)

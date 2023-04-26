@@ -63,7 +63,7 @@ namespace FuncTests
 
             _esIndexName = Guid.NewGuid().ToString("N");
 
-            await _esFxt.IndexTools.CreateIndexAsync(_esIndexName);
+            await _esFxt.Tools.Index(_esIndexName).CreateAsync();
 
             var indexNameProvider = new SingleIndexNameProvider(_esIndexName);
 
@@ -108,7 +108,7 @@ namespace FuncTests
         public async Task DisposeAsync()
         {
             _queue.Remove();
-            await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
+            await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
         }
     }
 }

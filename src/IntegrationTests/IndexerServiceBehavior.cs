@@ -344,7 +344,7 @@ namespace IntegrationTests
 
         public async Task DisposeAsync()
         {
-            await _idxFxt.IndexTools.PruneIndexAsync();
+            await _idxFxt.Tools.Index(_idxFxt.IndexName).PruneAsync();
         }
     }
 }

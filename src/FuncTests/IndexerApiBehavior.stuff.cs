@@ -98,7 +98,7 @@ namespace FuncTests
         {
             try
             {
-                await _esFxt.IndexTools.DeleteIndexAsync(_esIndexName);
+                await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
             }
             catch (EsException e) when (e.Response.HasIndexNotFound)
             {
