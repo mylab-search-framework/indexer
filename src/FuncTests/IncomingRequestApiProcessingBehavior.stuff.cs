@@ -1,6 +1,9 @@
 using MyLab.ApiClient.Test;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Services;
 using MyLab.Search.IndexerClient;
+using System.Threading.Tasks;
 using Xunit.Abstractions;
 
 namespace IntegrationTests
@@ -22,6 +25,18 @@ namespace IntegrationTests
         public void Dispose()
         {
             _testApi?.Dispose();
+        }
+
+        class TestInputRequestProcessor : IInputRequestProcessor
+        {
+            public InputIndexingRequest LastRequest { get; private set; }
+
+            public Task IndexAsync(InputIndexingRequest inputRequest)
+            {
+                LastRequest = inputRequest;
+
+                return Task.CompletedTask;
+            }
         }
     }
 }

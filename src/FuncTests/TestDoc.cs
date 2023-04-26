@@ -1,6 +1,7 @@
 ﻿using System;
 using LinqToDB.Mapping;
 using Nest;
+using Newtonsoft.Json;
 
 namespace FuncTests
 {
@@ -9,23 +10,24 @@ namespace FuncTests
     public class TestDoc
     {
         [Column("id")]
-        //[Number]
-        public int Id { get; set; }
+        [Keyword(Name = "id")]
+        [JsonProperty("id")]
+        public string Id { get; set; }
 
-        //[Keyword]
+        [Text(Name = "content")]
+        [JsonProperty("content")]
         [Column("content")]
         public string Content { get; set; }
-
-        //[Date(Index = false)]
+        
         [Column("changed")]
         public DateTime? LastChanged { get; set; }
 
         public static TestDoc Generate()
         {
-            return Generate(new Random(DateTime.Now.Millisecond).Next());
+            return Generate(Guid.NewGuid().ToString("N"));
         }
 
-        public static TestDoc Generate(int id)
+        public static TestDoc Generate(string id)
         {
             return new TestDoc
             {

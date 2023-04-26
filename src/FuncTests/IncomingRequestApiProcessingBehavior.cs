@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using FuncTests;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
@@ -21,7 +22,7 @@ namespace IntegrationTests
                     srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
                 );
 
-            var testDoc = new TestDoc(null, "foo-content");
+            var testDoc = TestDoc.Generate(null);
 
             //Act
             await api.PostAsync("foo-index", JObject.FromObject(testDoc));
@@ -47,7 +48,7 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testDoc = new TestDoc("foo-id", "foo-content");
+            var testDoc = TestDoc.Generate();
 
             //Act
             await api.PostAsync("foo-index", JObject.FromObject(testDoc));
@@ -59,8 +60,8 @@ namespace IntegrationTests
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.NotNull(actualDoc);
-            Assert.Equal("foo-id", item.GetIdProperty());
-            Assert.Equal("foo-content", actualDoc.Content);
+            Assert.Equal(testDoc.Id, item.GetIdProperty());
+            Assert.Equal(testDoc.Content, actualDoc.Content);
         }
 
         [Fact]
@@ -73,9 +74,9 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testDoc = new TestDoc("foo-id", "foo-content");
+            var testDoc = TestDoc.Generate();
 
-            
+
             //Act
             await api.PutAsync("foo-index", JObject.FromObject(testDoc));
 
@@ -86,8 +87,8 @@ namespace IntegrationTests
             //Assert
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.NotNull(actualDoc);
-            Assert.Equal("foo-id", item.GetIdProperty());
-            Assert.Equal("foo-content", actualDoc.Content);
+            Assert.Equal(testDoc.Id, item.GetIdProperty());
+            Assert.Equal(testDoc.Content, actualDoc.Content);
         }
 
         [Fact]
@@ -100,8 +101,8 @@ namespace IntegrationTests
                 srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
-            var testDoc = new TestDoc("foo-id", "foo-content");
-            
+            var testDoc = TestDoc.Generate();
+
             //Act
             await api.PatchAsync("foo-index", JObject.FromObject(testDoc));
 
@@ -114,8 +115,8 @@ namespace IntegrationTests
             Assert.NotNull(inputSrvProc.LastRequest);
             Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
             Assert.NotNull(actualDoc);
-            Assert.Equal("foo-id", item.GetIdProperty());
-            Assert.Equal("foo-content", actualDoc.Content);
+            Assert.Equal(testDoc.Id, item.GetIdProperty());
+            Assert.Equal(testDoc.Content, actualDoc.Content);
         }
 
         [Fact]

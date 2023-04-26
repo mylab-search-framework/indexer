@@ -52,7 +52,7 @@ namespace FuncTests
             _esFxt.Output = output;
         }
 
-        private Task<EsFound<TestDoc>> SearchByIdAsync(int id)
+        private Task<EsFound<TestDoc>> SearchByIdAsync(string id)
         {
             return _searcher.SearchAsync(new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(id))));
         }

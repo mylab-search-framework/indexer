@@ -53,7 +53,7 @@ namespace FuncTests
             _apiFxt.Output = output;
         }
 
-        Task<EsFound<TestDoc>> SearchByIdAsync(int id)
+        Task<EsFound<TestDoc>> SearchByIdAsync(string id)
         {
             return _searcher.SearchAsync(new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(id))));
         }
