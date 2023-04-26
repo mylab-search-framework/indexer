@@ -1,50 +1,34 @@
 ﻿using System;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
-using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 
-namespace MyLab.Search.Indexer.Services
+namespace MyLab.Search.Indexer.Services.ResourceUploading
 {
-    class StartupIndexCreatorService : BackgroundService
+    class IndexUploader
     {
-        private readonly IndexerOptions _opts;
         private readonly IEsTools _esTools;
         private readonly IIndexResourceProvider _idxResProvider;
-        private readonly IIndexCreator _indexCreator;
+        private readonly IndexerOptions _opts;
         private readonly IDslLogger _log;
 
-        public StartupIndexCreatorService(
-            IOptions<IndexerOptions> opts,
-            IEsTools esTools, 
-            IIndexResourceProvider idxResProvider,
-            IIndexCreator indexCreator,
-            ILogger<StartupIndexCreatorService> logger = null)
-            :this(opts.Value, esTools, idxResProvider, indexCreator, logger)
-        {
-        }
-
-        public StartupIndexCreatorService(
-            IndexerOptions opts,
+        public IndexUploader(
             IEsTools esTools,
             IIndexResourceProvider idxResProvider,
-            IIndexCreator indexCreator,
-            ILogger<StartupIndexCreatorService> logger = null)
+            IOptions<IndexerOptions> opts,
+            ILogger<IndexUploader> logger = null)
         {
-            _opts = opts;
             _esTools = esTools;
             _idxResProvider = idxResProvider;
-            _indexCreator = indexCreator;
+            _opts = opts.Value;
             _log = logger.Dsl();
         }
 
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public async Task UploadAsync(CancellationToken cancellationToken)
         {
             if (_opts.Indexes is not { Length: > 0 })
             {
@@ -58,7 +42,7 @@ namespace MyLab.Search.Indexer.Services
                 {
                     var indexName = _opts.GetEsIndexName(idxOpts.Id);
 
-                    await CheckIndex(stoppingToken, idxOpts.Id, indexName);
+                    await TouchIndex(idxOpts.Id, indexName, cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -68,10 +52,9 @@ namespace MyLab.Search.Indexer.Services
                         .Write();
                 }
             }
-                
         }
 
-        private async Task CheckIndex(CancellationToken stoppingToken, string indexId, string esIndexName)
+        private async Task TouchIndex(string indexId, string esIndexName, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(esIndexName))
             {
@@ -81,13 +64,13 @@ namespace MyLab.Search.Indexer.Services
                 return;
             }
 
-            var exists = await _esTools.Index(esIndexName).ExistsAsync(stoppingToken);
-
-            await Task.Delay(500, stoppingToken);
-
+            var exists = await _esTools.Index(esIndexName).ExistsAsync(cancellationToken);
+            
             if (!exists)
             {
-                await _indexCreator.CreateIndex(indexId, esIndexName, stoppingToken);
+                var settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(indexId);
+
+                await _esTools.Index(esIndexName).CreateAsync(settingsStr, cancellationToken);
             }
             else
             {

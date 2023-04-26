@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using MyLab.Log;
+using Nest;
 
 namespace MyLab.Search.Indexer.Options
 {
@@ -32,10 +33,16 @@ namespace MyLab.Search.Indexer.Options
             return foundOptions;
         }
 
-        [Obsolete]
         public string GetEsIndexName(string idxId)
         {
-            return GetEsName(idxId);
+            if (string.IsNullOrEmpty(idxId))
+                throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
+
+            var idxOpt = GetIndexOptionsCore(idxId);
+
+            var totalIdxName = idxOpt?.EsIndex ?? idxId;
+
+            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{totalIdxName.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
         }
 
         public string GetEsName(string name)
@@ -43,11 +50,7 @@ namespace MyLab.Search.Indexer.Options
             if (string.IsNullOrEmpty(name))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(name));
 
-            var idxOpt = GetIndexOptionsCore(name);
-
-            var totalIdxName = idxOpt?.EsIndex ?? name;
-
-            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{totalIdxName.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
+            return $"{EsNamePrefix?.ToLower()}{name.ToLower()}{EsNamePostfix?.ToLower()}";
         }
 
         public IdPropertyType GetTotalIdPropertyType(string idxId)

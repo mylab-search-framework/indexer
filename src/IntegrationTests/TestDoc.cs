@@ -19,9 +19,6 @@ namespace IntegrationTests
         [JsonProperty("content")]
         public string Content { get; set; }
 
-        [Column("changed")]
-        public DateTime? LastChanged { get; set; }
-
         public TestDoc()
         {
             

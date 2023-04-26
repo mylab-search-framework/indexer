@@ -13,6 +13,7 @@ using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
+using MyLab.Search.Indexer.Services.ResourceUploading;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
@@ -50,7 +51,7 @@ namespace MyLab.Search.Indexer
                 .AddLogging(l => l.AddMyLabConsole())
                 .AddUrlBasedHttpMetrics()
                 .AddTaskLogic<SyncTaskLogic>()
-                .AddHostedService<StartupIndexCreatorService>();
+                .AddHostedService<StartupResourceUploaderService>();
 
             services
                 .ConfigureRabbit(Configuration)
