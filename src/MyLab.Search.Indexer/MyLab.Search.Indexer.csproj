@@ -15,15 +15,15 @@
   <ItemGroup>
     <PackageReference Include="MyLab.Db" Version="1.3.5" />
     <PackageReference Include="MyLab.HttpMetrics" Version="1.1.3" />
-    <PackageReference Include="MyLab.Log" Version="3.3.15" />
-    <PackageReference Include="MyLab.Log.Dsl" Version="3.5.3" />
+    <PackageReference Include="MyLab.Log" Version="3.5.26" />
+    <PackageReference Include="MyLab.Log.Dsl" Version="3.6.4" />
     <PackageReference Include="MyLab.RabbitClient" Version="2.9.22" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.10" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.11" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
     <PackageReference Include="MyLab.TaskApp" Version="1.4.5" />
     <PackageReference Include="MyLab.WebErrors" Version="1.1.4" />
     <PackageReference Include="MySql.Data" Version="8.0.30" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

@@ -29,7 +29,9 @@
       }
     },
     "_meta": {
-      "ver": "2"
+      "mylab_indexer_data": {
+        "ver": "2"
+      }
     }
   }
 }

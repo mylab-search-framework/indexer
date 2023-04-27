@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using MyLab.ApiClient.Test;
 using MyLab.Db;
 using MyLab.DbTest;
+using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Indexing;
 using MyLab.Search.EsAdapter.Inter;

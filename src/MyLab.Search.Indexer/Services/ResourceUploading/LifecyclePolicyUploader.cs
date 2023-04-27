@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
+using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
+using Nest;
 
 namespace MyLab.Search.Indexer.Services.ResourceUploading
 {
@@ -30,44 +34,134 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         }
         public async Task UploadAsync(CancellationToken cancellationToken)
         {
-            var policies = _resourceProvider.ProvideLifecyclePoliciesAsync();
+            var policies = _resourceProvider.ProvideLifecyclePolicies();
+
+            _log?.Action("Lifecycle policies uploading")
+                .AndFactIs("policy-list", policies.Select(p => p.Name).ToArray())
+                .Write();
 
             foreach (var policy in policies)
             {
-                await TouchPolicyAsync(policy, cancellationToken);
+                using (_log?.BeginScope(new FactLogScope("policy", policy.Name)))
+                {
+                    await TryUploadPolicyAsync(policy, cancellationToken);
+                }
             }
         }
 
-        private async Task TouchPolicyAsync(IResource policy, CancellationToken cancellationToken)
+        private async Task TryUploadPolicyAsync(IResource policy, CancellationToken cancellationToken)
         {
-            var resPolicyName = _opts.GetEsName(policy.Name);
+            var policyId = _opts.GetEsName(policy.Name);
 
             try
             {
-                var esPolicy = await _esTools.LifecyclePolicy(resPolicyName).TryGetAsync(cancellationToken);
+                await using var readStream = policy.OpenRead();
+                var resPolicy = _esTools.Deserializer.DeserializeLifecyclePolicy(readStream);
 
-                var srvMetadataFromEs = ServiceMetadata.Read(esPolicy?.Policy?.Meta);
-
-                if (srvMetadataFromEs != null && srvMetadataFromEs.IsMyCreator())
+                if (resPolicy.Policy == null)
                 {
-                    await using var rStream = policy.OpenRead();
-                    var policyObj = _esTools.Deserializer.DeserializeLifecyclePolicy(rStream);
+                    _log?.Error("Policy resource has no 'policy' node").Write();
 
-                    var srvMetadataFromRes = ServiceMetadata.Read(policyObj?.Policy?.Meta);
-
-                    if (srvMetadataFromRes != null && srvMetadataFromEs.Ver != srvMetadataFromRes.Ver)
-                    {
-                        var policyJson = await policy.ReadAllTextAsync();
-                        await _esTools.LifecyclePolicy(resPolicyName).PutAsync(policyJson, cancellationToken);
-                    }
+                    return;
                 }
+
+                resPolicy.Policy.Meta ??= new Dictionary<string, object>();
+                var resPolicyMetadata = ServiceMetadata.Extract(resPolicy.Policy.Meta);
+
+                var esPolicy = await _esTools.LifecyclePolicy(policyId).TryGetAsync(cancellationToken);
+
+                if (esPolicy == null)
+                { 
+                    _log?.Action("Policy not found in ES and will be uploaded").Write();
+
+                    var newInitialMetadata = new ServiceMetadata
+                    {
+                        Creator = ServiceMetadata.MyCreator,
+                        Ver = resPolicyMetadata?.Ver,
+                        History = new ServiceMetadata.HistoryItem[]
+                        {
+                            new ()
+                            {
+                                ComponentVer = resPolicyMetadata?.Ver,
+                                ActorVer = GetMyActorVersion(),
+                                ActDt = DateTime.Now,
+                                Actor = ServiceMetadata.MyCreator
+                            }
+                        }
+                    };
+
+                    newInitialMetadata.Save(resPolicy.Policy.Meta);
+
+                    await UploadPolicyAsync(policyId, resPolicy, cancellationToken);
+
+                    _log?.Action("Policy was uploaded").Write();
+
+                    return;
+                }
+
+                var esPolicyMetadata = ServiceMetadata.Extract(esPolicy.Policy?.Meta);
+
+                if (esPolicyMetadata == null || !esPolicyMetadata.IsMyCreator())
+                {
+                    _log?.Warning("The same policy from another creator was found")
+                        .AndFactIs("creator", esPolicyMetadata?.Creator)
+                        .Write();
+
+                    return;
+                }
+
+                if (resPolicyMetadata?.Ver == esPolicyMetadata.Ver)
+                {
+                    _log?.Action("Upload canceled due to actual policy version")
+                        .AndFactIs("ver", resPolicyMetadata?.Ver)
+                        .Write();
+
+                    return;
+                }
+
+                var newHistory = new List<ServiceMetadata.HistoryItem>();
+
+                if (esPolicyMetadata.History is { Length: > 0 })
+                {
+                    newHistory.AddRange(esPolicyMetadata.History);
+                }
+
+                newHistory.Add(new ServiceMetadata.HistoryItem
+                {
+                    Actor = ServiceMetadata.MyCreator,
+                    ActDt = DateTime.Now,
+                    ActorVer = GetMyActorVersion(),
+                    ComponentVer = resPolicyMetadata?.Ver
+                });
+
+                var newMetadata = new ServiceMetadata
+                {
+                    Creator = esPolicyMetadata.Creator,
+                    Ver = resPolicyMetadata?.Ver,
+                    History = newHistory.Count > 0 ? newHistory.ToArray() : null
+                };
+
+                newMetadata.Save(resPolicy.Policy.Meta);
+
+                await UploadPolicyAsync(policyId, resPolicy, cancellationToken);
             }
             catch (Exception e)
             {
                 _log.Error("Unable to upload lifecycle policy", e)
-                    .AndFactIs("policy-name", resPolicyName)
                     .Write();
             }
+        }
+
+        string GetMyActorVersion() => typeof(LifecyclePolicyUploader).Assembly.GetName().Version?.ToString();
+
+
+        async Task UploadPolicyAsync(string policyId, LifecyclePolicy policy, CancellationToken cancellationToken)
+        {
+            IPutLifecycleRequest r = new PutLifecycleRequest(policyId)
+            {
+                Policy = policy.Policy
+            };
+            await _esTools.LifecyclePolicy(policyId).PutAsync(r, cancellationToken);
         }
     }
 }

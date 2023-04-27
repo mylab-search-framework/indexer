@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using FuncTests;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.DataProvider.MySql;
@@ -13,6 +12,7 @@ using Microsoft.Extensions.Logging;
 using MyLab.ApiClient.Test;
 using MyLab.Db;
 using MyLab.DbTest;
+using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
@@ -24,7 +24,7 @@ using MySql.Data.MySqlClient;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace IntegrationTests
+namespace FuncTests
 {
     public class IndexerSyncBehavior : 
         IClassFixture<EsFixture<TestEsFixtureStrategy>>, 

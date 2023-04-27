@@ -55,6 +55,21 @@ namespace UnitTests
             {
                 throw new NotImplementedException();
             }
+
+            public IResource[] ProvideLifecyclePolicies()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IResource[] ProvideIndexTemplates()
+            {
+                throw new NotImplementedException();
+            }
+
+            public IResource[] ProvideComponentTemplates()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         private class TestSeedService : ISeedService

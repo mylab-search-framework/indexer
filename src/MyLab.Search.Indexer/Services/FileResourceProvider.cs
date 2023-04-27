@@ -69,7 +69,7 @@ namespace MyLab.Search.Indexer.Services
             var indexJsonPath = Path.Combine(_indexResourcePath, indexId, IndexFilename);
             var indexJson = await ReadFileAsync(indexJsonPath, throwIfDoesNotExists: false);
 
-            var commonIndexJsonPath = Path.Combine(_opts.ResourcesPath, IndexFilename);
+            var commonIndexJsonPath = Path.Combine(_indexResourcePath, IndexFilename);
             var commonIndexJson = await ReadFileAsync(commonIndexJsonPath, throwIfDoesNotExists: false);
 
             if (indexJson == null && commonIndexJson == null)
@@ -92,19 +92,19 @@ namespace MyLab.Search.Indexer.Services
             return resultJson.ToString(Formatting.None);
         }
 
-        public IResource[] ProvideLifecyclePoliciesAsync()
+        public IResource[] ProvideLifecyclePolicies()
         {
-            return ProvideJsonResourcesAsync(_lifecyclePoliciesPath);
+            return ProvideJsonResources(_lifecyclePoliciesPath);
         }
 
-        public IResource[] ProvideIndexTemplatesAsync()
+        public IResource[] ProvideIndexTemplates()
         {
-            return ProvideJsonResourcesAsync(_indexTemplatesPath);
+            return ProvideJsonResources(_indexTemplatesPath);
         }
 
-        public IResource[] ProvideComponentTemplatesAsync()
+        public IResource[] ProvideComponentTemplates()
         {
-            return ProvideJsonResourcesAsync(_componentTemplatesPath);
+            return ProvideJsonResources(_componentTemplatesPath);
         }
 
         async Task<string> ReadFileAsync(string path, bool throwIfDoesNotExists)
@@ -120,8 +120,8 @@ namespace MyLab.Search.Indexer.Services
 
             return await File.ReadAllTextAsync(path);
         }
-
-        IResource[] ProvideJsonResourcesAsync(string dirPath)
+        
+        IResource[] ProvideJsonResources(string dirPath)
         {
             var resDir = new DirectoryInfo(dirPath);
 
@@ -139,6 +139,8 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var file in fileList)
             {
+                using var stream = file.OpenText();
+
                 res.Add(new FileResource(file));
             }
 

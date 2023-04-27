@@ -15,7 +15,8 @@ namespace FuncTests
 
         public override ConnectionSettings CreateConnectionSettings(IConnectionPool connection)
         {
-            return new ConnectionSettings(connection, new NewtonJsonEsSerializerFactory().Create);
+            return new ConnectionSettings(connection);
+            //return new ConnectionSettings(connection, new NewtonJsonEsSerializerFactory().Create);
         }
     }
 }

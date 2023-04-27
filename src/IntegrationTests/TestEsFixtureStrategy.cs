@@ -16,7 +16,8 @@ namespace IntegrationTests
 
         public override ConnectionSettings CreateConnectionSettings(IConnectionPool connection)
         {
-            return new ConnectionSettings(connection, (_, _) => new NewtonJsonEsSerializer())
+            //return new ConnectionSettings(connection, (_, _) => new NewtonJsonEsSerializer())
+            return new ConnectionSettings(connection)
                 .DefaultMappingFor(typeof(JObject), m => m.IdProperty("id"));
         }
     }

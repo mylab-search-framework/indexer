@@ -1,12 +1,12 @@
+using System.Threading.Tasks;
 using MyLab.ApiClient.Test;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.IndexerClient;
-using System.Threading.Tasks;
 using Xunit.Abstractions;
 
-namespace IntegrationTests
+namespace FuncTests
 {
     public partial class IncomingRequestApiProcessingBehavior
     {

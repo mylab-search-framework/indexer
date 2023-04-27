@@ -1,14 +1,13 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using FuncTests;
 using Microsoft.Extensions.DependencyInjection;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace IntegrationTests
+namespace FuncTests
 {
     public partial class IncomingRequestApiProcessingBehavior : IDisposable
     {
@@ -16,10 +15,10 @@ namespace IntegrationTests
         public async Task ShouldProcessPostWithoutId()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                    srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                    ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
                 );
 
             var testDoc = TestDoc.Generate(null);
@@ -42,10 +41,10 @@ namespace IntegrationTests
         public async Task ShouldProcessPost()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -68,10 +67,10 @@ namespace IntegrationTests
         public async Task ShouldProcessPut()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -95,10 +94,10 @@ namespace IntegrationTests
         public async Task ShouldProcessPatch()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -123,10 +122,10 @@ namespace IntegrationTests
         public async Task ShouldProcessDelete()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
             );
 
 
@@ -144,10 +143,10 @@ namespace IntegrationTests
         public async Task ShouldProcessKick()
         {
             //Arrange
-            var inputSrvProc = new TestInputRequestProcessor();
+            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
+                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
             );
 
 
