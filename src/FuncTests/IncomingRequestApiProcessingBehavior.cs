@@ -18,7 +18,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                    ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                    srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
                 );
 
             var testDoc = TestDoc.Generate(null);
@@ -44,7 +44,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -70,7 +70,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -97,7 +97,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
             var testDoc = TestDoc.Generate();
@@ -125,7 +125,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
 
@@ -146,7 +146,7 @@ namespace FuncTests
             var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
 
             var api = _testApi.StartWithProxy(srv =>
-                ServiceCollectionServiceExtensions.AddSingleton<IInputRequestProcessor>(srv, inputSrvProc)
+                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
             );
 
 

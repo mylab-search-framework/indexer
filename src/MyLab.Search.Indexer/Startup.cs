@@ -55,7 +55,7 @@ namespace MyLab.Search.Indexer
 
             services
                 .ConfigureRabbit(Configuration)
-                .ConfigureEsTools(opt => opt.SerializerFactory = new NewtonJsonEsSerializerFactory())
+                .ConfigureEsTools(opt => opt.SerializerFactory = new CombineEsSerializerFactory())
                 .ConfigureEsTools(Configuration)
                 .Configure<IndexerOptions>(Configuration.GetSection("Indexer"))
                 .Configure<IndexerDbOptions>(Configuration.GetSection("DB"))

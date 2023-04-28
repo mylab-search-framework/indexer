@@ -114,7 +114,7 @@ namespace MyLab.Search.Indexer.Services
                 if (_indexerCreator == null)
                     throw;
 
-                _log?.Warning("A 404 response has been received. Its try to create index.", e)
+                _log?.Warning("A 404 response has been received. Its try to create index.")
                     .AndFactIs("idx-name", esIdxName)
                     .Write();
 

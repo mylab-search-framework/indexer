@@ -1,0 +1,34 @@
+{
+  "template": {
+    "settings": {
+      "number_of_shards": 1
+    },
+    "mappings": {
+      "_source": {
+        "enabled": false
+      },
+      "properties": {
+        "host_name": {
+          "type": "keyword"
+        },
+        "created_at": {
+          "type": "date",
+          "format": "EEE MMM dd HH:mm:ss Z yyyy"
+        }
+      }
+    }
+  },
+  "_meta": {
+    "mylab_indexer_data": {
+      "ver": "1",
+      "creator": "mylab-indexer",
+      "history": {
+        "2023.01.01T01:02:03": {
+          "actor": "mylab-indexer",
+          "actor_ver": "1.0.0",
+          "component_ver": "1"
+        }
+      }
+    }
+  }
+}

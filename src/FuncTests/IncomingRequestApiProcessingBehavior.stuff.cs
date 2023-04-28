@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using MyLab.ApiClient.Test;
+using MyLab.Search.EsAdapter;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
@@ -18,7 +19,8 @@ namespace FuncTests
             _output = output;
             _testApi = new TestApi<Startup, IIndexerV2Api>
             {
-                Output = output
+                Output = output,
+                ServiceOverrider = srv => srv.ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
             };
         }
 

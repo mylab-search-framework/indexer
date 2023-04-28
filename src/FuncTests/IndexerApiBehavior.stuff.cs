@@ -65,6 +65,8 @@ namespace FuncTests
 
             _esIndexName = Guid.NewGuid().ToString("N");
 
+            //await _esFxt.Tools.Index(_esIndexName).CreateAsync();
+
             var indexNameProvider = new SingleIndexNameProvider(_esIndexName);
 
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);

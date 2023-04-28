@@ -16,13 +16,13 @@ using Xunit.Abstractions;
 
 namespace IntegrationTests
 {
-    public class LifecyclePolicyUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public class IndexTemplateUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
     {
         private readonly EsFixture<TestEsFixtureStrategy> _fxt;
         private readonly ITestOutputHelper _output;
         private readonly string _indexerVer;
 
-        public LifecyclePolicyUploaderBehavior(EsFixture<TestEsFixtureStrategy> fxt, ITestOutputHelper output)
+        public IndexTemplateUploaderBehavior(EsFixture<TestEsFixtureStrategy> fxt, ITestOutputHelper output)
         {
             _fxt = fxt;
             _output = output;
@@ -38,7 +38,7 @@ namespace IntegrationTests
 
         public async Task DisposeAsync()
         {
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").DeleteAsync();
+            await _fxt.Tools.IndexTemplate("index-template-test").DeleteAsync();
         }
 
         [Fact]
@@ -47,10 +47,10 @@ namespace IntegrationTests
             //Arrange
             var idxResProviderMock = new Mock<IResourceProvider>();
             
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example.json");
+            var templateResource = new TestResource("index-template-test", "resources\\index-template-example.json");
 
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
+            idxResProviderMock.Setup(p => p.ProvideIndexTemplates())
+                .Returns(() => new IResource[] { templateResource });
             
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -61,18 +61,18 @@ namespace IntegrationTests
                 .AddSingleton(idxResProviderMock.Object)
                 .BuildServiceProvider();
 
-            var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
+            var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
             ServiceMetadata metadata = null;
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
 
-            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test").TryGetAsync();
+            var templateInfo = await _fxt.Tools.IndexTemplate("index-template-test").TryGetAsync();
 
-            if (policyInfo != null)
+            if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(policyInfo.Policy.Meta);
+                metadata = ServiceMetadata.Extract(templateInfo.Meta);
             }
 
             //Assert
@@ -93,10 +93,10 @@ namespace IntegrationTests
             //Arrange
             var idxResProviderMock = new Mock<IResourceProvider>();
             
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example-2.json");
+            var templateResource = new TestResource("index-template-test", "resources\\index-template-example-2.json");
 
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
+            idxResProviderMock.Setup(p => p.ProvideIndexTemplates())
+                .Returns(() => new IResource[] { templateResource });
             
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -107,21 +107,21 @@ namespace IntegrationTests
                 .AddSingleton(idxResProviderMock.Object)
                 .BuildServiceProvider();
 
-            var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
+            var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
             ServiceMetadata metadata = null;
 
-            var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(existentPolicyJson);
+            var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
+            await _fxt.Tools.IndexTemplate("index-template-test").PutAsync(templateJson);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
 
-            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test").TryGetAsync();
+            var templateInfo = await _fxt.Tools.IndexTemplate("index-template-test").TryGetAsync();
 
-            if (policyInfo != null)
+            if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(policyInfo.Policy.Meta);
+                metadata = ServiceMetadata.Extract(templateInfo.Meta);
             }
 
             //Assert
@@ -148,10 +148,10 @@ namespace IntegrationTests
             //Arrange
             var idxResProviderMock = new Mock<IResourceProvider>();
 
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example.json");
+            var templateResource = new TestResource("index-template-test", "resources\\index-template-example.json");
 
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
+            idxResProviderMock.Setup(p => p.ProvideIndexTemplates())
+                .Returns(() => new IResource[] { templateResource });
 
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -162,21 +162,21 @@ namespace IntegrationTests
                 .AddSingleton(idxResProviderMock.Object)
                 .BuildServiceProvider();
 
-            var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
+            var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
             ServiceMetadata metadata = null;
 
-            var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(existentPolicyJson);
+            var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
+            await _fxt.Tools.IndexTemplate("index-template-test").PutAsync(templateJson);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
 
-            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test").TryGetAsync();
+            var templateInfo = await _fxt.Tools.IndexTemplate("index-template-test").TryGetAsync();
 
-            if (policyInfo != null)
+            if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(policyInfo.Policy.Meta);
+                metadata = ServiceMetadata.Extract(templateInfo.Meta);
             }
 
             //Assert

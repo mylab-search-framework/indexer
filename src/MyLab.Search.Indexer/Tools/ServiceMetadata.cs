@@ -50,6 +50,11 @@ namespace MyLab.Search.Indexer.Tools
 
         public static ServiceMetadata Extract(IDictionary<string, object> metadata)
         {
+            return Extract((IReadOnlyDictionary<string, object>)new Dictionary<string, object>(metadata));
+        }
+
+        public static ServiceMetadata Extract(IReadOnlyDictionary<string, object> metadata)
+        {
             if (metadata == null ||
                 !metadata.TryGetValue(MetaKey, out var dataObj) ||
                 dataObj is not IDictionary<string, object> dataDict)

@@ -14,11 +14,12 @@ namespace FuncTests
             //Arrange
             var docForDelete = TestDoc.Generate();
 
+            await _esFxt.Tools.Index(_esIndexName).CreateAsync();
             await _indexer.CreateAsync(docForDelete);
 
             //Act
             await _api.DeleteAsync("baz", docForDelete.Id.ToString());
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForDelete.Id);
 
@@ -39,7 +40,9 @@ namespace FuncTests
             var found = await SearchByIdAsync(docForPost.Id);
 
             //Assert
-            Assert.Empty(found);
+            Assert.Single(found);
+            Assert.Equal(docForPost.Id, found[0].Id);
+            Assert.Equal(docForPost.Content, found[0].Content);
         }
 
         [Fact]
@@ -70,7 +73,7 @@ namespace FuncTests
             await _api.PostAsync("baz", JObject.FromObject(docForPost));
             await Task.Delay(500);
             await _api.PutAsync("baz", JObject.FromObject(docForPut));
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForPut.Id);
             
@@ -90,7 +93,7 @@ namespace FuncTests
             await _api.PostAsync("baz", JObject.FromObject(docForPost));
             await Task.Delay(500);
             await _api.PutAsync("baz", JObject.FromObject(docForPatch));
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForPatch.Id); ;
 
@@ -133,7 +136,7 @@ namespace FuncTests
 
             //Act
             await _api.KickAsync("baz", docForKick.Id.ToString());
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForKick.Id);
 
