@@ -8,7 +8,7 @@ namespace MyLab.Search.Indexer.Options
     public class IndexerOptions
     {
         public IndexOptions[] Indexes { get; set; }
-        public IndexOptionsBase DefaultIndexOptions { get; set; }
+        public IndexOptionsBase DefaultIndexOptions { get; set; } = new();
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
 
         [Obsolete("Use ResourcesPath instead")]

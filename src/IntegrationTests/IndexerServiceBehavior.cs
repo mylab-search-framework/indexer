@@ -164,7 +164,7 @@ namespace IntegrationTests
 
             //Act
             await indexer.IndexAsync(req);
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var resp = await _idxFxt.Searcher.SearchAsync(
                 new EsSearchParams<TestDoc>(

@@ -35,7 +35,7 @@ namespace FuncTests
 
             //Act
             await _api.PostAsync("baz", JObject.FromObject(docForPost));
-            await Task.Delay(500);
+            await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForPost.Id);
 

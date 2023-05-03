@@ -87,6 +87,32 @@ namespace FuncTests
             Assert.True(isIndexExists);
         }
 
+        [Fact]
+        public async Task ShouldCreateStreamWhenNotFound()
+        {
+            //Arrange
+            var indexesOptions = Array.Empty<IndexOptions>();
+
+            var api = _apiFxt.StartWithProxy(srv => srv.Configure<IndexerOptions>(
+                opt =>
+                {
+                    opt.DefaultIndexOptions.IndexType = IndexType.Stream;
+                    opt.Indexes = indexesOptions;
+                })
+            );
+
+            var docForPost = TestDoc.Generate();
+
+            //Act
+            await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
+            await Task.Delay(1000);
+
+            var isStreamExists = await _esFxt.Tools.Stream(_esIndexName).ExistsAsync();
+
+            //Assert
+            Assert.True(isStreamExists);
+        }
+
         public Task InitializeAsync()
         {
             return Task.CompletedTask;
@@ -97,6 +123,14 @@ namespace FuncTests
             try
             {
                 await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
+            }
+            catch (EsException e) when (e.Response.HasIndexNotFound)
+            {
+            }
+
+            try
+            {
+                await _esFxt.Tools.Stream(_esIndexName).DeleteAsync();
             }
             catch (EsException e) when (e.Response.HasIndexNotFound)
             {
