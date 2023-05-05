@@ -9,6 +9,8 @@ using MyLab.Search.Indexer.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.NetworkInformation;
+using Microsoft.Extensions.Logging;
+using MyLab.Log.Dsl;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -20,20 +22,25 @@ namespace MyLab.Search.Indexer.Services
         private readonly string _lifecyclePoliciesPath;
         private readonly string _indexTemplatesPath;
         private readonly string _componentTemplatesPath;
+        private readonly IDslLogger _log;
 
         private const string KickFilename = "kick.sql";
         private const string SyncFilename = "sync.sql";
         private const string IndexFilename = "index.json";
+        private const string MappingFilename = "mapping.json";
 
-        public FileResourceProvider(IOptions<IndexerOptions> opts)
-            : this(opts.Value)
+        public FileResourceProvider(IOptions<IndexerOptions> opts,
+            ILogger<FileResourceProvider> logger = null)
+            : this(opts.Value, logger)
         {
             
         }
         
-        public FileResourceProvider(IndexerOptions opts)
+        public FileResourceProvider(IndexerOptions opts,
+            ILogger<FileResourceProvider> logger = null)
         {
             _opts = opts;
+            _log = logger?.Dsl();
             _indexResourcePath = Path.Combine(opts.ResourcesPath, "indexes");
             _lifecyclePoliciesPath = Path.Combine(opts.ResourcesPath, "lifecycle-policies");
             _indexTemplatesPath = Path.Combine(opts.ResourcesPath, "index-templates");
@@ -49,7 +56,7 @@ namespace MyLab.Search.Indexer.Services
 
             var filePath = Path.Combine(_indexResourcePath, indexId, KickFilename);
 
-            return await ReadFileAsync(filePath, throwIfDoesNotExists: true);
+            return await ReadFileAsync(filePath);
         }
 
         public async Task<string> ProvideSyncQueryAsync(string indexId)
@@ -61,35 +68,30 @@ namespace MyLab.Search.Indexer.Services
 
             var filePath = Path.Combine(_indexResourcePath, indexId, SyncFilename);
 
-            return await ReadFileAsync(filePath, throwIfDoesNotExists: true);
+            return await ReadFileAsync(filePath);
         }
 
-        public async Task<string> ProvideIndexSettingsAsync(string indexId)
+        public async Task<string> ProvideIndexMappingAsync(string indexId)
         {
             var indexJsonPath = Path.Combine(_indexResourcePath, indexId, IndexFilename);
-            var indexJson = await ReadFileAsync(indexJsonPath, throwIfDoesNotExists: false);
+            if (File.Exists(indexJsonPath))
+            {
+                _log.Warning("'index.json' is no longer supported")
+                    .AndFactIs("filename", indexJsonPath)
+                    .Write();
+            }
 
             var commonIndexJsonPath = Path.Combine(_indexResourcePath, IndexFilename);
-            var commonIndexJson = await ReadFileAsync(commonIndexJsonPath, throwIfDoesNotExists: false);
+            if (File.Exists(commonIndexJsonPath))
+            {
+                _log.Warning("'index.json' is no longer supported")
+                    .AndFactIs("filename", commonIndexJsonPath)
+                    .Write();
+            }
 
-            if (indexJson == null && commonIndexJson == null)
-                throw new FileNotFoundException("Resource not found")
-                    .AndFactIs("index-id", indexId)
-                    .AndFactIs("index-file", indexJsonPath)
-                    .AndFactIs("common-file", commonIndexJsonPath);
+            var filePath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
 
-            if (commonIndexJson == null)
-                return indexJson;
-
-            if (indexJson == null)
-                return commonIndexJson;
-
-            var indexJObj = JObject.Parse(indexJson);
-            var resultJson = JObject.Parse(commonIndexJson);
-
-            resultJson.Merge(indexJObj);
-
-            return resultJson.ToString(Formatting.None);
+            return await ReadFileAsync(filePath);
         }
 
         public IResource[] ProvideLifecyclePolicies()
@@ -107,13 +109,10 @@ namespace MyLab.Search.Indexer.Services
             return ProvideJsonResources(_componentTemplatesPath);
         }
 
-        async Task<string> ReadFileAsync(string path, bool throwIfDoesNotExists)
+        async Task<string> ReadFileAsync(string path)
         {
             if (!File.Exists(path))
             {
-                if (!throwIfDoesNotExists)
-                    return null;
-
                 throw new FileNotFoundException("Resource file not found")
                     .AndFactIs("full-path", path);
             }

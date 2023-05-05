@@ -7,10 +7,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
-using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
-using Nest;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -46,10 +44,10 @@ namespace MyLab.Search.Indexer.Services
         {
             using (_log.BeginScope(new LabelLogScope("index-id", idxId)))
             {
-                string settingsStr = null;
+                string mappingStr = null;
                 try
                 {
-                    settingsStr = await _idxResProvider.ProvideIndexSettingsAsync(idxId);
+                    mappingStr = await _idxResProvider.ProvideIndexMappingAsync(idxId);
                 }
                 catch (FileNotFoundException)
                 {
@@ -70,7 +68,7 @@ namespace MyLab.Search.Indexer.Services
                     }
                 }
 
-                await CreateEsIndexCoreAsync(esIndexName, settingsStr, stoppingToken);
+                await CreateEsIndexCoreAsync(esIndexName, mappingStr, stoppingToken);
             }
         }
 

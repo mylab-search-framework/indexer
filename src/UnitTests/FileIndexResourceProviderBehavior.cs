@@ -146,7 +146,7 @@ namespace UnitTests
             var service = new FileResourceProvider(indexerOpts);
 
             //Act
-            var indexJson = await service.ProvideIndexSettingsAsync("foo-index");
+            var indexJson = await service.ProvideIndexMappingAsync("foo-index");
            
             var indexJObj = JObject.Parse(indexJson);
 

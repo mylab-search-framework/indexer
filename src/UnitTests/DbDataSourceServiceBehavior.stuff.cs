@@ -51,7 +51,7 @@ namespace UnitTests
                 return Task.FromResult(_syncQuery);
             }
 
-            public Task<string> ProvideIndexSettingsAsync(string indexId)
+            public Task<string> ProvideIndexMappingAsync(string indexId)
             {
                 throw new NotImplementedException();
             }
