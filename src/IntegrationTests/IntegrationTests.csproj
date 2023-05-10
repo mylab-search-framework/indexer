@@ -40,7 +40,7 @@
     <None Update="resources\component-template-example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\index-2.json">
+    <None Update="resources\mapping-2.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="resources\existent-index-template.json">
@@ -52,7 +52,7 @@
     <None Update="resources\index-template-example.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\index.json">
+    <None Update="resources\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="resources\existent-lifecycle.json">

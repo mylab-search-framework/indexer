@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -9,6 +10,7 @@ using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
+using Nest;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -48,6 +50,8 @@ namespace MyLab.Search.Indexer.Services
                 try
                 {
                     mappingStr = await _idxResProvider.ProvideIndexMappingAsync(idxId);
+
+
                 }
                 catch (FileNotFoundException)
                 {
@@ -85,7 +89,15 @@ namespace MyLab.Search.Indexer.Services
         {
             if (settingsStr != null)
             {
-                await _esTools.Index(esIndexName).CreateAsync(settingsStr, stoppingToken);
+                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(settingsStr));
+                var mapping = _esTools.Serializer.DeserializeMapping(stream);
+
+                ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
+                {
+                    Mappings = mapping
+                };
+
+                await _esTools.Index(esIndexName).CreateAsync(d => req, stoppingToken);
             }
             else
             {

@@ -151,8 +151,8 @@ namespace UnitTests
             var indexJObj = JObject.Parse(indexJson);
 
             //Assert
-            Assert.Equal("long", indexJObj.SelectToken("mappings.properties.Id.type")?.Value<string>());
-            Assert.Equal("text", indexJObj.SelectToken("mappings.properties.Content.type")?.Value<string>());
+            Assert.Equal("long", indexJObj.SelectToken("properties.Id.type")?.Value<string>());
+            Assert.Equal("text", indexJObj.SelectToken("properties.Content.type")?.Value<string>());
         }
     }
 }

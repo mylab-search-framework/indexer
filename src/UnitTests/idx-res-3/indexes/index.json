@@ -1,8 +1,0 @@
-﻿{
-  "mappings": {
-    "properties": {
-      "Id": { "type": "long" },
-      "Content": { "type": "text" }
-    }
-  }
-}

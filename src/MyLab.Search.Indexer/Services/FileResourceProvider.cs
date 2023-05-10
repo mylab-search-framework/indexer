@@ -76,7 +76,7 @@ namespace MyLab.Search.Indexer.Services
             var indexJsonPath = Path.Combine(_indexResourcePath, indexId, IndexFilename);
             if (File.Exists(indexJsonPath))
             {
-                _log.Warning("'index.json' is no longer supported")
+                _log?.Warning("'index.json' is no longer supported")
                     .AndFactIs("filename", indexJsonPath)
                     .Write();
             }
@@ -84,14 +84,35 @@ namespace MyLab.Search.Indexer.Services
             var commonIndexJsonPath = Path.Combine(_indexResourcePath, IndexFilename);
             if (File.Exists(commonIndexJsonPath))
             {
-                _log.Warning("'index.json' is no longer supported")
+                _log?.Warning("'index.json' is no longer supported")
                     .AndFactIs("filename", commonIndexJsonPath)
                     .Write();
             }
 
-            var filePath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
+            var mappingJsonPath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
+            var mappingJson = await ReadFileAsync(mappingJsonPath, throwIfDoesNotExists: false);
 
-            return await ReadFileAsync(filePath);
+            var commonMappingJsonPath = Path.Combine(_indexResourcePath, MappingFilename);
+            var commonMappingJson = await ReadFileAsync(commonMappingJsonPath, throwIfDoesNotExists: false);
+
+            if (mappingJson == null && commonMappingJson == null)
+                throw new FileNotFoundException("Resource not found")
+                    .AndFactIs("index-id", indexId)
+                    .AndFactIs("index-file", indexJsonPath)
+                    .AndFactIs("common-file", commonIndexJsonPath);
+
+            if (commonMappingJson == null)
+                return mappingJson;
+
+            if (mappingJson == null)
+                return commonMappingJson;
+
+            var mappingJObj = JObject.Parse(mappingJson);
+            var resultMappingJson = JObject.Parse(commonMappingJson);
+
+            resultMappingJson.Merge(mappingJObj);
+
+            return resultMappingJson.ToString(Formatting.None);
         }
 
         public IResource[] ProvideLifecyclePolicies()
@@ -109,10 +130,13 @@ namespace MyLab.Search.Indexer.Services
             return ProvideJsonResources(_componentTemplatesPath);
         }
 
-        async Task<string> ReadFileAsync(string path)
+        async Task<string> ReadFileAsync(string path, bool throwIfDoesNotExists = true)
         {
             if (!File.Exists(path))
             {
+                if (!throwIfDoesNotExists)
+                    return null;
+
                 throw new FileNotFoundException("Resource file not found")
                     .AndFactIs("full-path", path);
             }

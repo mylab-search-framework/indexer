@@ -33,7 +33,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="resources\indexes\baz\index.json">
+    <None Update="resources\indexes\baz\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="resources\indexes\baz\kick.sql">
@@ -42,7 +42,7 @@
     <None Update="resources\indexes\baz\sync.sql">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="resources\indexes\index.json">
+    <None Update="resources\indexes\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

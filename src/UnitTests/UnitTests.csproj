@@ -30,16 +30,16 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="idx-res-2\indexes\index.json">
+    <None Update="idx-res-2\indexes\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="idx-res-2\indexes\foo-index\index.json">
+    <None Update="idx-res-2\indexes\foo-index\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="idx-res-3\indexes\index.json">
+    <None Update="idx-res-3\indexes\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="idx-res\indexes\foo-index\index.json">
+    <None Update="idx-res\indexes\foo-index\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="idx-res\indexes\foo-index\kick.sql">
