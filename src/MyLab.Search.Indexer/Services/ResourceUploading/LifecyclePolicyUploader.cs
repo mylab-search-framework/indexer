@@ -69,14 +69,9 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
         public IReadOnlyDictionary<string, object> ProvideMeta(LifecyclePolicy component)
         {
-            return new Dictionary<string, object>(component.Policy.Meta);
-        }
-
-        public void ApplyMetadata(LifecyclePolicy component, ServiceMetadata newMetadata)
-        {
-            var metaDict = component.Policy.Meta ??= new Dictionary<string, object>();
-
-            newMetadata.Save(metaDict);
+            return component.Policy.Meta != null 
+                ? new Dictionary<string, object>(component.Policy.Meta)
+                : new Dictionary<string, object>();
         }
 
         public Task UploadComponentAsync(string componentId, LifecyclePolicy component, IEsTools esTools,

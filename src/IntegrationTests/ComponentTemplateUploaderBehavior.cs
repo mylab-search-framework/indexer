@@ -1,16 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
 using MyLab.Log.XUnit;
+using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ResourceUploading;
 using MyLab.Search.Indexer.Tools;
+using Org.BouncyCastle.Asn1;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -49,6 +53,8 @@ namespace IntegrationTests
             
             var templateResource = new TestResource("component-template-test", "resources\\component-template-example.json");
 
+            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
+
             idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
                 .Returns(() => new IResource[] { templateResource });
             
@@ -63,7 +69,8 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
-            ServiceMetadata metadata = null;
+            string hash = null;
+            string ver = null;
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -72,19 +79,13 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(templateInfo.Meta);
+                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(metadata);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.Creator);
-            Assert.Equal("1", metadata.Ver);
-            Assert.NotNull(metadata.History);
-            Assert.Single(metadata.History);
-            Assert.Equal(_indexerVer, metadata.History[0].ActorVer);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.History[0].Actor);
-            Assert.Equal(DateTime.Now.Date, metadata.History[0].ActDt.Date);
-            Assert.Equal("1", metadata.History[0].ComponentVer);
+            Assert.Equal(resourceHash, hash);
+            Assert.Equal("1", ver);
         }
 
         [Fact]
@@ -95,6 +96,8 @@ namespace IntegrationTests
             
             var templateResource = new TestResource("component-template-test", "resources\\component-template-example-2.json");
 
+            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
+
             idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
                 .Returns(() => new IResource[] { templateResource });
             
@@ -109,7 +112,8 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
-            ServiceMetadata metadata = null;
+            string ver = null;
+            string hash = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
             await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(templateJson);
@@ -121,50 +125,51 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(templateInfo.Meta);
+                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(metadata);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.Creator);
-            Assert.Equal("2", metadata.Ver);
-            Assert.NotNull(metadata.History);
-            Assert.Equal(2, metadata.History.Length);
-
-            Assert.Equal("1.0.0", metadata.History[0].ActorVer);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.History[0].Actor);
-            Assert.Equal(new DateTime(2023, 01, 01, 01,02,03), metadata.History[0].ActDt);
-            Assert.Equal("1", metadata.History[0].ComponentVer);
-
-            Assert.Equal(_indexerVer, metadata.History[1].ActorVer);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.History[1].Actor);
-            Assert.Equal(DateTime.Now.Date, metadata.History[1].ActDt.Date);
-            Assert.Equal("2", metadata.History[1].ComponentVer);
+            Assert.Equal(resourceHash, hash);
+            Assert.Equal("2", ver);
         }
 
         [Fact]
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-
             var templateResource = new TestResource("component-template-test", "resources\\component-template-example.json");
 
+            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
+
+            var idxResProviderMock = new Mock<IResourceProvider>();
             idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
                 .Returns(() => new IResource[] { templateResource });
+
+            var componentTemplateToolMock = new Mock<IEsComponentTemplateTool>();
+            componentTemplateToolMock.Setup(t => t.TryGetAsync(It.IsAny<CancellationToken>()))
+                .Returns<CancellationToken>(ct =>
+                    _fxt.Tools.ComponentTemplate("component-template-test").TryGetAsync(ct));
+
+            var toolsMock = new Mock<IEsTools>();
+            toolsMock.Setup(m => m.ComponentTemplate(It.IsAny<string>()))
+                .Returns<string>(s => componentTemplateToolMock.Object);
+            toolsMock.SetupGet(m => m.Serializer)
+                .Returns(() => _fxt.Tools.Serializer);
 
             var services = new ServiceCollection()
                 .AddLogging(l => l
                         .SetMinimumLevel(LogLevel.Trace)
                         .AddXUnit(_output)
                     )
-                .AddSingleton(_fxt.Tools)
+                .AddSingleton(toolsMock.Object)
                 .AddSingleton(idxResProviderMock.Object)
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
-            ServiceMetadata metadata = null;
+            string hash = null;
+            string ver = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
             await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(templateJson);
@@ -176,19 +181,15 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                metadata = ServiceMetadata.Extract(templateInfo.Meta);
+                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(metadata);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.Creator);
-            Assert.Equal("1", metadata.Ver);
-            Assert.NotNull(metadata.History);
-            Assert.Single(metadata.History);
-            Assert.Equal("1.0.0", metadata.History[0].ActorVer);
-            Assert.Equal(ServiceMetadata.MyCreator, metadata.History[0].Actor);
-            Assert.Equal(new DateTime(2023, 01, 01, 01, 02, 03), metadata.History[0].ActDt);
-            Assert.Equal("1", metadata.History[0].ComponentVer);
+            Assert.Equal(resourceHash, hash);
+            Assert.Equal("1", ver);
+
+            componentTemplateToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         class TestResource : IResource

@@ -18,8 +18,6 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         void SetMeta(TEsComponent component, IDictionary<string, object> newMeta);
         IReadOnlyDictionary<string, object> ProvideMeta(TEsComponent component);
 
-        void ApplyMetadata(TEsComponent component, ServiceMetadata newMetadata);
-
         Task UploadComponentAsync(string componentId, TEsComponent component, IEsTools esTools, CancellationToken cancellationToken);
     }
 }

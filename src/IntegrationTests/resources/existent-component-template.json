@@ -19,16 +19,7 @@
     }
   },
   "_meta": {
-    "mylab_indexer_data": {
-      "ver": "1",
-      "creator": "mylab-indexer",
-      "history": {
-        "2023.01.01T01:02:03": {
-          "actor": "mylab-indexer",
-          "actor_ver": "1.0.0",
-          "component_ver": "1"
-        }
-      }
-    }
+    "ver": "1",
+    "mylab-indexer:src-hash": "ad241843ff931a923fbda833e2cdf3d9"
   }
 }

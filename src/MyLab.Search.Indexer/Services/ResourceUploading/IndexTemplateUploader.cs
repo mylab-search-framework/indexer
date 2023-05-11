@@ -69,14 +69,9 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
             public IReadOnlyDictionary<string, object> ProvideMeta(IndexTemplate component)
             {
-                return new Dictionary<string, object>(component.Meta);
-            }
-
-            public void ApplyMetadata(IndexTemplate component, ServiceMetadata newMetadata)
-            {
-                var metaDict = component.Meta ??= new Dictionary<string, object>();
-
-                newMetadata.Save(metaDict);
+                return component.Meta != null 
+                    ? new Dictionary<string, object>(component.Meta)
+                    : new Dictionary<string, object>();
             }
             
             public Task UploadComponentAsync(string componentId, IndexTemplate component, IEsTools esTools,

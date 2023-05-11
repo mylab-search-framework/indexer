@@ -28,11 +28,6 @@
           "delete": {}
         }
       }
-    },
-    "_meta": {
-      "mylab_indexer_data": {
-        "ver": "1"
-      }
     }
   }
 }

@@ -71,17 +71,6 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             {
                 return component.Meta;
             }
-
-            public void ApplyMetadata(ComponentTemplate component, ServiceMetadata newMetadata)
-            {
-                var metaDict = component.Meta == null 
-                    ? new Dictionary<string, object>() 
-                    : new Dictionary<string, object>(component.Meta);
-
-                component.Meta = metaDict;
-               
-                    newMetadata.Save(metaDict);
-            }
             
             public Task UploadComponentAsync(string componentId, ComponentTemplate component, IEsTools esTools,
                 CancellationToken cancellationToken)

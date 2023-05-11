@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -66,7 +68,14 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             try
             {
                 await using var readStream = resource.OpenRead();
-                var resourceComponent = _strategy.DeserializeComponent(_esTools.Serializer, readStream);
+                
+                var resourceBinBuff = new byte[readStream.Length];
+                var readBytes = await readStream.ReadAsync(resourceBinBuff, cancellationToken);
+
+                var resourceComponentHash = NormHash(BitConverter.ToString(MD5.HashData(resourceBinBuff)));
+
+                using var memStream = new MemoryStream(resourceBinBuff);
+                var resourceComponent = _strategy.DeserializeComponent(_esTools.Serializer, memStream);
 
                 if (_strategy.HasAbsentNode(resourceComponent, out var absentNodeName))
                 {
@@ -77,86 +86,44 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     return;
                 }
 
-                var resComponentMetaDict = _strategy.ProvideMeta(resourceComponent);
-                var resComponentMetadata = ServiceMetadata.Extract(resComponentMetaDict);
-                
                 var esComponent = await _strategy.TryGetComponentFromEsAsync(resId, _esTools, cancellationToken);
-                
+                IDictionary<string, object> resultMeta = new Dictionary<string, object>(
+                    _strategy.ProvideMeta(resourceComponent) ?? new Dictionary<string, object>());
+
                 if (esComponent == null)
                 {
                     _log?.Action($"{_strategy.OneResourceName} not found in ES and will be uploaded").Write();
 
-                    var newInitialMetadata = new ServiceMetadata
-                    {
-                        Creator = ServiceMetadata.MyCreator,
-                        Ver = resComponentMetadata?.Ver,
-                        History = new ServiceMetadata.HistoryItem[]
-                        {
-                            new ()
-                            {
-                                ComponentVer = resComponentMetadata?.Ver,
-                                ActorVer = GetMyActorVersion(),
-                                ActDt = DateTime.Now,
-                                Actor = ServiceMetadata.MyCreator
-                            }
-                        }
-                    };
-                    
-                    _strategy.ApplyMetadata(resourceComponent, newInitialMetadata);
+                    ServiceMetadata.SaveComponentHash(resultMeta, resourceComponentHash);
+
+                    _strategy.SetMeta(resourceComponent, resultMeta);
 
                     await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
 
                     _log?.Action($"{_strategy.OneResourceName} was uploaded").Write();
-
+                    
                     return;
                 }
 
-                var esMeta = _strategy.ProvideMeta(esComponent);
-                var esComponentMetadata = ServiceMetadata.Extract(esMeta);
-
-                if (esComponentMetadata == null || !esComponentMetadata.IsMyCreator())
+                if(ServiceMetadata.TryGetComponentHash(resultMeta, out var esComponentHash) &&
+                   NormHash(esComponentHash) == resourceComponentHash)
                 {
-                    _log?.Warning($"The same {_strategy.ResourceSetName.ToLower()} from another creator was found")
-                        .AndFactIs("creator", esComponentMetadata?.Creator)
+                    _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
+                        .AndFactIs("hash", resourceComponentHash)
                         .Write();
 
                     return;
                 }
 
-                if (resComponentMetadata?.Ver == esComponentMetadata.Ver)
-                {
-                    _log?.Action($"Upload canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
-                        .AndFactIs("ver", resComponentMetadata?.Ver)
-                        .Write();
+                _log?.Action($"{_strategy.OneResourceName} has different version and will be uploaded").Write();
 
-                    return;
-                }
+                ServiceMetadata.SaveComponentHash(resultMeta, resourceComponentHash);
 
-                var newHistory = new List<ServiceMetadata.HistoryItem>();
-
-                if (esComponentMetadata.History is { Length: > 0 })
-                {
-                    newHistory.AddRange(esComponentMetadata.History);
-                }
-
-                newHistory.Add(new ServiceMetadata.HistoryItem
-                {
-                    Actor = ServiceMetadata.MyCreator,
-                    ActDt = DateTime.Now,
-                    ActorVer = GetMyActorVersion(),
-                    ComponentVer = resComponentMetadata?.Ver
-                });
-
-                var newMetadata = new ServiceMetadata
-                {
-                    Creator = esComponentMetadata.Creator,
-                    Ver = resComponentMetadata?.Ver,
-                    History = newHistory.Count > 0 ? newHistory.ToArray() : null
-                };
-
-                _strategy.ApplyMetadata(resourceComponent, newMetadata);
+                _strategy.SetMeta(resourceComponent, resultMeta);
 
                 await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
+
+                _log?.Action($"{_strategy.OneResourceName} was uploaded").Write();
             }
             catch (Exception e)
             {
@@ -164,7 +131,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     .Write();
             }
         }
-
-        string GetMyActorVersion() => typeof(ResourceUploader<>).Assembly.GetName().Version?.ToString();
+        
+        static string NormHash(string hash) => hash.Replace("-", "").ToLower();
     }
 }
