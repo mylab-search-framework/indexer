@@ -47,7 +47,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
             public ComponentTemplate DeserializeComponent(IEsSerializer serializer, Stream inStream)
             {
-                return serializer.DeserializeComponentTemplate(inStream);
+                return serializer.Deserialize<ComponentTemplate>(inStream);
             }
 
             public bool HasAbsentNode(ComponentTemplate component, out string absentNodeName)

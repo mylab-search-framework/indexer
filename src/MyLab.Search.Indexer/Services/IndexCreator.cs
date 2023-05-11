@@ -90,7 +90,7 @@ namespace MyLab.Search.Indexer.Services
             if (settingsStr != null)
             {
                 using var stream = new MemoryStream(Encoding.UTF8.GetBytes(settingsStr));
-                var mapping = _esTools.Serializer.DeserializeMapping(stream);
+                var mapping = _esTools.Serializer.Deserialize<TypeMapping>(stream);
 
                 ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
                 {

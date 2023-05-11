@@ -47,7 +47,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
         public LifecyclePolicy DeserializeComponent(IEsSerializer serializer, Stream inStream)
         {
-            return serializer.DeserializeLifecyclePolicy(inStream);
+            return serializer.Deserialize<LifecyclePolicy>(inStream);
         }
 
         public bool HasAbsentNode(LifecyclePolicy component, out string absentNodeName)
