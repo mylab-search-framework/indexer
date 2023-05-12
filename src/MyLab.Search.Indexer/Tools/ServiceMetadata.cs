@@ -49,28 +49,6 @@ namespace MyLab.Search.Indexer.Tools
             }
         }
 
-        public static void CalcAndSaveComponentHash(IDictionary<string, object> metadata, byte[] componentJsonBin)
-        {
-            if (metadata == null) throw new ArgumentNullException(nameof(metadata));
-            if (componentJsonBin == null) throw new ArgumentNullException(nameof(componentJsonBin));
-            
-            var hashBin = MD5.HashData(componentJsonBin);
-            var hashStr = BitConverter.ToString(hashBin);
-
-            SaveComponentHash(metadata, NormHash(hashStr));
-        }
-
-        public static bool CheckHash(IDictionary<string, object> meta, byte[]  componentJsonBin)
-        {
-            if (!TryGetComponentHash(meta, out var componentHash))
-                return false;
-            
-            var hashBin = MD5.HashData(componentJsonBin);
-            var hashString = BitConverter.ToString(hashBin);
-
-            return NormHash(componentHash) == NormHash(hashString);
-        }
-
 
         static string NormHash(string hash) => hash.Replace("-", "").ToLower();
     }
