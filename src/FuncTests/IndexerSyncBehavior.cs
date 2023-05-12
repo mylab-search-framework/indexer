@@ -119,6 +119,7 @@ namespace FuncTests
                                 EsIndex = _esIndexName
                             }
                         };
+                        opt.EnableEsIndexAutoCreation = true;
                     })
                     .AddDbTools(_dbConfig, new MySqlDataProvider(ProviderName.MySql))
                     .ConfigureEsTools(opt => opt.Url = EsUrl)

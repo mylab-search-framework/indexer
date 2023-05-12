@@ -86,6 +86,7 @@ namespace FuncTests
                                 IdPropertyType = IdPropertyType.Int
                             }
                         };
+                        opt.EnableEsIndexAutoCreation = true;
                     })
                     .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
                     .AddLogging(l => l

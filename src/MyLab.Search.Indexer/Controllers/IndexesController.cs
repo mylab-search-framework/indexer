@@ -26,7 +26,8 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPost("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
+        [ErrorToResponse(typeof(IndexNotFoundException), HttpStatusCode.NotFound, "Index not found")]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index options not found")]
         public async Task<IActionResult> Post([FromRoute] string indexId)
         {
             var doc = await ReadDocFromRequestBodyAsync();
@@ -50,7 +51,8 @@ namespace MyLab.Search.Indexer.Controllers
 
         [HttpPut("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index not found")]
+        [ErrorToResponse(typeof(IndexNotFoundException), HttpStatusCode.NotFound, "Index not found")]
+        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index options not found")]
         public async Task<IActionResult> Put([FromRoute] string indexId)
         {
             var doc = await ReadDocFromRequestBodyAsync();

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -6,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
@@ -44,35 +46,57 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task CreateIndex(string idxId, string esIndexName, CancellationToken stoppingToken)
         {
-            using (_log.BeginScope(new LabelLogScope("index-id", idxId)))
+            using (_log.BeginScope(new LabelLogScope(new Dictionary<string, string>
+                   {
+                       {"index-id", idxId},
+                       {"index-name", esIndexName}
+                   })))
             {
-                string mappingStr = null;
                 try
                 {
-                    mappingStr = await _idxResProvider.ProvideIndexMappingAsync(idxId);
-
-
-                }
-                catch (FileNotFoundException)
-                {
-                    var idxOpts = _opts.Indexes?.FirstOrDefault(i => i.Id == idxId);
-
-                    var idxType = idxOpts?.IndexType ?? _opts.DefaultIndexOptions.IndexType;
-
-                    switch (idxType)
+                    try
                     {
-                        case IndexType.Heap:
-                            await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
-                            break;
-                        case IndexType.Stream:
-                            await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
+                        var mappingStr = await _idxResProvider.ProvideIndexMappingAsync(idxId);
+
+                        if (!_opts.EnableEsIndexAutoCreation)
+                            throw new IndexNotFoundException();
+
+                        await CreateEsIndexCoreAsync(esIndexName, mappingStr, stoppingToken);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        var idxOpts = _opts.Indexes?.FirstOrDefault(i => i.Id == idxId);
+
+                        var idxType = idxOpts?.IndexType ?? _opts.DefaultIndexOptions.IndexType;
+
+                        switch (idxType)
+                        {
+                            case IndexType.Heap:
+                            {
+                                if (!_opts.EnableEsIndexAutoCreation)
+                                    throw new IndexNotFoundException();
+                                await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
+                            }
+                                break;
+                            case IndexType.Stream:
+                            {
+                                if (!_opts.EnableEsStreamAutoCreation)
+                                    throw new IndexNotFoundException();
+                                await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
+                            }
+                                break;
+                            default:
+                                throw new ArgumentOutOfRangeException();
+                        }
                     }
                 }
+                catch (IndexNotFoundException e)
+                {
+                    e.AndFactIs("index-id", idxId)
+                        .AndFactIs("index-name", esIndexName);
 
-                await CreateEsIndexCoreAsync(esIndexName, mappingStr, stoppingToken);
+                    throw;
+                }
             }
         }
 
@@ -107,6 +131,14 @@ namespace MyLab.Search.Indexer.Services
             _log?.Action("Elasticsearch index has been created")
                 .AndFactIs("index-name", esIndexName)
                 .Write();
+        }
+    }
+
+    public class IndexNotFoundException : Exception
+    {
+        public IndexNotFoundException() : base("Index not found")
+        {
+            
         }
     }
 }
