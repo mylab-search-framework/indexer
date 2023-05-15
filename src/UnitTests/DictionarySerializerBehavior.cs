@@ -93,7 +93,7 @@ namespace UnitTests
 
         class TestObj
         {
-            [DictProp("prop-with-attr")]
+            [DictProperty("prop-with-attr")]
             public string PropWithAttrProperty { get; set; }
             public string StringProperty { get; set; }
             public int IntProperty { get; set; }

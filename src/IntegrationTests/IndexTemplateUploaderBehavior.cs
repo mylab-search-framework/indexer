@@ -63,11 +63,12 @@ namespace IntegrationTests
                     )            
                 .AddSingleton(_fxt.Tools)
                 .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
             
-            string hash = null;
+            ServiceMetadata srvMeta = null;
             string ver = null;
 
             //Act
@@ -77,12 +78,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.Equal("foo", srvMeta.Owner);
             Assert.Equal("1", ver);
         }
 
@@ -106,12 +109,13 @@ namespace IntegrationTests
                     )
                 .AddSingleton(_fxt.Tools)
                 .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
             string ver = null;
-            string hash = null;
+            ServiceMetadata srvMeta = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
             await _fxt.Tools.IndexTemplate("index-template-test").PutAsync(templateJson);
@@ -123,12 +127,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.Equal("foo", srvMeta.Owner);
             Assert.Equal("2", ver);
         }
 
@@ -163,11 +169,12 @@ namespace IntegrationTests
                     )
                 .AddSingleton(toolsMock.Object)
                 .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
-            string hash = null;
+            ServiceMetadata srvMeta = null;
             string ver = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
@@ -180,12 +187,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(templateInfo.Meta, out hash);
+                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.Equal("foo", srvMeta.Owner);
             Assert.Equal("1", ver);
             indexTemplateToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }

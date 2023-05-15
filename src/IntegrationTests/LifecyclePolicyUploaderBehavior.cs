@@ -64,11 +64,12 @@ namespace IntegrationTests
                     )            
                 .AddSingleton(_fxt.Tools)
                 .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            string hash = null;
+            ServiceMetadata srvMeta = null;
             string ver = null;
 
             //Act
@@ -78,12 +79,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(policyInfo.Policy.Meta, out hash);
+                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal("foo", srvMeta.Owner);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
             Assert.Equal("1", ver);
         }
 
@@ -106,12 +109,13 @@ namespace IntegrationTests
                         .AddXUnit(_output)
                     )
                 .AddSingleton(_fxt.Tools)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .AddSingleton(idxResProviderMock.Object)
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            string hash = null;
+            ServiceMetadata srvMeta = null;
             string ver = null;
 
             var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
@@ -124,12 +128,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(policyInfo.Policy.Meta, out hash);
+                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.Equal("foo", srvMeta.Owner);
             Assert.Equal("2", ver);
         }
 
@@ -164,11 +170,12 @@ namespace IntegrationTests
                     )
                 .AddSingleton(toolsMock.Object)
                 .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            string hash = null;
+            ServiceMetadata srvMeta = null;
             string ver = null;
 
             var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
@@ -181,12 +188,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGetComponentHash(policyInfo.Policy.Meta, out hash);
+                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.Equal(resourceHash, hash);
+            Assert.NotNull(srvMeta);
+            Assert.Equal("foo", srvMeta.Owner);
+            Assert.Equal(resourceHash, srvMeta.SourceHash);
             Assert.Equal("1", ver);
             lifecyclePolicyToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 

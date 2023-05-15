@@ -1,55 +1,57 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Security.Cryptography;
-using System.Text;
-using Nest;
 
 namespace MyLab.Search.Indexer.Tools
-{
-    static class ServiceMetadata
+{ 
+    class ServiceMetadata
     {
-        private const string ComponentHashKey = "mylab-indexer:src-hash";
+        public const string MetadataKey = "mylab_indexer";
 
-        public static bool TryGetComponentHash(IReadOnlyDictionary<string, object> metadata, out string hash)
+        [DictProperty("owner")]
+        public string Owner { get; set; }
+
+        [DictProperty("src_hash")]
+        public string SourceHash { get; set; }
+
+        public static bool TryGet(IReadOnlyDictionary<string, object> metadata, out ServiceMetadata srvMeta)
         {
-            if (metadata == null || !metadata.TryGetValue(ComponentHashKey, out var hashObj) || hashObj is not string hasStr)
+            if (metadata == null || !metadata.TryGetValue(MetadataKey, out var mdObject) || mdObject is not IDictionary<string, object> mdDict)
             {
-                hash = null;
+                srvMeta = null;
                 return false;
             }
 
-            hash = hasStr;
+            srvMeta = DictionarySerializer.Deserialize<ServiceMetadata>(mdDict);
             return true;
         }
 
-        public static bool TryGetComponentHash(IDictionary<string, object> metadata, out string hash)
+        public static bool TryGet(IDictionary<string, object> metadata, out ServiceMetadata srvMeta)
         {
-            if (metadata == null || !metadata.TryGetValue(ComponentHashKey, out var hashObj) || hashObj is not string hasStr)
+            if (metadata == null || !metadata.TryGetValue(MetadataKey, out var mdObject) || mdObject is not IDictionary<string, object> mdDict)
             {
-                hash = null;
+                srvMeta = null;
                 return false;
             }
 
-            hash = hasStr;
+            srvMeta = DictionarySerializer.Deserialize<ServiceMetadata>(mdDict);
             return true;
         }
 
-        public static void SaveComponentHash(IDictionary<string, object> metadata, string newHash)
+        public void Save(IDictionary<string, object> metadata)
         {
             if (metadata == null) throw new ArgumentNullException(nameof(metadata));
-            if (newHash == null) throw new ArgumentNullException(nameof(newHash));
 
-            if (metadata.ContainsKey(ComponentHashKey))
+            var dstDict = new Dictionary<string, object>();
+            DictionarySerializer.Serialize(dstDict, this);
+
+            if (metadata.ContainsKey(MetadataKey))
             {
-                metadata[ComponentHashKey] = newHash;
+                metadata[MetadataKey] = dstDict;
             }
             else
             {
-                metadata.Add(ComponentHashKey, newHash);
+                metadata.Add(MetadataKey, dstDict);
             }
         }
-
-
-        static string NormHash(string hash) => hash.Replace("-", "").ToLower();
     }
 }

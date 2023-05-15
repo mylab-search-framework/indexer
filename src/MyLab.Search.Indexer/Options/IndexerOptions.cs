@@ -7,6 +7,7 @@ namespace MyLab.Search.Indexer.Options
 {
     public class IndexerOptions
     {
+        public string AppId { get; set; } = "mylab-indexer";
         public IndexOptions[] Indexes { get; set; }
         public IndexOptionsBase DefaultIndexOptions { get; set; } = new();
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";

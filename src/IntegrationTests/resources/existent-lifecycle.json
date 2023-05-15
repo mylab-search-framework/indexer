@@ -31,7 +31,10 @@
       }
     },
     "_meta": {
-      "mylab-indexer:src-hash": "015e53e7d5355327ed7fee25d68f232c"
+      "mylab_indexer": {
+        "src_hash": "015e53e7d5355327ed7fee25d68f232c",
+        "owner": "foo"
+      }
     }
   }
 }

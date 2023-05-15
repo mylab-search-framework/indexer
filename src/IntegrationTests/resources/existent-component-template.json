@@ -20,6 +20,9 @@
   },
   "_meta": {
     "ver": "1",
-    "mylab-indexer:src-hash": "ad241843ff931a923fbda833e2cdf3d9"
+    "mylab_indexer": {
+      "src_hash": "ad241843ff931a923fbda833e2cdf3d9",
+      "owner": "foo"
+    }
   }
-}
+ }

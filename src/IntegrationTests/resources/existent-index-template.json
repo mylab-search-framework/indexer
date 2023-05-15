@@ -25,6 +25,9 @@
   "priority": 500,
   "version": 3,
   "_meta": {
-    "mylab-indexer:src-hash": "1de237d891ded2eebdeb6f506fb97fb7"
+    "mylab_indexer": {
+      "src_hash": "1de237d891ded2eebdeb6f506fb97fb7",
+      "owner": "foo"
+    }
   }
 }

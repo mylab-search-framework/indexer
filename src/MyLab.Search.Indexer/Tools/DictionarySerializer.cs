@@ -40,7 +40,7 @@ namespace MyLab.Search.Indexer.Tools
                     resVal = nestedDict;
                 }
 
-                var dictPropAttr = (DictPropAttribute)Attribute.GetCustomAttribute(prop, typeof(DictPropAttribute));
+                var dictPropAttr = (DictPropertyAttribute)Attribute.GetCustomAttribute(prop, typeof(DictPropertyAttribute));
 
                 var propName = dictPropAttr?.Name ?? prop.Name;
                 
@@ -70,7 +70,7 @@ namespace MyLab.Search.Indexer.Tools
 
             var propsDict = resultType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(
-                    p => Attribute.GetCustomAttribute(p, typeof(DictPropAttribute)) is DictPropAttribute attr ? attr.Name : p.Name,
+                    p => Attribute.GetCustomAttribute(p, typeof(DictPropertyAttribute)) is DictPropertyAttribute attr ? attr.Name : p.Name,
                     p => p
                 );
 
@@ -120,11 +120,11 @@ namespace MyLab.Search.Indexer.Tools
         }
     }
 
-    class DictPropAttribute : Attribute
+    class DictPropertyAttribute : Attribute
     {
         public string Name { get; }
 
-        public DictPropAttribute(string name)
+        public DictPropertyAttribute(string name)
         {
             Name = name;
         }

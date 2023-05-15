@@ -70,7 +70,9 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 await using var readStream = resource.OpenRead();
                 
                 var resourceBinBuff = new byte[readStream.Length];
-                var readBytes = await readStream.ReadAsync(resourceBinBuff, cancellationToken);
+                
+                // ReSharper disable once MustUseReturnValue
+                await readStream.ReadAsync(resourceBinBuff, cancellationToken);
 
                 var resourceComponentHash = NormHash(BitConverter.ToString(MD5.HashData(resourceBinBuff)));
 
@@ -90,12 +92,18 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 IDictionary<string, object> resultMeta = new Dictionary<string, object>(
                     _strategy.ProvideMeta(resourceComponent) ?? new Dictionary<string, object>());
 
+                var srvMetadata = new ServiceMetadata
+                {
+                    Owner = _opts.AppId
+                };
+
                 if (esComponent == null)
                 {
                     _log?.Action($"{_strategy.OneResourceName} not found in ES and will be uploaded").Write();
 
-                    ServiceMetadata.SaveComponentHash(resultMeta, resourceComponentHash);
-
+                    srvMetadata.SourceHash = resourceComponentHash;
+                    srvMetadata.Save(resultMeta);
+                    
                     _strategy.SetMeta(resourceComponent, resultMeta);
 
                     await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
@@ -105,19 +113,33 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     return;
                 }
 
-                if(ServiceMetadata.TryGetComponentHash(resultMeta, out var esComponentHash) &&
-                   NormHash(esComponentHash) == resourceComponentHash)
+                if(ServiceMetadata.TryGet(resultMeta, out var esSrvMetadata))
                 {
-                    _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
-                        .AndFactIs("hash", resourceComponentHash)
-                        .Write();
+                    if (esSrvMetadata.Owner != _opts.AppId)
+                    {
+                        _log.Warning("Another owner component detected")
+                            .AndFactIs("my-app-id", _opts.AppId)
+                            .AndFactIs("component-owner", esSrvMetadata.Owner)
+                            .Write();
 
-                    return;
+                        return;
+                    }
+
+                    if (NormHash(esSrvMetadata.SourceHash) == resourceComponentHash)
+                    {
+
+                        _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
+                            .AndFactIs("hash", resourceComponentHash)
+                            .Write();
+
+                        return;
+                    }
                 }
 
                 _log?.Action($"{_strategy.OneResourceName} has different version and will be uploaded").Write();
 
-                ServiceMetadata.SaveComponentHash(resultMeta, resourceComponentHash);
+                srvMetadata.SourceHash = resourceComponentHash;
+                srvMetadata.Save(resultMeta);
 
                 _strategy.SetMeta(resourceComponent, resultMeta);
 
