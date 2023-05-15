@@ -12,6 +12,7 @@ using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Tools;
 using Nest;
 
 namespace MyLab.Search.Indexer.Services
@@ -111,10 +112,22 @@ namespace MyLab.Search.Indexer.Services
 
         private async Task CreateEsIndexCoreAsync(string esIndexName, string settingsStr, CancellationToken stoppingToken)
         {
+            var srvMapping = new ServiceMetadata
+            {
+                Owner = _opts.AppId
+            };
+
             if (settingsStr != null)
             {
-                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(settingsStr));
+                var settingsBin = Encoding.UTF8.GetBytes(settingsStr);
+
+                using var stream = new MemoryStream(settingsBin);
                 var mapping = _esTools.Serializer.Deserialize<TypeMapping>(stream);
+
+                srvMapping.SourceHash = HashCalculator.Calculate(settingsBin);
+
+                var metaDict = mapping.Meta ??= new Dictionary<string, object>();
+                srvMapping.Save(metaDict);
 
                 ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
                 {
@@ -125,7 +138,12 @@ namespace MyLab.Search.Indexer.Services
             }
             else
             {
-                await _esTools.Index(esIndexName).CreateAsync(d => d, stoppingToken);
+                var metaDit = new Dictionary<string, object>();
+                srvMapping.Save(metaDit);
+
+                await _esTools.Index(esIndexName).CreateAsync(d => d
+                        .Map(md => md.Meta(metaDit))
+                    , stoppingToken);
             }
 
             _log?.Action("Elasticsearch index has been created")

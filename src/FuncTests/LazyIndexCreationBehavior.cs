@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Tools;
 using MyLab.Search.IndexerClient;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -51,6 +53,7 @@ namespace FuncTests
             {
                 srv.Configure<IndexerOptions>(opt =>
                     {
+                        opt.AppId = "test";
                         opt.ResourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
                         opt.EnableEsIndexAutoCreation = true;
                     })
@@ -86,6 +89,33 @@ namespace FuncTests
 
             //Assert
             Assert.True(isIndexExists);
+        }
+
+        [Fact]
+        public async Task ShouldSetupServiceDataWhenCreateIndex()
+        {
+            //Arrange
+            var api = _apiFxt.StartWithProxy();
+
+            var docForPost = TestDoc.Generate();
+
+            //Act
+            await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
+            await Task.Delay(1000);
+
+            var indexInfo= await _esFxt.Tools.Index(_esIndexName).TryGetAsync(CancellationToken.None);
+
+            var metaDict = indexInfo?.Mappings?.Meta;
+
+            var srvMeta = ServiceMetadata.TryGet(metaDict, out var metaObj);
+
+            //Assert
+            Assert.NotNull(indexInfo);
+            Assert.NotNull(indexInfo.Mappings);
+            Assert.NotNull(metaObj);
+            Assert.Equal("test", metaObj.Owner);
+            Assert.Equal("ce8cf6d2c39e169ce7daf8a06380619e", metaObj.SourceHash);
+            
         }
 
         [Fact]

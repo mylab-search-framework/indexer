@@ -74,7 +74,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 // ReSharper disable once MustUseReturnValue
                 await readStream.ReadAsync(resourceBinBuff, cancellationToken);
 
-                var resourceComponentHash = NormHash(BitConverter.ToString(MD5.HashData(resourceBinBuff)));
+                var resourceComponentHash = HashCalculator.Calculate(resourceBinBuff);
 
                 using var memStream = new MemoryStream(resourceBinBuff);
                 var resourceComponent = _strategy.DeserializeComponent(_esTools.Serializer, memStream);
@@ -125,7 +125,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                         return;
                     }
 
-                    if (NormHash(esSrvMetadata.SourceHash) == resourceComponentHash)
+                    if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resourceComponentHash)
                     {
 
                         _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
@@ -153,7 +153,5 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     .Write();
             }
         }
-        
-        static string NormHash(string hash) => hash.Replace("-", "").ToLower();
     }
 }
