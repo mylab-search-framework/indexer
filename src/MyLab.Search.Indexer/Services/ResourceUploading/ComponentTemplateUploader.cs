@@ -62,7 +62,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 return false;
             }
 
-            public void SetMeta(ComponentTemplate component, IDictionary<string, object> newMeta)
+            public void SetMeta(string componentId, string appId, ComponentTemplate component, IDictionary<string, object> newMeta)
             {
                 component.Meta = new Dictionary<string, object>(newMeta);
             }

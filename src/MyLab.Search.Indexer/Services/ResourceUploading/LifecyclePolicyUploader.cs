@@ -62,7 +62,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             return false;
         }
 
-        public void SetMeta(LifecyclePolicy component, IDictionary<string, object> newMeta)
+        public void SetMeta(string componentId, string appId, LifecyclePolicy component, IDictionary<string, object> newMeta)
         {
             component.Policy.Meta = newMeta;
         }

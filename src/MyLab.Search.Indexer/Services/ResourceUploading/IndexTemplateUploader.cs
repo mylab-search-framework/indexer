@@ -1,6 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using Nest;
@@ -8,7 +7,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using System.Threading;
-using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services.ResourceUploading
 {
@@ -27,7 +25,6 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 logger
             )
         {
-            
         }
 
         class IndexTemplateUploaderStrategy : IResourceUploaderStrategy<IndexTemplate>
@@ -62,9 +59,24 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 return false;
             }
 
-            public void SetMeta(IndexTemplate component, IDictionary<string, object> newMeta)
+            public void SetMeta(string componentId, string appId, IndexTemplate component, IDictionary<string, object> newMeta)
             {
                 component.Meta = new Dictionary<string, object>(newMeta);
+
+                var originMappingMetadata = component.Template?.Mappings;
+                if (originMappingMetadata != null)
+                {
+                    var mappingMetadataObj = new IndexTemplateMappingMetadata(
+                        componentId,
+                        new IndexTemplateMappingMetadata.Item
+                        {
+                            SourceName = componentId,
+                            Owner = appId
+                        }
+                    );
+
+                    mappingMetadataObj.Save(originMappingMetadata.Meta ??= new Dictionary<string, object>());
+                }
             }
 
             public IReadOnlyDictionary<string, object> ProvideMeta(IndexTemplate component)

@@ -21,7 +21,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         private readonly IEsTools _esTools;
         private readonly IResourceProvider _resourceProvider;
         private readonly IDslLogger _log;
-        private readonly IndexerOptions _opts;
+        private readonly IndexerOptions _options;
 
         protected ResourceUploader(
             IResourceUploaderStrategy<TEsComponent> strategy,
@@ -33,7 +33,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             _strategy = strategy;
             _esTools = esTools;
             _resourceProvider = resourceProvider;
-            _opts = options.Value;
+            _options = options.Value;
             _log = logger?.Dsl();
         }
 
@@ -63,7 +63,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
         private async Task TryUploadResourceAsync(IResource resource, CancellationToken cancellationToken)
         {
-            var resId = _opts.GetEsName(resource.Name);
+            var resId = _options.GetEsName(resource.Name);
 
             try
             {
@@ -94,7 +94,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
                 var componentMetadata = new ComponentMetadata
                 {
-                    Owner = _opts.AppId
+                    Owner = _options.AppId
                 };
 
                 if (esComponent == null)
@@ -104,7 +104,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     componentMetadata.SourceHash = resourceComponentHash;
                     componentMetadata.Save(resultMeta);
                     
-                    _strategy.SetMeta(resourceComponent, resultMeta);
+                    _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
 
                     await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
 
@@ -115,10 +115,10 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
                 if(ComponentMetadata.TryGet(resultMeta, out var esSrvMetadata))
                 {
-                    if (esSrvMetadata.Owner != _opts.AppId)
+                    if (esSrvMetadata.Owner != _options.AppId)
                     {
                         _log.Warning("Another owner component detected")
-                            .AndFactIs("my-app-id", _opts.AppId)
+                            .AndFactIs("my-app-id", _options.AppId)
                             .AndFactIs("component-owner", esSrvMetadata.Owner)
                             .Write();
 
@@ -141,7 +141,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 componentMetadata.SourceHash = resourceComponentHash;
                 componentMetadata.Save(resultMeta);
 
-                _strategy.SetMeta(resourceComponent, resultMeta);
+                _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
 
                 await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
 

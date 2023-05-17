@@ -15,7 +15,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         Task<TEsComponent> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken);
         TEsComponent DeserializeComponent(IEsSerializer serializer, Stream inStream);
         bool HasAbsentNode(TEsComponent component, out string absentNodeName);
-        void SetMeta(TEsComponent component, IDictionary<string, object> newMeta);
+        void SetMeta(string componentId, string appId, TEsComponent component, IDictionary<string, object> newMeta);
         IReadOnlyDictionary<string, object> ProvideMeta(TEsComponent component);
 
         Task UploadComponentAsync(string componentId, TEsComponent component, IEsTools esTools, CancellationToken cancellationToken);

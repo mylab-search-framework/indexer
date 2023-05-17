@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,7 +10,6 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ResourceUploading;
-using MyLab.Search.Indexer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -41,6 +38,49 @@ namespace IntegrationTests
         public async Task DisposeAsync()
         {
             await _fxt.Tools.IndexTemplate("index-template-test").DeleteAsync();
+        }
+
+        [Fact]
+        public async Task ShouldSaveMappingMetadataWhenUpload()
+        {
+            //Arrange
+            var idxResProviderMock = new Mock<IResourceProvider>();
+
+            var templateResource = new TestResource("index-template-test", "resources\\index-template-example.json");
+
+            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
+
+            idxResProviderMock.Setup(p => p.ProvideIndexTemplates())
+                .Returns(() => new IResource[] { templateResource });
+
+            var services = new ServiceCollection()
+                .AddLogging(l => l
+                        .SetMinimumLevel(LogLevel.Trace)
+                        .AddXUnit(_output)
+                    )
+                .AddSingleton(_fxt.Tools)
+                .AddSingleton(idxResProviderMock.Object)
+                .Configure<IndexerOptions>(o => o.AppId = "foo")
+                .BuildServiceProvider();
+
+            var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
+            
+            IndexTemplateMappingMetadata mappingMetadata = null;
+
+            //Act
+            await uploader.UploadAsync(CancellationToken.None);
+
+            var templateInfo = await _fxt.Tools.IndexTemplate("index-template-test").TryGetAsync();
+
+            if (templateInfo != null)
+            {
+                IndexTemplateMappingMetadata.TryGet(templateInfo.Template?.Mappings?.Meta, out mappingMetadata);
+            }
+
+            //Assert
+
+            Assert.NotNull(mappingMetadata);
+            Assert.Contains(mappingMetadata.Entities, p => p.Key == "index-template-test" && p.Value.Owner == "foo" && p.Value.SourceName == "index-template-test");
         }
 
         [Fact]

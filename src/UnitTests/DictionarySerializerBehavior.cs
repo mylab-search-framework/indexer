@@ -136,6 +136,25 @@ namespace UnitTests
             Assert.Equal(default, obj.ObjProperty.GuidProperty);
         }
 
+        [Fact]
+        public void ShouldInitializeInitiableObject()
+        {
+            //Arrange 
+            var guid = Guid.NewGuid().ToString("N");
+
+            var dict = new Dictionary<string, object>
+            {
+                { "foo", guid }
+            };
+
+            //Act
+            var obj = DictionarySerializer.Deserialize<TestInitialbeObj>(dict);
+
+            //Assert
+            Assert.NotNull(obj);
+            Assert.Equal(guid, obj.Foo);
+        }
+
         class TestObj
         {
             [DictProperty("prop-with-attr")]
@@ -145,6 +164,16 @@ namespace UnitTests
             public Guid GuidProperty { get; set; }
             public DateTime DateTimeProperty{ get; set; }
             public TestObj ObjProperty { get; set; }
+        }
+
+        class TestInitialbeObj : IDictionaryInitiable
+        {
+            public string Foo { get; set; }
+            public void Initialize(IDictionary<string, object> dict)
+            {
+                if (dict.TryGetValue("foo", out var fooVal))
+                    Foo = fooVal.ToString();
+            }
         }
     }
 }

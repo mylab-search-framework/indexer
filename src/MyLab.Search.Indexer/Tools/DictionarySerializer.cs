@@ -89,6 +89,12 @@ namespace MyLab.Search.Indexer.Tools
             if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (dict == null) throw new ArgumentNullException(nameof(dict));
 
+            if (instance is IDictionaryInitiable dictInitable)
+            {
+                dictInitable.Initialize(dict);
+                return;
+            }
+
             var propsDict = instanceType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(
                     p => Attribute.GetCustomAttribute(p, typeof(DictPropertyAttribute)) is DictPropertyAttribute attr ? attr.Name : p.Name,
@@ -146,5 +152,10 @@ namespace MyLab.Search.Indexer.Tools
         {
             Name = name;
         }
+    }
+
+    interface IDictionaryInitiable
+    {
+        void Initialize(IDictionary<string, object> dict);
     }
 }
