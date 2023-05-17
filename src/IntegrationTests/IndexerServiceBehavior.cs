@@ -6,7 +6,6 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using Nest;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;

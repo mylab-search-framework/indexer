@@ -68,7 +68,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
             
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             //Act
@@ -78,14 +78,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
-            Assert.Equal("foo", srvMeta.Owner);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("1", ver);
         }
 
@@ -115,7 +115,7 @@ namespace IntegrationTests
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
             string ver = null;
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
             await _fxt.Tools.IndexTemplate("index-template-test").PutAsync(templateJson);
@@ -127,14 +127,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
-            Assert.Equal("foo", srvMeta.Owner);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("2", ver);
         }
 
@@ -174,7 +174,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata srvMeta = null;
             string ver = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-index-template.json");
@@ -187,7 +187,7 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out srvMeta);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 

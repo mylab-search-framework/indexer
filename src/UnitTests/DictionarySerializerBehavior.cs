@@ -91,6 +91,51 @@ namespace UnitTests
             Assert.Equal(default,obj.ObjProperty.GuidProperty);
         }
 
+        [Fact]
+        public void ShouldInitializeObject()
+        {
+            //Arrange 
+            var guid = Guid.NewGuid();
+            var datetime = DateTime.Now;
+
+            var dict = new Dictionary<string, object>
+            {
+                { "StringProperty", "foo" },
+                { "IntProperty", "10" },
+                { "GuidProperty", guid.ToString("N") },
+                { "DateTimeProperty", datetime.ToString("O") },
+                { "prop-with-attr", "bar" },
+                { "extra", "extra" },
+                {
+                    "ObjProperty", new Dictionary<string, object>
+                    {
+                        { "StringProperty", "baz" }
+                    }
+                }
+
+            };
+
+            var obj = new TestObj();
+
+            //Act
+            DictionarySerializer.Initialize(obj, dict);
+
+            //Assert
+            Assert.NotNull(obj);
+            Assert.Equal("foo", obj.StringProperty);
+            Assert.Equal(10, obj.IntProperty);
+            Assert.Equal(guid, obj.GuidProperty);
+            Assert.Equal(datetime, obj.DateTimeProperty);
+            Assert.Equal("bar", obj.PropWithAttrProperty);
+            Assert.NotNull(obj.ObjProperty);
+            Assert.Equal("baz", obj.ObjProperty.StringProperty);
+            Assert.Null(obj.ObjProperty.PropWithAttrProperty);
+            Assert.Null(obj.ObjProperty.ObjProperty);
+            Assert.Equal(default, obj.ObjProperty.DateTimeProperty);
+            Assert.Equal(default, obj.ObjProperty.IntProperty);
+            Assert.Equal(default, obj.ObjProperty.GuidProperty);
+        }
+
         class TestObj
         {
             [DictProperty("prop-with-attr")]

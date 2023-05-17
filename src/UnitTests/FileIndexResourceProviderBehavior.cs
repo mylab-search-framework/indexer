@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using Nest;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;

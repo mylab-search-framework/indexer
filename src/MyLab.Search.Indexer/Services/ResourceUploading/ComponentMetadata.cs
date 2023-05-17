@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using MyLab.Search.Indexer.Tools;
 
-namespace MyLab.Search.Indexer.Tools
-{ 
-    class ServiceMetadata
+namespace MyLab.Search.Indexer.Services.ResourceUploading
+{
+    class ComponentMetadata
     {
         public const string MetadataKey = "mylab_indexer";
 
@@ -13,7 +14,7 @@ namespace MyLab.Search.Indexer.Tools
         [DictProperty("src_hash")]
         public string SourceHash { get; set; }
 
-        public static bool TryGet(IReadOnlyDictionary<string, object> metadata, out ServiceMetadata srvMeta)
+        public static bool TryGet(IReadOnlyDictionary<string, object> metadata, out ComponentMetadata srvMeta)
         {
             if (metadata == null || !metadata.TryGetValue(MetadataKey, out var mdObject) || mdObject is not IDictionary<string, object> mdDict)
             {
@@ -21,11 +22,11 @@ namespace MyLab.Search.Indexer.Tools
                 return false;
             }
 
-            srvMeta = DictionarySerializer.Deserialize<ServiceMetadata>(mdDict);
+            srvMeta = DictionarySerializer.Deserialize<ComponentMetadata>(mdDict);
             return true;
         }
 
-        public static bool TryGet(IDictionary<string, object> metadata, out ServiceMetadata srvMeta)
+        public static bool TryGet(IDictionary<string, object> metadata, out ComponentMetadata srvMeta)
         {
             if (metadata == null || !metadata.TryGetValue(MetadataKey, out var mdObject) || mdObject is not IDictionary<string, object> mdDict)
             {
@@ -33,7 +34,7 @@ namespace MyLab.Search.Indexer.Tools
                 return false;
             }
 
-            srvMeta = DictionarySerializer.Deserialize<ServiceMetadata>(mdDict);
+            srvMeta = DictionarySerializer.Deserialize<ComponentMetadata>(mdDict);
             return true;
         }
 

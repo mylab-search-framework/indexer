@@ -92,7 +92,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 IDictionary<string, object> resultMeta = new Dictionary<string, object>(
                     _strategy.ProvideMeta(resourceComponent) ?? new Dictionary<string, object>());
 
-                var srvMetadata = new ServiceMetadata
+                var componentMetadata = new ComponentMetadata
                 {
                     Owner = _opts.AppId
                 };
@@ -101,8 +101,8 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 {
                     _log?.Action($"{_strategy.OneResourceName} not found in ES and will be uploaded").Write();
 
-                    srvMetadata.SourceHash = resourceComponentHash;
-                    srvMetadata.Save(resultMeta);
+                    componentMetadata.SourceHash = resourceComponentHash;
+                    componentMetadata.Save(resultMeta);
                     
                     _strategy.SetMeta(resourceComponent, resultMeta);
 
@@ -113,7 +113,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     return;
                 }
 
-                if(ServiceMetadata.TryGet(resultMeta, out var esSrvMetadata))
+                if(ComponentMetadata.TryGet(resultMeta, out var esSrvMetadata))
                 {
                     if (esSrvMetadata.Owner != _opts.AppId)
                     {
@@ -138,8 +138,8 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
                 _log?.Action($"{_strategy.OneResourceName} has different version and will be uploaded").Write();
 
-                srvMetadata.SourceHash = resourceComponentHash;
-                srvMetadata.Save(resultMeta);
+                componentMetadata.SourceHash = resourceComponentHash;
+                componentMetadata.Save(resultMeta);
 
                 _strategy.SetMeta(resourceComponent, resultMeta);
 

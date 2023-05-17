@@ -1,11 +1,8 @@
-﻿using System;
-using System.IO;
-using System.Security.Policy;
+﻿using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
 using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter.Tools;
@@ -13,7 +10,6 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ResourceUploading;
-using MyLab.Search.Indexer.Tools;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -69,7 +65,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             //Act
@@ -79,14 +75,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
+                ComponentMetadata.TryGet(policyInfo.Policy.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal("foo", srvMeta.Owner);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal("foo", componentMetadata.Owner);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
             Assert.Equal("1", ver);
         }
 
@@ -115,7 +111,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
@@ -128,14 +124,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
+                ComponentMetadata.TryGet(policyInfo.Policy.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
-            Assert.Equal("foo", srvMeta.Owner);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("2", ver);
         }
 
@@ -175,7 +171,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
@@ -188,14 +184,14 @@ namespace IntegrationTests
 
             if (policyInfo != null)
             {
-                ServiceMetadata.TryGet(policyInfo.Policy.Meta, out srvMeta);
+                ComponentMetadata.TryGet(policyInfo.Policy.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(policyInfo.Policy.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal("foo", srvMeta.Owner);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal("foo", componentMetadata.Owner);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
             Assert.Equal("1", ver);
             lifecyclePolicyToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 

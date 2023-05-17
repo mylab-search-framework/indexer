@@ -12,6 +12,7 @@ using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Services.ResourceUploading;
 using MyLab.Search.Indexer.Tools;
 using Nest;
 
@@ -112,7 +113,7 @@ namespace MyLab.Search.Indexer.Services
 
         private async Task CreateEsIndexCoreAsync(string esIndexName, string settingsStr, CancellationToken stoppingToken)
         {
-            var srvMapping = new ServiceMetadata
+            var srvMapping = new ComponentMetadata()
             {
                 Owner = _opts.AppId
             };

@@ -70,7 +70,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             //Act
@@ -80,14 +80,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal("foo", srvMeta.Owner);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal("foo", componentMetadata.Owner);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
             Assert.Equal("1", ver);
         }
 
@@ -117,7 +117,7 @@ namespace IntegrationTests
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
             string ver = null;
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
             await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(templateJson);
@@ -129,14 +129,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal("foo", srvMeta.Owner);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal("foo", componentMetadata.Owner);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
             Assert.Equal("2", ver);
         }
 
@@ -175,7 +175,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<ComponentTemplateUploader>(services);
 
-            ServiceMetadata srvMeta = null;
+            ComponentMetadata componentMetadata = null;
             string ver = null;
 
             var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
@@ -188,14 +188,14 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                ServiceMetadata.TryGet(templateInfo.Meta, out srvMeta);
+                ComponentMetadata.TryGet(templateInfo.Meta, out componentMetadata);
                 ver = TestTools.GetComponentVer(templateInfo.Meta);
             }
 
             //Assert
-            Assert.NotNull(srvMeta);
-            Assert.Equal(resourceHash, srvMeta.SourceHash);
-            Assert.Equal("foo", srvMeta.Owner);
+            Assert.NotNull(componentMetadata);
+            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("1", ver);
 
             componentTemplateToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);

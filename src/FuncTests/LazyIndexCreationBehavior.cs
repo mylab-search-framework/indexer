@@ -16,6 +16,7 @@ using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Services.ResourceUploading;
 using MyLab.Search.Indexer.Tools;
 using MyLab.Search.IndexerClient;
 using Newtonsoft.Json.Linq;
@@ -107,7 +108,7 @@ namespace FuncTests
 
             var metaDict = indexInfo?.Mappings?.Meta;
 
-            var srvMeta = ServiceMetadata.TryGet(metaDict, out var metaObj);
+            var srvMeta = ComponentMetadata.TryGet(metaDict, out var metaObj);
 
             //Assert
             Assert.NotNull(indexInfo);

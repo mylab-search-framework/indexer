@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using static LinqToDB.Reflection.Methods.LinqToDB.Insert;
 using DateTime = System.DateTime;
 
 namespace MyLab.Search.Indexer.Tools
@@ -63,18 +62,38 @@ namespace MyLab.Search.Indexer.Tools
             return (T)Deserialize(typeof(T), dict);
         }
 
+        public static void Initialize<T>(T instance, IReadOnlyDictionary<string, object> dict) where T : class
+        {
+            Initialize<T>(instance, (IDictionary<string, object>)new Dictionary<string, object>(dict));
+        }
+
+        public static void Initialize<T>(T instance, IDictionary<string, object> dict) where T : class
+        {
+            Initialize(instance, typeof(T), dict);
+        }
+
+        public static void Initialize<T>(T instance, Dictionary<string, object> dict) where T : class
+        {
+            Initialize(instance, typeof(T), dict);
+        }
+
         static object Deserialize(Type resultType, IDictionary<string, object> dict)
         {
-            if (resultType == null) throw new ArgumentNullException(nameof(resultType));
+            var res = Activator.CreateInstance(resultType);
+            Initialize(res, resultType, dict);
+            return res;
+        }
+
+        static void Initialize(object instance, Type instanceType, IDictionary<string, object> dict)
+        {
+            if (instance == null) throw new ArgumentNullException(nameof(instance));
             if (dict == null) throw new ArgumentNullException(nameof(dict));
 
-            var propsDict = resultType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            var propsDict = instanceType.GetProperties(BindingFlags.Instance | BindingFlags.Public)
                 .ToDictionary(
                     p => Attribute.GetCustomAttribute(p, typeof(DictPropertyAttribute)) is DictPropertyAttribute attr ? attr.Name : p.Name,
                     p => p
                 );
-
-            var res = Activator.CreateInstance(resultType);
 
             foreach (var pair in dict)
             {
@@ -105,10 +124,8 @@ namespace MyLab.Search.Indexer.Tools
                     else newPropVal = prop;
                 }
 
-                prop.SetValue(res, newPropVal);
+                prop.SetValue(instance, newPropVal);
             }
-
-            return res;
         }
     }
 
@@ -120,6 +137,7 @@ namespace MyLab.Search.Indexer.Tools
         }
     }
 
+    [AttributeUsage(AttributeTargets.Property)]
     class DictPropertyAttribute : Attribute
     {
         public string Name { get; }
