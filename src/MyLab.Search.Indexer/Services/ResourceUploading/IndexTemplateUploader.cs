@@ -66,9 +66,9 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 var originMappingMetadata = component.Template?.Mappings;
                 if (originMappingMetadata != null)
                 {
-                    var mappingMetadataObj = new IndexTemplateMappingMetadata(
+                    var mappingMetadataObj = new MappingMetadata(
                         componentId,
-                        new IndexTemplateMappingMetadata.Item
+                        new MappingMetadata.Item
                         {
                             SourceName = componentId,
                             Owner = appId

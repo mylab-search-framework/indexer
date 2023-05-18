@@ -5,14 +5,14 @@ using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services.ResourceUploading
 {
-    class IndexTemplateMappingMetadata
+    class MappingMetadata
     {
         public const string MetadataKey = "mylab_indexer";
 
         private readonly Dictionary<string, Item> _entities;
         public IReadOnlyDictionary<string, Item> Entities { get; }
 
-        public static bool TryGet(IDictionary<string, object> dict, out IndexTemplateMappingMetadata metadata)
+        public static bool TryGet(IDictionary<string, object> dict, out MappingMetadata metadata)
         {
             if (dict == null || !dict.TryGetValue(MetadataKey, out var foundNode) ||
                 foundNode is not IDictionary<string, object> foundDict)
@@ -31,7 +31,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 }
             }
 
-            metadata = new IndexTemplateMappingMetadata(resultDict);
+            metadata = new MappingMetadata(resultDict);
             return true;
         }
 
@@ -67,17 +67,17 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             }
         }
 
-        public IndexTemplateMappingMetadata(string key,Item item)
+        public MappingMetadata(string key,Item item)
             : this(new Dictionary<string, Item>{ {key, item} })
         {
         }
 
-        public IndexTemplateMappingMetadata()
+        public MappingMetadata()
             :this(new Dictionary<string, Item>())
         {
         }
 
-        public IndexTemplateMappingMetadata(IDictionary<string, Item> initial)
+        public MappingMetadata(IDictionary<string, Item> initial)
         {
             _entities = new Dictionary<string, Item>(initial);
             Entities = new ReadOnlyDictionary<string, Item>(_entities);

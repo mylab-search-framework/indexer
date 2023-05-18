@@ -65,7 +65,7 @@ namespace IntegrationTests
 
             var uploader = ActivatorUtilities.CreateInstance<IndexTemplateUploader>(services);
             
-            IndexTemplateMappingMetadata mappingMetadata = null;
+            MappingMetadata mappingMetadata = null;
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -74,7 +74,7 @@ namespace IntegrationTests
 
             if (templateInfo != null)
             {
-                IndexTemplateMappingMetadata.TryGet(templateInfo.Template?.Mappings?.Meta, out mappingMetadata);
+                MappingMetadata.TryGet(templateInfo.Template?.Mappings?.Meta, out mappingMetadata);
             }
 
             //Assert

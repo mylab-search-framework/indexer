@@ -14,7 +14,7 @@ namespace UnitTests
             var dict = new Dictionary<string, object>
             {
                 {
-                    IndexTemplateMappingMetadata.MetadataKey,
+                    MappingMetadata.MetadataKey,
                     new Dictionary<string,object>
                     {
                         {
@@ -38,7 +38,7 @@ namespace UnitTests
             };
 
             //Act
-            IndexTemplateMappingMetadata.TryGet(dict, out var templateMetadata);
+            MappingMetadata.TryGet(dict, out var templateMetadata);
 
             templateMetadata.Entities.TryGetValue("foo-index-template", out var fooTemplateMetadata);
             templateMetadata.Entities.TryGetValue("bar-index-template", out var barTemplateMetadata);
@@ -59,7 +59,7 @@ namespace UnitTests
             var dict = new Dictionary<string, object>
             {
                 {
-                    IndexTemplateMappingMetadata.MetadataKey,
+                    MappingMetadata.MetadataKey,
                     new Dictionary<string,object>
                     {
                         {
@@ -74,9 +74,9 @@ namespace UnitTests
                 }
             };
 
-            var barMetadata = new IndexTemplateMappingMetadata(
+            var barMetadata = new MappingMetadata(
                 "bar-index-template",
-                new IndexTemplateMappingMetadata.Item
+                new MappingMetadata.Item
                 {
                     Owner = "bar-owner",
                     SourceName = "bar-source"
@@ -86,7 +86,7 @@ namespace UnitTests
             //Act
             barMetadata.Save(dict);
 
-            IndexTemplateMappingMetadata.TryGet(dict, out var templateMetadata);
+            MappingMetadata.TryGet(dict, out var templateMetadata);
 
             templateMetadata.Entities.TryGetValue("foo-index-template", out var fooTemplateMetadata);
             templateMetadata.Entities.TryGetValue("bar-index-template", out var barTemplateMetadata);
