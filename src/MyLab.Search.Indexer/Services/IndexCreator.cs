@@ -20,33 +20,33 @@ namespace MyLab.Search.Indexer.Services
 {
     class IndexCreator : IIndexCreator
     {
-        private readonly IResourceProvider _idxResProvider;
+        private readonly IIndexMappingProvider _indexMappingProvider;
         private readonly IEsTools _esTools;
         private readonly IDslLogger _log;
         private readonly IndexerOptions _opts;
 
         public IndexCreator(
             IOptions<IndexerOptions> opts,
-            IResourceProvider idxResProvider,
+            IIndexMappingProvider indexMappingProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
-            :this(opts.Value, idxResProvider, esTools, logger)
+            :this(opts.Value, indexMappingProvider, esTools, logger)
         {
         }
 
         public IndexCreator(
             IndexerOptions opts,
-            IResourceProvider idxResProvider,
+            IIndexMappingProvider indexMappingProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
         {
-            _idxResProvider = idxResProvider;
+            _indexMappingProvider = indexMappingProvider;
             _esTools = esTools;
             _log = logger?.Dsl();
             _opts = opts;
         }
 
-        public async Task CreateIndex(string idxId, string esIndexName, CancellationToken stoppingToken)
+        public async Task CreateIndexAsync(string idxId, string esIndexName, CancellationToken stoppingToken)
         {
             using (_log.BeginScope(new LabelLogScope(new Dictionary<string, string>
                    {
@@ -58,10 +58,10 @@ namespace MyLab.Search.Indexer.Services
                 {
                     try
                     {
-                        var mappingStr = await _idxResProvider.ProvideIndexMappingAsync(idxId);
+                        var mappingStr = await _indexMappingProvider.ProvideAsync(idxId);
 
                         if (!_opts.EnableEsIndexAutoCreation)
-                            throw new IndexNotFoundException();
+                            throw new IndexCreationDeniedException();
 
                         await CreateEsIndexCoreAsync(esIndexName, mappingStr, stoppingToken);
                     }
@@ -76,14 +76,14 @@ namespace MyLab.Search.Indexer.Services
                             case IndexType.Heap:
                             {
                                 if (!_opts.EnableEsIndexAutoCreation)
-                                    throw new IndexNotFoundException();
+                                    throw new IndexCreationDeniedException();
                                 await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
                             }
                                 break;
                             case IndexType.Stream:
                             {
                                 if (!_opts.EnableEsStreamAutoCreation)
-                                    throw new IndexNotFoundException();
+                                    throw new IndexCreationDeniedException();
                                 await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
                             }
                                 break;
@@ -92,7 +92,7 @@ namespace MyLab.Search.Indexer.Services
                         }
                     }
                 }
-                catch (IndexNotFoundException e)
+                catch (IndexCreationDeniedException e)
                 {
                     e.AndFactIs("index-id", idxId)
                         .AndFactIs("index-name", esIndexName);
@@ -111,39 +111,33 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private async Task CreateEsIndexCoreAsync(string esIndexName, string settingsStr, CancellationToken stoppingToken)
+        private async Task CreateEsIndexCoreAsync(string esIndexName, IndexMappingDesc indexMapping, CancellationToken stoppingToken)
         {
-            var srvMapping = new ComponentMetadata()
+            if (indexMapping != null)
             {
-                Owner = _opts.AppId
-            };
-
-            if (settingsStr != null)
-            {
-                var settingsBin = Encoding.UTF8.GetBytes(settingsStr);
-
-                using var stream = new MemoryStream(settingsBin);
-                var mapping = _esTools.Serializer.Deserialize<TypeMapping>(stream);
-
-                srvMapping.SourceHash = HashCalculator.Calculate(settingsBin);
-
-                var metaDict = mapping.Meta ??= new Dictionary<string, object>();
-                srvMapping.Save(metaDict);
+                var mappingMeta = new MappingMetadata
+                {
+                    Creator = new MappingMetadata.CreatorDesc
+                    {
+                        Owner = _opts.AppId,
+                        SourceHash = indexMapping.SourceHash
+                    }
+                };
+                
+                var metaDict = indexMapping.Mapping.Meta ??= new Dictionary<string, object>();
+                mappingMeta.Save(metaDict);
 
                 ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
                 {
-                    Mappings = mapping
+                    Mappings = indexMapping.Mapping
                 };
 
                 await _esTools.Index(esIndexName).CreateAsync(d => req, stoppingToken);
             }
             else
             {
-                var metaDit = new Dictionary<string, object>();
-                srvMapping.Save(metaDit);
-
                 await _esTools.Index(esIndexName).CreateAsync(d => d
-                        .Map(md => md.Meta(metaDit))
+                        .Map(md => md)
                     , stoppingToken);
             }
 
@@ -153,9 +147,9 @@ namespace MyLab.Search.Indexer.Services
         }
     }
 
-    public class IndexNotFoundException : Exception
+    public class IndexCreationDeniedException : Exception
     {
-        public IndexNotFoundException() : base("Index not found")
+        public IndexCreationDeniedException() : base("Index creation was denied due to settings")
         {
             
         }

@@ -66,14 +66,14 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 var originMappingMetadata = component.Template?.Mappings;
                 if (originMappingMetadata != null)
                 {
-                    var mappingMetadataObj = new MappingMetadata(
-                        componentId,
-                        new MappingMetadata.Item
+                    var mappingMetadataObj = new MappingMetadata
+                    {   
+                        Template = new MappingMetadata.TemplateDesc
                         {
                             SourceName = componentId,
                             Owner = appId
                         }
-                    );
+                    };
 
                     mappingMetadataObj.Save(originMappingMetadata.Meta ??= new Dictionary<string, object>());
                 }

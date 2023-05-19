@@ -93,7 +93,7 @@ namespace FuncTests
         }
 
         [Fact]
-        public async Task ShouldSetupServiceDataWhenCreateIndex()
+        public async Task ShouldSetupMappingMetaWhenCreateIndex()
         {
             //Arrange
             var api = _apiFxt.StartWithProxy();
@@ -108,14 +108,15 @@ namespace FuncTests
 
             var metaDict = indexInfo?.Mappings?.Meta;
 
-            var srvMeta = ComponentMetadata.TryGet(metaDict, out var metaObj);
+            MappingMetadata.TryGet(metaDict, out var metaObj);
 
             //Assert
             Assert.NotNull(indexInfo);
             Assert.NotNull(indexInfo.Mappings);
             Assert.NotNull(metaObj);
-            Assert.Equal("test", metaObj.Owner);
-            Assert.Equal("ce8cf6d2c39e169ce7daf8a06380619e", metaObj.SourceHash);
+            Assert.Null(metaObj.Template);
+            Assert.Equal("test", metaObj.Creator.Owner);
+            Assert.Equal("ce8cf6d2c39e169ce7daf8a06380619e", metaObj.Creator.SourceHash);
             
         }
 

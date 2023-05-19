@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services.ResourceUploading
@@ -9,8 +8,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
     {
         public const string MetadataKey = "mylab_indexer";
 
-        private readonly Dictionary<string, Item> _entities;
-        public IReadOnlyDictionary<string, Item> Entities { get; }
+        public const string CreatorKey = "creator"; 
+        public const string TemplateKey = "template"; 
+
+        public TemplateDesc Template { get; set; }
+        public CreatorDesc Creator { get; init; }
 
         public static bool TryGet(IDictionary<string, object> dict, out MappingMetadata metadata)
         {
@@ -21,17 +23,28 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 return false;
             }
 
-            var resultDict = new Dictionary<string, Item>();
+            CreatorDesc creator = null;
 
-            foreach (var p in foundDict)
+            if (foundDict.TryGetValue(CreatorKey, out var creatorDictObj) &&
+                creatorDictObj is IDictionary<string, object> creatorDict)
             {
-                if (p.Value is IDictionary<string, object> dictValue)
-                {
-                    resultDict.Add(p.Key, DictionarySerializer.Deserialize<Item>(dictValue));
-                }
+                creator = DictionarySerializer.Deserialize<CreatorDesc>(creatorDict);
             }
 
-            metadata = new MappingMetadata(resultDict);
+            TemplateDesc template = null;
+
+            if (foundDict.TryGetValue(TemplateKey, out var templateDictObj) &&
+                templateDictObj is IDictionary<string, object> templateDict)
+            {
+                template = DictionarySerializer.Deserialize<TemplateDesc>(templateDict);
+            }
+
+            metadata = new MappingMetadata
+            {
+                Creator = creator,
+                Template = template
+            };
+
             return true;
         }
 
@@ -39,57 +52,49 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         {
             if (dict == null) throw new ArgumentNullException(nameof(dict));
 
-            Dictionary<string, object> metadataDict;
+            var metaDict = new Dictionary<string, object>();
 
-            if (dict.TryGetValue(MetadataKey, out var foundMetadata))
+            if (Creator != null)
             {
-                if (foundMetadata is Dictionary<string, object> castedMetadataDict)
-                {
-                    metadataDict = castedMetadataDict;
-                }
-                else
-                {
-                    dict[MetadataKey] = metadataDict = new Dictionary<string, object>();
-                }
-            }
-            else
-            {
-                dict.Add(MetadataKey, metadataDict = new Dictionary<string, object>());
+                if (dict.ContainsKey(CreatorKey))
+                    throw new Exception("A creator mapping info already exists");
+
+                var creatorDict = new Dictionary<string, object>();
+                DictionarySerializer.Serialize(creatorDict, Creator);
+
+                metaDict.Add(CreatorKey, creatorDict);
             }
 
-            foreach (var entity in _entities)
+            if (Template != null)
             {
-                var entityDict = new Dictionary<string, object>();
+                if (dict.ContainsKey(TemplateKey))
+                    throw new Exception("A template mapping info already exists");
 
-                DictionarySerializer.Serialize(entityDict, entity.Value);
+                var templateDict = new Dictionary<string, object>();
+                DictionarySerializer.Serialize(templateDict, Template);
 
-                metadataDict.Add(entity.Key, entityDict);
+                metaDict.Add(TemplateKey, templateDict);
             }
+
+            dict.Add(MetadataKey, metaDict);
         }
 
-        public MappingMetadata(string key,Item item)
-            : this(new Dictionary<string, Item>{ {key, item} })
-        {
-        }
-
-        public MappingMetadata()
-            :this(new Dictionary<string, Item>())
-        {
-        }
-
-        public MappingMetadata(IDictionary<string, Item> initial)
-        {
-            _entities = new Dictionary<string, Item>(initial);
-            Entities = new ReadOnlyDictionary<string, Item>(_entities);
-        }
-
-        public class Item
+        public class TemplateDesc
         {
             [DictProperty("owner")]
             public string Owner { get; set; }
 
             [DictProperty("source_name")]
             public string SourceName { get; set; }
+        }
+
+        public class CreatorDesc
+        {
+            [DictProperty("owner")]
+            public string Owner { get; set; }
+
+            [DictProperty("source_hash")]
+            public string SourceHash { get; set; }
         }
     }
 }

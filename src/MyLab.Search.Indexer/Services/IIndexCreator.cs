@@ -5,6 +5,6 @@ namespace MyLab.Search.Indexer.Services
 {
     interface IIndexCreator
     {
-        Task CreateIndex(string idxId, string esIndexName, CancellationToken stoppingToken);
+        Task CreateIndexAsync(string idxId, string esIndexName, CancellationToken stoppingToken);
     }
 }

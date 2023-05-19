@@ -43,6 +43,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
                 .AddSingleton<IIndexerService,IndexerService>()
                 .AddSingleton<IIndexCreator,IndexCreator>()
+                .AddSingleton<IIndexMappingProvider,IndexMappingProvider>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
                 .AddDbTools<ConfiguredDataProviderSource>(Configuration)

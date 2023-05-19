@@ -118,7 +118,7 @@ namespace MyLab.Search.Indexer.Services
                     .AndFactIs("idx-name", esIdxName)
                     .Write();
 
-                await _indexerCreator.CreateIndex(req.IndexId, esIdxName, cToken);
+                await _indexerCreator.CreateIndexAsync(req.IndexId, esIdxName, cToken);
                 await Task.Delay(500, cToken);
 
                 _log?.Action("Try to index docs after index created").Write();

@@ -80,7 +80,8 @@ namespace IntegrationTests
             //Assert
 
             Assert.NotNull(mappingMetadata);
-            Assert.Contains(mappingMetadata.Entities, p => p.Key == "index-template-test" && p.Value.Owner == "foo" && p.Value.SourceName == "index-template-test");
+            Assert.Equal("foo", mappingMetadata.Template.Owner);
+            Assert.Equal("index-template-test", mappingMetadata.Template.SourceName);
         }
 
         [Fact]

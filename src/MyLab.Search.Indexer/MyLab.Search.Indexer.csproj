@@ -18,7 +18,7 @@
     <PackageReference Include="MyLab.Log" Version="3.5.27" />
     <PackageReference Include="MyLab.Log.Dsl" Version="3.6.5" />
     <PackageReference Include="MyLab.RabbitClient" Version="2.9.22" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.18" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.19" />
     <PackageReference Include="MyLab.StatusProvider" Version="1.5.9" />
     <PackageReference Include="MyLab.TaskApp" Version="1.4.5" />
     <PackageReference Include="MyLab.WebErrors" Version="1.1.4" />
