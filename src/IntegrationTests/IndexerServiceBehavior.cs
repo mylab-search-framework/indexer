@@ -43,8 +43,7 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
+                        EsIndex = _idxFxt.IndexName
                     }
                 }
             };
@@ -88,8 +87,7 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
+                        EsIndex = _idxFxt.IndexName
                     }
                 }
             };
@@ -143,8 +141,7 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
+                        EsIndex = _idxFxt.IndexName
                     }
                 }
             };
@@ -188,8 +185,7 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
+                        EsIndex = _idxFxt.IndexName
                     }
                 }
             };
@@ -245,8 +241,7 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
+                        EsIndex = _idxFxt.IndexName
                     }
                 }
             };
@@ -302,9 +297,8 @@ namespace IntegrationTests
                     new IndexOptions
                     {
                         Id = "foo",
-                        EsIndex = _idxFxt.IndexName,
-                        IdPropertyType = IdPropertyType.String
-                    }
+                        EsIndex = _idxFxt.IndexName
+                    }   
                 }
             };
 

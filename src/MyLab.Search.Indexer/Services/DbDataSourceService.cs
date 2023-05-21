@@ -51,10 +51,8 @@ namespace MyLab.Search.Indexer.Services
             var kickQueryPattern = await _resourceProvider.ProvideKickQueryAsync(indexId);
 
             await using var conn = _dbManager.Use();
-
-            var totalIdPropertyType = _options.GetTotalIdPropertyType(indexId);
-
-            var kickQuery = KickQuery.Build(kickQueryPattern, idList, totalIdPropertyType);
+            
+            var kickQuery = KickQuery.Build(kickQueryPattern, idList);
             
             var docs = await conn.QueryToArrayAsync(
                 IndexingDocDataReader.Read, 

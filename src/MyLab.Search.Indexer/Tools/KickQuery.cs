@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Immutable;
-using System.Data;
 using System.Linq;
 using LinqToDB;
 using LinqToDB.Common;
 using LinqToDB.Data;
-using LinqToDB.DataProvider;
 using MyLab.Search.Indexer.Options;
 
 namespace MyLab.Search.Indexer.Tools
@@ -22,26 +19,16 @@ namespace MyLab.Search.Indexer.Tools
             Parameters = parameters;
         }
 
-        public static KickQuery Build(string queryPattern, string[] ids, IdPropertyType idPropertyType)
+        public static KickQuery Build(string queryPattern, string[] ids)
         {
             if (ids.IsNullOrEmpty())
                 throw new InvalidOperationException("Kick id list is empty or null");
 
             DataParameter[] parameters;
-            DataType idType;
+            DataType idType = ids.All(id => long.TryParse(id, out long _))
+                ? DataType.Int64
+                : DataType.Text;
             string query;
-
-            switch (idPropertyType)
-            {
-                case IdPropertyType.String:
-                    idType = DataType.Text;
-                    break;
-                case IdPropertyType.Int:
-                    idType = DataType.Int64;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(idPropertyType), idPropertyType, null);
-            }
 
             if (ids.Length == 1)
             {

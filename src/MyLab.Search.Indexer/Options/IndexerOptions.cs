@@ -56,20 +56,6 @@ namespace MyLab.Search.Indexer.Options
             return $"{EsNamePrefix?.ToLower()}{name.ToLower()}{EsNamePostfix?.ToLower()}";
         }
 
-        public IdPropertyType GetTotalIdPropertyType(string idxId)
-        {
-            var idxOpts = GetIndexOptionsCore(idxId);
-
-            if (idxOpts != null)
-                return idxOpts.IdPropertyType;
-
-            if (DefaultIndexOptions == null)
-                throw new InvalidOperationException("Unable to determine index id property type")
-                    .AndFactIs("idx", idxId);
-
-            return DefaultIndexOptions.IdPropertyType;
-        }
-
         public IndexType GetTotalIndexType(string idxId)
         {
             var idxOpts = GetIndexOptionsCore(idxId);

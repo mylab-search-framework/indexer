@@ -83,8 +83,7 @@ namespace FuncTests
                         new IndexOptions
                         {
                             Id = "baz",
-                            EsIndex = _esIndexName,
-                            IdPropertyType = IdPropertyType.Int
+                            EsIndex = _esIndexName
                         }
                     };
                     opt.MqQueue = _queue.Name;

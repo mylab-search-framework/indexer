@@ -10,15 +10,15 @@ namespace UnitTests
         private const string QueryPattern = "select * from table where id in (@id)";
 
         [Theory]
-        [InlineData("foo-id", IdPropertyType.String, DataType.Text)]
-        [InlineData("34", IdPropertyType.Int, DataType.Int64)]
-        public void ShouldBuildSingleIdQuery(string id, IdPropertyType idPropertyType, DataType expectedDbType)
+        [InlineData("foo-id", DataType.Text)]
+        [InlineData("34", DataType.Int64)]
+        public void ShouldBuildSingleIdQuery(string id, DataType expectedDbType)
         {
             //Arrange
             var ids = new [] { id };
                 
             //Act
-            var query = KickQuery.Build(QueryPattern, ids, idPropertyType);
+            var query = KickQuery.Build(QueryPattern, ids);
 
             //Assert
             Assert.Equal(QueryPattern, query.Query);
@@ -29,15 +29,15 @@ namespace UnitTests
         }
 
         [Theory]
-        [InlineData("foo,bar", "select * from table where id in (@id0,@id1)", IdPropertyType.String, DataType.Text)]
-        [InlineData("56,123", "select * from table where id in (@id0,@id1)", IdPropertyType.Int, DataType.Int64)]
-        public void ShouldBuildMultipleIdQuery(string idsString, string expectedQuery, IdPropertyType idPropertyType, DataType expectedDataType)
+        [InlineData("foo,bar", "select * from table where id in (@id0,@id1)", DataType.Text)]
+        [InlineData("56,123", "select * from table where id in (@id0,@id1)", DataType.Int64)]
+        public void ShouldBuildMultipleIdQuery(string idsString, string expectedQuery, DataType expectedDataType)
         {
             //Arrange
             var ids = idsString.Split(',');
 
             //Act
-            var query = KickQuery.Build(QueryPattern, ids, idPropertyType);
+            var query = KickQuery.Build(QueryPattern, ids);
 
             //Assert
             Assert.Equal(expectedQuery, query.Query);

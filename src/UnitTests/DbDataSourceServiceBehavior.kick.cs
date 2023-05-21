@@ -26,8 +26,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions 
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from docs where id in (@id)",
-                IdPropertyType = IdPropertyType.Int
+                KickDbQuery = "select id, content from docs where id in (@id)"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
@@ -62,8 +61,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from docs where id in (@id)",
-                IdPropertyType = IdPropertyType.Int
+                KickDbQuery = "select id, content from docs where id in (@id)"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
@@ -98,8 +96,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from docs where content in (@id)",
-                IdPropertyType = IdPropertyType.Int
+                KickDbQuery = "select id, content from docs where content in (@id)"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
@@ -134,8 +131,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                KickDbQuery = "select id, content from docs where content in (@id)",
-                IdPropertyType = IdPropertyType.Int
+                KickDbQuery = "select id, content from docs where content in (@id)"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
