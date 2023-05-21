@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Log.Dsl;
-using MyLab.Search.EsAdapter.Indexing;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 

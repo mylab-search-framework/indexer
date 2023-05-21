@@ -8,39 +8,28 @@ using Microsoft.Extensions.Options;
 using MyLab.Search.Indexer.Options;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Net.NetworkInformation;
-using Microsoft.Extensions.Logging;
-using MyLab.Log.Dsl;
 
 namespace MyLab.Search.Indexer.Services
 {
     class FileResourceProvider : IResourceProvider
     {
-        private readonly IndexerOptions _opts;
-
         private readonly string _indexResourcePath;
         private readonly string _lifecyclePoliciesPath;
         private readonly string _indexTemplatesPath;
         private readonly string _componentTemplatesPath;
-        private readonly IDslLogger _log;
 
         private const string KickFilename = "kick.sql";
         private const string SyncFilename = "sync.sql";
-        private const string IndexFilename = "index.json";
         private const string MappingFilename = "mapping.json";
 
-        public FileResourceProvider(IOptions<IndexerOptions> opts,
-            ILogger<FileResourceProvider> logger = null)
-            : this(opts.Value, logger)
+        public FileResourceProvider(IOptions<IndexerOptions> opts)
+            : this(opts.Value)
         {
             
         }
         
-        public FileResourceProvider(IndexerOptions opts,
-            ILogger<FileResourceProvider> logger = null)
+        public FileResourceProvider(IndexerOptions opts)
         {
-            _opts = opts;
-            _log = logger?.Dsl();
             _indexResourcePath = Path.Combine(opts.ResourcesPath, "indexes");
             _lifecyclePoliciesPath = Path.Combine(opts.ResourcesPath, "lifecycle-policies");
             _indexTemplatesPath = Path.Combine(opts.ResourcesPath, "index-templates");
@@ -49,11 +38,6 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<string> ProvideKickQueryAsync(string indexId)
         {
-            var idxOpts = _opts.GetIndexOptions(indexId);
-
-            if (idxOpts.KickDbQuery != null) 
-                return idxOpts.KickDbQuery;
-
             var filePath = Path.Combine(_indexResourcePath, indexId, KickFilename);
 
             return await ReadFileAsync(filePath);
@@ -61,11 +45,6 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<string> ProvideSyncQueryAsync(string indexId)
         {
-            var idxOpts = _opts.GetIndexOptions(indexId);
-
-            if (idxOpts.SyncDbQuery != null)
-                return idxOpts.SyncDbQuery;
-
             var filePath = Path.Combine(_indexResourcePath, indexId, SyncFilename);
 
             return await ReadFileAsync(filePath);
