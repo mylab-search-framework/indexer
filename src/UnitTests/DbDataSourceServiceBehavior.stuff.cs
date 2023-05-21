@@ -32,23 +32,17 @@ namespace UnitTests
 
         private class TestResourceProvider : IResourceProvider
         {
-            private readonly string _kickQuery;
-            private readonly string _syncQuery;
-
-            public TestResourceProvider(IndexOptions options)
-            {
-                _kickQuery = options.KickDbQuery;
-                _syncQuery = options.SyncDbQuery;
-            }
-
+            public string KickQuery { get; set; }
+            public string SyncQuery { get; set; }
+            
             public Task<string> ProvideKickQueryAsync(string indexId)
             {
-                return Task.FromResult(_kickQuery);
+                return Task.FromResult(KickQuery);
             }
 
             public Task<string> ProvideSyncQueryAsync(string indexId)
             {
-                return Task.FromResult(_syncQuery);
+                return Task.FromResult(SyncQuery);
             }
 
             public Task<string> ProvideIndexMappingAsync(string indexId)

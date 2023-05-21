@@ -23,11 +23,9 @@ namespace MyLab.Search.Indexer.Services
         private readonly IDataSourceService _dataSource;
         private readonly IIndexerService _indexer;
         private readonly IResourceProvider _resourceProvider;
-        private readonly IndexerOptions _options;
         private readonly IDslLogger _log;
 
         public SyncService(
-            IOptions<IndexerOptions> options,
             IDataSourceService dataSource,
             IIndexerService indexer,
             IResourceProvider resourceProvider,
@@ -36,15 +34,11 @@ namespace MyLab.Search.Indexer.Services
             _dataSource = dataSource;
             _indexer = indexer;
             _resourceProvider = resourceProvider;
-            _options = options.Value;
             _log = logger?.Dsl();
         }
 
         public async Task<bool> IsSyncEnabledAsync(string indexName)
         {
-            if (_options.Indexes.Any(idx => idx.Id == indexName && idx.KickDbQuery != null))
-                return true;
-
             try
             {
                 var kickQuery = await _resourceProvider.ProvideKickQueryAsync(indexName);

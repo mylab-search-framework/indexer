@@ -25,13 +25,15 @@ namespace UnitTests
 
             var indexOpts = new IndexOptions 
             {
-                Id = "foo-index",
-                KickDbQuery = "select id, content from docs where id in (@id)"
+                Id = "foo-index"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                KickQuery = "select id, content from docs where id in (@id)"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -60,13 +62,15 @@ namespace UnitTests
 
             var indexOpts = new IndexOptions
             {
-                Id = "foo-index",
-                KickDbQuery = "select id, content from docs where id in (@id)"
+                Id = "foo-index"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                KickQuery = "select id, content from docs where id in (@id)"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -95,13 +99,15 @@ namespace UnitTests
 
             var indexOpts = new IndexOptions
             {
-                Id = "foo-index",
-                KickDbQuery = "select id, content from docs where content in (@id)"
+                Id = "foo-index"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                KickQuery = "select id, content from docs where content in (@id)"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -130,13 +136,15 @@ namespace UnitTests
 
             var indexOpts = new IndexOptions
             {
-                Id = "foo-index",
-                KickDbQuery = "select id, content from docs where content in (@id)"
+                Id = "foo-index"
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                KickQuery = "select id, content from docs where content in (@id)"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 

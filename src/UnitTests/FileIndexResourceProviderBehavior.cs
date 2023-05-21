@@ -18,32 +18,6 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadKickQueryFromOptions()
-        {
-            //Arrange
-            var indexerOpts = new IndexerOptions
-            {
-                ResourcesPath = _resourcePath,
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "foo-index",
-                        KickDbQuery = "-- kick query from options"
-                    }
-                }
-            };
-
-            var service = new FileResourceProvider(indexerOpts);
-
-            //Act
-            var kickQuery = await service.ProvideKickQueryAsync("foo-index");
-
-            //Assert
-            Assert.Equal("-- kick query from options", kickQuery);
-        }
-
-        [Fact]
         public async Task ShouldLoadKickQueryFromFile()
         {
             //Arrange
@@ -54,8 +28,7 @@ namespace UnitTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo-index",
-                        KickDbQuery = null
+                        Id = "foo-index"
                     }
                 }
             };
