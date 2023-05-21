@@ -48,20 +48,12 @@ namespace UnitTests
         [InlineData(null, "BAR", "-POST", "bar-post")]
         [InlineData("pRe-", "BAR", null, "pre-bar")]
         [InlineData(null, "BAR", null, "bar")]
-
-        [InlineData("pre-", null, "-post", "pre-foo-post")]
-        [InlineData(null, null, "-Post", "foo-post")]
-        [InlineData("PRE-", null, null, "pre-foo")]
-        [InlineData(null, null, null, "foo")]
-        [InlineData(null, null, "-POST", "foo-post")]
-        [InlineData("pRe-", null, null, "pre-foo")]
         public void ShouldProvideEsIndexName(string prefix, string value, string postfix, string expected)
         {
             //Arrange
             var indexOpt = new IndexOptions
             {
-                Id = "foo",
-                EsIndex = value
+                Id = value
             };
             var opts = new IndexerOptions
             {
@@ -74,7 +66,7 @@ namespace UnitTests
             };
 
             //Act
-            var foundName = opts.GetEsIndexName("foo");
+            var foundName = opts.GetEsIndexName(value);
 
             //Assert
             Assert.Equal(expected, foundName);

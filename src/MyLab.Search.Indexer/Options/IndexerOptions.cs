@@ -40,12 +40,8 @@ namespace MyLab.Search.Indexer.Options
         {
             if (string.IsNullOrEmpty(idxId))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
-
-            var idxOpt = GetIndexOptionsCore(idxId);
-
-            var totalIdxName = idxOpt?.EsIndex ?? idxId;
-
-            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{totalIdxName.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
+            
+            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{idxId.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
         }
 
         public string GetEsName(string name)

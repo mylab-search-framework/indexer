@@ -42,8 +42,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }
                 }
             };
@@ -53,7 +52,7 @@ namespace IntegrationTests
             var doc = TestDoc.Generate();
             var req = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PostList = new []
                 {
                     JObject.FromObject(doc)
@@ -86,8 +85,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }
                 }
             };
@@ -97,7 +95,7 @@ namespace IntegrationTests
             var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PostList = new[]
                 {
                     JObject.FromObject(doc)
@@ -106,7 +104,7 @@ namespace IntegrationTests
 
             var delReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 DeleteList = new[]
                 {
                     doc.Id
@@ -140,8 +138,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }
                 }
             };
@@ -151,7 +148,7 @@ namespace IntegrationTests
             var doc = TestDoc.Generate();
             var req = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PutList = new[]
                 {
                     JObject.FromObject(doc)
@@ -184,8 +181,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }
                 }
             };
@@ -195,7 +191,7 @@ namespace IntegrationTests
             var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PostList = new[]
                 {
                     JObject.FromObject(doc)
@@ -205,7 +201,7 @@ namespace IntegrationTests
             var docPatcher = new TestDoc(doc.Id, "patched");
             var putReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PutList = new[]
                 {
                     JObject.FromObject(docPatcher)
@@ -240,8 +236,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }
                 }
             };
@@ -251,7 +246,7 @@ namespace IntegrationTests
             var doc = TestDoc.Generate();
             var postReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PostList = new[]
                 {
                     JObject.FromObject(doc)
@@ -261,7 +256,7 @@ namespace IntegrationTests
             var dockPatcher = new TestDoc(doc.Id, "patched");
             var patchReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PatchList = new[]
                 {
                     JObject.FromObject(dockPatcher)
@@ -296,8 +291,7 @@ namespace IntegrationTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo",
-                        EsIndex = _idxFxt.IndexName
+                        Id = _idxFxt.IndexName
                     }   
                 }
             };
@@ -306,7 +300,7 @@ namespace IntegrationTests
             
             var patchReq = new IndexingRequest
             {
-                IndexId = "foo",
+                IndexId = _idxFxt.IndexName,
                 PatchList = new[]
                 {
                     JObject.FromObject(TestDoc.Generate())

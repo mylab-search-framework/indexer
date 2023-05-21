@@ -14,7 +14,7 @@ namespace FuncTests
             //Arrange
             var docForDelete = TestDoc.Generate();
 
-            await _esFxt.Tools.Index(_esIndexName).CreateAsync();
+            await _esFxt.Tools.Index("baz").CreateAsync();
             await _indexer.CreateAsync(docForDelete);
 
             //Act

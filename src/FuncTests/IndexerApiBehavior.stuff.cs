@@ -34,7 +34,6 @@ namespace FuncTests
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
         private IDbManager _dbMgr;
-        private string _esIndexName;
 
         public IndexerApiBehavior(
             TmpDbFixture<TestDbInitializer> dbFxt,
@@ -63,11 +62,7 @@ namespace FuncTests
         {
             _dbMgr = await _dbFxt.CreateDbAsync();
 
-            _esIndexName = Guid.NewGuid().ToString("N");
-
-            //await _esFxt.Tools.Index(_esIndexName).CreateAsync();
-
-            var indexNameProvider = new SingleIndexNameProvider(_esIndexName);
+            var indexNameProvider = new SingleIndexNameProvider("baz");
 
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);
             _searcher = new EsSearcher<TestDoc>(_esFxt.Searcher, indexNameProvider);
@@ -81,8 +76,7 @@ namespace FuncTests
                         {
                             new IndexOptions
                             {
-                                Id = "baz",
-                                EsIndex = _esIndexName
+                                Id = "baz"
                             }
                         };
                         opt.EnableEsIndexAutoCreation = true;
@@ -99,13 +93,8 @@ namespace FuncTests
 
         public async Task DisposeAsync()
         {
-            try
-            {
-                await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
-            }
-            catch (EsException e) when (e.Response.HasIndexNotFound)
-            {
-            }
+            var exists = await _esFxt.Tools.Index("baz").ExistsAsync();
+            if (exists) await _esFxt.Tools.Index("baz").DeleteAsync();
         }
     }
 }

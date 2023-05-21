@@ -36,7 +36,6 @@ namespace FuncTests
         private readonly TestApi<Startup, IIndexerSyncTaskApi> _apiFxt;
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
-        private readonly string _esIndexName;
         private readonly IDbManager _dbMgr;
         private readonly IConfigurationRoot _dbConfig;
 
@@ -50,7 +49,6 @@ namespace FuncTests
             _apiFxt = apiFxtFxt;
             _output = output;
             _apiFxt.Output = output;
-            _esIndexName = Guid.NewGuid().ToString("N");
 
             var memConfig = new MemoryConfigurationSource
             {
@@ -115,8 +113,7 @@ namespace FuncTests
                         {
                             new IndexOptions
                             {
-                                Id = "baz",
-                                EsIndex = _esIndexName
+                                Id = "baz"
                             }
                         };
                         opt.EnableEsIndexAutoCreation = true;
@@ -137,7 +134,7 @@ namespace FuncTests
             await api.StartSynchronizationAsync();
             await Task.Delay(2000);
 
-            var found = await _esFxt.Searcher.SearchAsync(_esIndexName, searchP);
+            var found = await _esFxt.Searcher.SearchAsync("baz", searchP);
 
             //Assert
             Assert.Single(found);
@@ -153,7 +150,8 @@ namespace FuncTests
 
         public async Task DisposeAsync()
         {
-            await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
+            var exists = await _esFxt.Tools.Index("baz").ExistsAsync();
+            if(exists) await _esFxt.Tools.Index("baz").DeleteAsync();
         }
 
         public class TestDbInitializer : ITestDbInitializer
