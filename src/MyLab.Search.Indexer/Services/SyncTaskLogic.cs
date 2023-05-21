@@ -13,22 +13,17 @@ namespace MyLab.Search.Indexer.Services
 {
     class SyncTaskLogic : ITaskLogic
     {
+        private readonly ISyncService _syncService;
         private readonly IndexerOptions _opts;
-        private readonly IDataSourceService _dataSource;
-        private readonly IIndexerService _indexer;
         private readonly IDslLogger _log;
-
-        public SyncTaskLogic(IOptions<IndexerOptions> opts, IDataSourceService dataSource, IIndexerService indexer, ILogger<SyncTaskLogic> logger = null)
-            :this(opts.Value, dataSource, indexer, logger)
+        
+        public SyncTaskLogic(
+            IOptions<IndexerOptions> opts,
+            ISyncService syncService,
+            ILogger<SyncTaskLogic> logger = null)
         {
-            
-        }
-
-        public SyncTaskLogic(IndexerOptions opts, IDataSourceService dataSource, IIndexerService indexer, ILogger<SyncTaskLogic> logger = null)
-        {
-            _opts = opts;
-            _dataSource = dataSource;
-            _indexer = indexer;
+            _syncService = syncService;
+            _opts = opts.Value;
             _log = logger?.Dsl();
         }
 
@@ -46,7 +41,9 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var idx in _opts.Indexes)
             {
-                if (!idx.EnableSync)
+                var idxSyncEnabled = await _syncService.IsSyncEnabledAsync(idx.Id);
+
+                if (!idxSyncEnabled)
                 {
                     _log.Action("Index sync is disabled")
                         .AndFactIs("idx", idx.Id)
@@ -57,7 +54,7 @@ namespace MyLab.Search.Indexer.Services
                 {
                     var totalIndexType = _opts.GetTotalIndexType(idx.Id);
 
-                    await SyncIndexAsync(cancellationToken, idx.Id, totalIndexType);
+                    await _syncService.SyncAsync(idx.Id, totalIndexType, cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -69,69 +66,6 @@ namespace MyLab.Search.Indexer.Services
 
             _log.Action("Indexes sync completed")
                 .Write();
-        }
-
-        private async Task SyncIndexAsync(CancellationToken cancellationToken, string idxId, IndexType idxType)
-        {
-            _log.Action("Index sync started")
-                .AndFactIs("idx", idxId)
-                .Write();
-
-            int syncCount = 0;
-
-            var dataEnum = await _dataSource.LoadSyncAsync(idxId);
-            if (dataEnum != null)
-            {
-                await foreach (var data in dataEnum.WithCancellation(cancellationToken))
-                {
-                    var idxReq = new IndexingRequest
-                    {
-                        IndexId = idxId
-                    };
-
-                    switch (idxType)
-                    {
-                        case IndexType.Heap:
-                        {
-                            idxReq.PutList = data.Batch.Docs;
-                        }
-                            break;
-                        case IndexType.Stream:
-                        {
-                            idxReq.PostList = data.Batch.Docs;
-                        }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    await _indexer.IndexAsync(idxReq, cancellationToken);
-
-                    await data.SeedSaver.SaveAsync();
-
-                    syncCount += data.Batch.Docs.Length;
-
-                    _log.Debug("Sync data has been indexed")
-                        .AndFactIs("idx", idxId)
-                        .AndFactIs("sql", data.Batch.Query)
-                        .AndFactIs("count", data.Batch.Docs.Length)
-                        .Write();
-                }
-            }
-
-            if (syncCount != 0)
-            {
-                _log.Action("Index sync completed")
-                    .AndFactIs("idx", idxId)
-                    .AndFactIs("count", syncCount)
-                    .Write();
-            }
-            else
-            {
-                _log.Action("No sync data found")
-                    .AndFactIs("idx", idxId)                  
-                    .Write();
-            }
         }
     }
 }

@@ -44,6 +44,7 @@ namespace MyLab.Search.Indexer
                 .AddSingleton<IIndexerService,IndexerService>()
                 .AddSingleton<IIndexCreator,IndexCreator>()
                 .AddSingleton<IIndexMappingProvider,IndexMappingProvider>()
+                .AddSingleton<ISyncService, SyncService>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()
                 .AddDbTools<ConfiguredDataProviderSource>(Configuration)

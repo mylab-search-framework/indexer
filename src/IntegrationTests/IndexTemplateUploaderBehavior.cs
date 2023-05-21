@@ -114,7 +114,7 @@ namespace IntegrationTests
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
-
+            
             var templateInfo = await _fxt.Tools.IndexTemplate("index-template-test").TryGetAsync();
 
             if (templateInfo != null)
