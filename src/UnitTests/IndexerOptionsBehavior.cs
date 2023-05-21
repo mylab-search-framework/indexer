@@ -57,8 +57,8 @@ namespace UnitTests
             };
             var opts = new IndexerOptions
             {
-                EsIndexNamePrefix = prefix,
-                EsIndexNamePostfix = postfix,
+                EsNamePrefix = prefix,
+                EsNamePostfix = postfix,
                 Indexes = new[]
                 {
                     indexOpt

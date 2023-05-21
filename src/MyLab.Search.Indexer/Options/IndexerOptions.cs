@@ -11,16 +11,8 @@ namespace MyLab.Search.Indexer.Options
         public IndexOptions[] Indexes { get; set; }
         public IndexOptionsBase DefaultIndexOptions { get; set; } = new();
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
-
-        [Obsolete("Use ResourcesPath instead")]
-        public string ResourcePath { get; set; } = "/etc/mylab-indexer/indexes";
         public string ResourcesPath { get; set; } = "/etc/mylab-indexer";
         public string MqQueue { get; set; }
-
-        [Obsolete("Use EsNamePrefix instead")]
-        public string EsIndexNamePrefix { get; set; }
-        [Obsolete("Use EsNamePostfix instead")]
-        public string EsIndexNamePostfix { get; set; }
         public string EsNamePrefix { get; set; }
         public string EsNamePostfix { get; set; }
         public bool EnableEsIndexAutoCreation { get; set; } = false;
@@ -41,7 +33,7 @@ namespace MyLab.Search.Indexer.Options
             if (string.IsNullOrEmpty(idxId))
                 throw new ArgumentException("Value cannot be null or empty.", nameof(idxId));
             
-            return $"{(EsIndexNamePrefix ?? EsNamePrefix)?.ToLower()}{idxId.ToLower()}{(EsIndexNamePostfix ?? EsNamePostfix)?.ToLower()}";
+            return $"{EsNamePrefix?.ToLower()}{idxId.ToLower()}{EsNamePostfix?.ToLower()}";
         }
 
         public string GetEsName(string name)

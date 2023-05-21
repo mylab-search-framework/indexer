@@ -73,22 +73,6 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<string> ProvideIndexMappingAsync(string indexId)
         {
-            var indexJsonPath = Path.Combine(_indexResourcePath, indexId, IndexFilename);
-            if (File.Exists(indexJsonPath))
-            {
-                _log?.Warning("'index.json' is no longer supported")
-                    .AndFactIs("filename", indexJsonPath)
-                    .Write();
-            }
-
-            var commonIndexJsonPath = Path.Combine(_indexResourcePath, IndexFilename);
-            if (File.Exists(commonIndexJsonPath))
-            {
-                _log?.Warning("'index.json' is no longer supported")
-                    .AndFactIs("filename", commonIndexJsonPath)
-                    .Write();
-            }
-
             var mappingJsonPath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
             var mappingJson = await ReadFileAsync(mappingJsonPath, throwIfDoesNotExists: false);
 
@@ -96,10 +80,10 @@ namespace MyLab.Search.Indexer.Services
             var commonMappingJson = await ReadFileAsync(commonMappingJsonPath, throwIfDoesNotExists: false);
 
             if (mappingJson == null && commonMappingJson == null)
-                throw new FileNotFoundException("Resource not found")
+                throw new FileNotFoundException("Mapping not found")
                     .AndFactIs("index-id", indexId)
-                    .AndFactIs("index-file", indexJsonPath)
-                    .AndFactIs("common-file", commonIndexJsonPath);
+                    .AndFactIs("mapping-file", mappingJsonPath)
+                    .AndFactIs("common-file", commonMappingJsonPath);
 
             if (commonMappingJson == null)
                 return mappingJson;
