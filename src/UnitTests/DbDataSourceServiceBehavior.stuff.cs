@@ -68,32 +68,17 @@ namespace UnitTests
 
         private class TestSeedService : ISeedService
         {
-            public Stack<long> IdSeeds { get; } = new();
+            public Seed Seed { get; set; }
 
-            public Stack<DateTime> DtSeeds { get; } = new();
-
-            public Task SaveSeedAsync(string indexId, long idSeed)
+            public Task SaveSeedAsync(string indexId, Seed seed)
             {
-                IdSeeds.Push(idSeed);
-
+                Seed = seed;
                 return Task.CompletedTask;
             }
 
-            public Task SaveSeedAsync(string indexId, DateTime dtSeed)
+            public Task<Seed> LoadSeedAsync(string indexId)
             {
-                DtSeeds.Push(dtSeed);
-
-                return Task.CompletedTask;
-            }
-
-            public Task<long> LoadIdSeedAsync(string indexId)
-            {
-                return Task.FromResult(IdSeeds.Count != 0 ? IdSeeds.Peek() : -1);
-            }
-
-            public Task<DateTime> LoadDtSeedAsync(string indexId)
-            {
-                return Task.FromResult(DtSeeds.Count != 0 ? DtSeeds.Peek() : DateTime.MinValue);
+                return Task.FromResult(Seed);
             }
         }
 

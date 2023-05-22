@@ -17,7 +17,7 @@ namespace UnitTests
             var indexId = Guid.NewGuid().ToString("N");
 
             //Act
-            var seed = await seedSrv.LoadIdSeedAsync("foo");
+            var seed = await seedSrv.LoadSeedAsync("foo");
 
             //Assert
             Assert.Equal(-1, seed);
@@ -31,7 +31,7 @@ namespace UnitTests
             var indexId = Guid.NewGuid().ToString("N");
 
             //Act
-            var seed = await seedSrv.LoadDtSeedAsync(indexId);
+            var seed = await seedSrv.LoadSeedAsync(indexId);
 
             //Assert
             Assert.Equal(DateTime.MinValue, seed);
@@ -47,7 +47,7 @@ namespace UnitTests
 
             //Act
             await seedSrv.SaveSeedAsync(indexId, actualSeed);
-            var loadedSeed = await seedSrv.LoadIdSeedAsync(indexId);
+            var loadedSeed = await seedSrv.LoadSeedAsync(indexId);
 
             //Assert
             Assert.Equal(actualSeed, loadedSeed);
@@ -63,7 +63,7 @@ namespace UnitTests
 
             //Act
             await seedSrv.SaveSeedAsync(indexId, actualSeed);
-            var loadedSeed = await seedSrv.LoadDtSeedAsync(indexId);
+            var loadedSeed = await seedSrv.LoadSeedAsync(indexId);
 
             //Assert
             Assert.Equal(actualSeed, loadedSeed);

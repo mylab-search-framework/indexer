@@ -31,50 +31,7 @@ namespace IntegrationTests
             _idxFxt.Output = output;
             _fxt.Output = output;
         }
-
-        [Fact]
-        public async Task ShouldPostDocs()
-        {
-            //Arrange
-            var opts = new IndexerOptions
-            {
-                Indexes = new []
-                {
-                    new IndexOptions
-                    {
-                        Id = _idxFxt.IndexName
-                    }
-                }
-            };
-
-            var indexer = new IndexerService(_fxt.Indexer, opts);
-
-            var doc = TestDoc.Generate();
-            var req = new IndexingRequest
-            {
-                IndexId = _idxFxt.IndexName,
-                PostList = new []
-                {
-                    JObject.FromObject(doc)
-                }
-            };
-
-            //Act
-            await indexer.IndexAsync(req);
-            await Task.Delay(1000);
-            
-            var resp = await _idxFxt.Searcher.SearchAsync(
-                new EsSearchParams<TestDoc>(
-                        d => d.Ids(idQDesc => idQDesc.Values(doc.Id))
-                    )
-                );
-
-            //Assert
-            Assert.NotNull(resp);
-            Assert.Single(resp);
-            Assert.Equal(doc, resp[0]);
-        }
-
+        
         [Fact]
         public async Task ShouldDeleteDocs()
         {
@@ -96,7 +53,7 @@ namespace IntegrationTests
             var postReq = new IndexingRequest
             {
                 IndexId = _idxFxt.IndexName,
-                PostList = new[]
+                PutList = new[]
                 {
                     JObject.FromObject(doc)
                 }
@@ -192,7 +149,7 @@ namespace IntegrationTests
             var postReq = new IndexingRequest
             {
                 IndexId = _idxFxt.IndexName,
-                PostList = new[]
+                PutList = new[]
                 {
                     JObject.FromObject(doc)
                 }
@@ -247,7 +204,7 @@ namespace IntegrationTests
             var postReq = new IndexingRequest
             {
                 IndexId = _idxFxt.IndexName,
-                PostList = new[]
+                PutList = new[]
                 {
                     JObject.FromObject(doc)
                 }

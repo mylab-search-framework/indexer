@@ -28,24 +28,6 @@ namespace FuncTests
         }
 
         [Fact]
-        public async Task ShouldPost()
-        {
-            //Arrange
-            var docForPost = TestDoc.Generate();
-
-            //Act
-            await _api.PostAsync("baz", JObject.FromObject(docForPost));
-            await Task.Delay(1000);
-
-            var found = await SearchByIdAsync(docForPost.Id);
-
-            //Assert
-            Assert.Single(found);
-            Assert.Equal(docForPost.Id, found[0].Id);
-            Assert.Equal(docForPost.Content, found[0].Content);
-        }
-
-        [Fact]
         public async Task ShouldPutNew()
         {
             //Arrange
@@ -66,11 +48,11 @@ namespace FuncTests
         public async Task ShouldPutIndexed()
         {
             //Arrange
-            var docForPost = TestDoc.Generate();
-            var docForPut = TestDoc.Generate(docForPost.Id);
+            var newDoc = TestDoc.Generate();
+            var docForPut = TestDoc.Generate(newDoc.Id);
 
             //Act
-            await _api.PostAsync("baz", JObject.FromObject(docForPost));
+            await _api.PutAsync("baz", JObject.FromObject(newDoc));
             await Task.Delay(500);
             await _api.PutAsync("baz", JObject.FromObject(docForPut));
             await Task.Delay(1000);
@@ -86,11 +68,11 @@ namespace FuncTests
         public async Task ShouldPatch()
         {
             //Arrange
-            var docForPost = TestDoc.Generate();
-            var docForPatch = TestDoc.Generate(docForPost.Id);
+            var newDoc = TestDoc.Generate();
+            var docForPatch = TestDoc.Generate(newDoc.Id);
 
             //Act
-            await _api.PostAsync("baz", JObject.FromObject(docForPost));
+            await _api.PutAsync("baz", JObject.FromObject(newDoc));
             await Task.Delay(500);
             await _api.PutAsync("baz", JObject.FromObject(docForPatch));
             await Task.Delay(1000);
@@ -111,7 +93,7 @@ namespace FuncTests
             var inserted = await _dbMgr.DoOnce().InsertAsync(docForKick);
 
             //Act
-            await _api.KickAsync("baz", docForKick.Id.ToString());
+            await _api.KickAsync("baz", docForKick.Id);
             await Task.Delay(1000);
 
             var found = await SearchByIdAsync(docForKick.Id);
@@ -126,10 +108,10 @@ namespace FuncTests
         public async Task ShouldKickIndexed()
         {
             //Arrange
-            var docForPost = TestDoc.Generate();
-            var docForKick = TestDoc.Generate(docForPost.Id);
+            var newDoc = TestDoc.Generate();
+            var docForKick = TestDoc.Generate(newDoc.Id);
 
-            await _api.PostAsync("baz", JObject.FromObject(docForPost));
+            await _api.PutAsync("baz", JObject.FromObject(newDoc));
             await Task.Delay(500);
 
             var inserted = await _dbMgr.DoOnce().InsertAsync(docForKick);

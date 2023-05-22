@@ -9,39 +9,21 @@ namespace MyLab.Search.Indexer.Tools
         Task SaveAsync();
     }
 
-    class IdSeedSaver : ISeedSaver
+    class SeedSaver : ISeedSaver
     {
         private readonly string _indexId;
-        private readonly long _idSeed;
+        private readonly Seed _seed;
         private readonly ISeedService _seedService;
 
-        public IdSeedSaver(string indexId, long idSeed, ISeedService seedService)
+        public SeedSaver(string indexId, Seed seed, ISeedService seedService)
         {
             _indexId = indexId;
-            _idSeed = idSeed;
+            _seed = seed;
             _seedService = seedService;
         }
         public Task SaveAsync()
         {
-            return _seedService.SaveSeedAsync(_indexId, _idSeed);
-        }
-    }
-
-    class DtSeedSaver : ISeedSaver
-    {
-        private readonly string _indexId;
-        private readonly DateTime _dtSeed;
-        private readonly ISeedService _seedService;
-
-        public DtSeedSaver(string indexId, DateTime dtSeed, ISeedService seedService)
-        {
-            _indexId = indexId;
-            _dtSeed = dtSeed;
-            _seedService = seedService;
-        }
-        public Task SaveAsync()
-        {
-            return _seedService.SaveSeedAsync(_indexId, _dtSeed);
+            return _seedService.SaveSeedAsync(_indexId, _seed);
         }
     }
 }

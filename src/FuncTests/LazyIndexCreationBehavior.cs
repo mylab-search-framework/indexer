@@ -80,10 +80,10 @@ namespace FuncTests
                 })
             );
 
-            var docForPost = TestDoc.Generate();
+            var newDoc = TestDoc.Generate();
 
             //Act
-            await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
+            await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
             var isIndexExists = await _esFxt.Tools.Index(_esIndexName).ExistsAsync();
@@ -98,10 +98,10 @@ namespace FuncTests
             //Arrange
             var api = _apiFxt.StartWithProxy();
 
-            var docForPost = TestDoc.Generate();
+            var newDoc = TestDoc.Generate();
 
             //Act
-            await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
+            await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
             var indexInfo= await _esFxt.Tools.Index(_esIndexName).TryGetAsync(CancellationToken.None);
@@ -134,10 +134,10 @@ namespace FuncTests
                 })
             );
 
-            var docForPost = TestDoc.Generate();
+            var newDoc = TestDoc.Generate();
 
             //Act
-            await api.PostAsync(_esIndexName, JObject.FromObject(docForPost));
+            await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
             var isStreamExists = await _esFxt.Tools.Stream(_esIndexName).ExistsAsync();
@@ -153,21 +153,11 @@ namespace FuncTests
 
         public async Task DisposeAsync()
         {
-            try
-            {
-                await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
-            }
-            catch (EsException e) when (e.Response.HasIndexNotFound)
-            {
-            }
+            var indexExists = await _esFxt.Tools.Index(_esIndexName).ExistsAsync();
+            if(indexExists) await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
 
-            try
-            {
-                await _esFxt.Tools.Stream(_esIndexName).DeleteAsync();
-            }
-            catch (EsException e) when (e.Response.HasIndexNotFound)
-            {
-            }
+            var streamExists = await _esFxt.Tools.Stream(_esIndexName).ExistsAsync();
+            if(streamExists) await _esFxt.Tools.Stream(_esIndexName).DeleteAsync();
         }
     }
 }

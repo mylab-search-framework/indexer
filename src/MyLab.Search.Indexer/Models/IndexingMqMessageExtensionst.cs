@@ -11,8 +11,7 @@ namespace MyLab.Search.Indexer.Models
         {
             if (string.IsNullOrEmpty(msg.IndexId))
                 throw new ValidationException("'indexId' must be specified");
-
-            CheckList(msg.Post);
+            
             CheckList(msg.Put);
             CheckList(msg.Patch);
 
@@ -32,7 +31,6 @@ namespace MyLab.Search.Indexer.Models
         {
             return new InputIndexingRequest
             {
-                PostList = msg.Post,
                 PutList = msg.Put,
                 PatchList = msg.Patch,
                 IndexId = msg.IndexId,

@@ -72,36 +72,26 @@ namespace MyLab.Search.Indexer.Services
         public async Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)
         {
             string syncQuery = await _resourceProvider.ProvideSyncQueryAsync(indexId);
-            
-            DataParameter seedParameter;
-            string seedStrValue;
 
             var totalIndexType = _options.GetTotalIndexType(indexId);
-            
-            switch (totalIndexType)
-            {
-                case IndexType.Heap:
-                    {
-                        var dtSeed = await _seedService.LoadDtSeedAsync(indexId);
-                        seedStrValue = dtSeed.ToString("O");
-                        seedParameter = new DataParameter(QueryParameterNames.Seed, dtSeed, DataType.DateTime);
-                    }
-                    break;
-                case IndexType.Stream:
-                    {
-                        var idSeed = await _seedService.LoadIdSeedAsync(indexId);
-                        seedStrValue = idSeed.ToString();
-                        seedParameter = new DataParameter(QueryParameterNames.Seed, idSeed, DataType.Int64);
-                    }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
-            }
-            
+            var seed = await _seedService.LoadSeedAsync(indexId);
+
+            if (totalIndexType == IndexType.Heap && !seed.IsDateTime)
+                throw new InvalidOperationException("A DateTime seed is not suitable for Heap index");
+
+            if (totalIndexType == IndexType.Stream && !seed.IsLong)
+                throw new InvalidOperationException("A Long seed is not suitable for Stream index");
+
+            var seedParameter = new DataParameter(
+                QueryParameterNames.Seed, 
+                seed.IsLong ? seed.Long : seed.DataTime, 
+                seed.IsLong ? DataType.Int64 : DataType.DateTime
+            );
+
             var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, _options.SyncPageSize);
 
             _log?.Action("Sync data loading")
-                .AndFactIs("seed", seedStrValue)
+                .AndFactIs("seed", seed.ToString())
                 .Write();
 
             return new DataSourceLoadEnumerable(indexId, totalIndexType, _seedService, batchEnumerable);

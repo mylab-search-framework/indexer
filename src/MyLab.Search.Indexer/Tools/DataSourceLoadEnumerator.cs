@@ -50,7 +50,7 @@ namespace MyLab.Search.Indexer.Tools
                 {
                     case IndexType.Heap:
                         {
-                            seedSaver = new DtSeedSaver(_indexId, DateTime.Now, _seedService);
+                            seedSaver = new SeedSaver(_indexId, DateTime.Now, _seedService);
                         }
                         break;
                     case IndexType.Stream:
@@ -75,7 +75,7 @@ namespace MyLab.Search.Indexer.Tools
 
                             var maxId = allLoadIds.Max(id => id.ParsedId.GetValueOrDefault());
 
-                            seedSaver = new IdSeedSaver(_indexId, maxId, _seedService);
+                            seedSaver = new SeedSaver(_indexId, maxId, _seedService);
                         }
                         break;
                     default:

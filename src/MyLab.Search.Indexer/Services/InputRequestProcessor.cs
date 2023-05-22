@@ -62,23 +62,7 @@ namespace MyLab.Search.Indexer.Services
                         throw new KickDocsCountMismatchException();
                     }
 
-                    var totalIndexType = _options.GetTotalIndexType(inputRequest.IndexId);
-
-                    switch (totalIndexType)
-                    {
-                        case IndexType.Heap:
-                            {
-                                idxReq.PutList = JoinDocs(idxReq.PutList, docs);
-                            }
-                            break;
-                        case IndexType.Stream:
-                            {
-                                idxReq.PostList = JoinDocs(idxReq.PostList, docs);
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    idxReq.PutList = JoinDocs(idxReq.PutList, docs);
                 }
             }
 

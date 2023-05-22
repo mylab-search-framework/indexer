@@ -18,10 +18,6 @@ namespace UnitTests
             var request = new IndexingMqMessage
             {
                 IndexId = "bar",
-                Post = new[]
-                {
-                    JObject.FromObject(new TestIdDoc())
-                },
                 Put = new[]
                 {
                     JObject.FromObject(new TestIdDoc())
@@ -72,10 +68,6 @@ namespace UnitTests
             var request = new IndexingMqMessage
             {
                 IndexId = "bar",
-                Post = new[]
-                {
-                    JObject.FromObject(new TestDoc())
-                },
                 Put = new[]
                 {
                     JObject.FromObject(new TestDoc()),
@@ -101,10 +93,6 @@ namespace UnitTests
             var request = new IndexingMqMessage
             {
                 IndexId = "bar",
-                Post = new[]
-                {
-                    JObject.FromObject(new TestDoc()),
-                },
                 Put = new[]
                 {
                     JObject.FromObject(new TestIdDoc())
@@ -131,16 +119,16 @@ namespace UnitTests
 
             //Act
             var jsonObj = JObject.Parse(
-                "{\"indexId\":\"foo\",\"post\":[{\"Id\":\"3b60d17d9fa54708a25148dac6717bdb\"}],\"put\":null,\"patch\":null,\"kick\":[\"bar\"]}");
+                "{\"indexId\":\"foo\",\"put\":[{\"Id\":\"3b60d17d9fa54708a25148dac6717bdb\"}],\"patch\":null,\"kick\":[\"bar\"]}");
             var req = jsonObj.ToObject<IndexingMqMessage>();
 
             //Assert
             Assert.NotNull(req);
             Assert.Equal("foo", req.IndexId);
-            Assert.NotNull(req.Post);
-            Assert.Single(req.Post);
-            Assert.NotNull(req.Post[0].Property("Id"));
-            Assert.Equal("3b60d17d9fa54708a25148dac6717bdb", req.Post[0]["Id"].ToString());
+            Assert.NotNull(req.Put);
+            Assert.Single(req.Put);
+            Assert.NotNull(req.Put[0].Property("Id"));
+            Assert.Equal("3b60d17d9fa54708a25148dac6717bdb", req.Put[0]["Id"].ToString());
             Assert.Equal("bar", req.Kick?.FirstOrDefault());
         }
 
@@ -148,13 +136,6 @@ namespace UnitTests
         public void ShouldExtractIndexingRequest()
         {
             //Arrange
-
-            var postEntWithoutId = new TestDoc
-            {
-                Content = Guid.NewGuid().ToString("N")
-            };
-
-            var postEnt = TestIdDoc.Generate();
             var putEnt = TestIdDoc.Generate();
             var patchEnt = TestIdDoc.Generate();
             var deleteId = Guid.NewGuid().ToString("N");
@@ -163,11 +144,6 @@ namespace UnitTests
             var mqMsg = new IndexingMqMessage
             {
                 IndexId = "foo",
-                Post = new[]
-                {
-                    JObject.FromObject(postEntWithoutId),
-                    JObject.FromObject(postEnt)
-                },
                 Put = new[]
                 {
                     JObject.FromObject(putEnt)
@@ -191,12 +167,6 @@ namespace UnitTests
 
             //Assert
             Assert.Equal("foo", indexingRequest.IndexId);
-
-            Assert.Equal(2, indexingRequest.PostList.Length);
-            Assert.Null(indexingRequest.PostList[0].GetIdProperty());
-            Assert.Equal(postEntWithoutId.Content, indexingRequest.PostList[0]?.ToObject<TestDoc>()?.Content);
-            Assert.Equal(postEnt.Id, indexingRequest.PostList[1].GetIdProperty());
-            Assert.Equal(postEnt.Content, indexingRequest.PostList[1]?.ToObject<TestIdDoc>()?.Content);
 
             Assert.Single(indexingRequest.PutList);
             Assert.Equal(putEnt.Id, indexingRequest.PutList[0].GetIdProperty());

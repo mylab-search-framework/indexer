@@ -9,32 +9,6 @@ namespace FuncTests
     public partial class IndexerMqBehavior
     {
         [Fact]
-        public async Task ShouldPost()
-        {
-            //Arrange
-            var doc = TestDoc.Generate();
-
-            var mqMsg = new IndexingMqMessage
-            {
-                IndexId = "baz",
-                Post = new[] { JObject.FromObject(doc) }
-            };
-
-            //Act
-            _queue.Publish(mqMsg);
-            await Task.Delay(500);
-            await _kickApi.KickAsync();
-            await Task.Delay(1000);
-
-            var found = await SearchByIdAsync(doc.Id);
-
-            //Assert
-            Assert.Single(found);
-            Assert.Equal(doc.Id, found[0].Id);
-            Assert.Equal(doc.Content, found[0].Content);
-        }
-
-        [Fact]
         public async Task ShouldPutNew()
         {
             //Arrange

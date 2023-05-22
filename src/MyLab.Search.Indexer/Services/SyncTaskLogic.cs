@@ -52,9 +52,7 @@ namespace MyLab.Search.Indexer.Services
 
                 try
                 {
-                    var totalIndexType = _opts.GetTotalIndexType(idx.Id);
-
-                    await _syncService.SyncAsync(idx.Id, totalIndexType, cancellationToken);
+                    await _syncService.SyncAsync(idx.Id, cancellationToken);
                 }
                 catch (Exception e)
                 {

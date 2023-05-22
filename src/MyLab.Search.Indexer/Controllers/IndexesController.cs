@@ -24,31 +24,6 @@ namespace MyLab.Search.Indexer.Controllers
             _inputRequestProcessor = inputRequestProcessor;
         }
 
-        [HttpPost("{indexId}")]
-        [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
-        [ErrorToResponse(typeof(IndexCreationDeniedException), HttpStatusCode.NotFound, "Index not found")]
-        [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound, "Index options not found")]
-        public async Task<IActionResult> Post([FromRoute] string indexId)
-        {
-            var doc = await ReadDocFromRequestBodyAsync();
-
-            ValidateIndexId(indexId);
-            ValidateDoc(doc);
-
-            var indexingReq = new InputIndexingRequest
-            {
-                IndexId = indexId,
-                PostList = new []
-                {
-                    doc
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
-
-            return Ok();
-        }
-
         [HttpPut("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexCreationDeniedException), HttpStatusCode.NotFound, "Index not found")]

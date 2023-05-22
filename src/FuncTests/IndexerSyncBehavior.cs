@@ -101,7 +101,10 @@ namespace FuncTests
             await _dbMgr.DoOnce().InsertAsync(testDocOld);
             await _dbMgr.DoOnce().InsertAsync(testDoc);
 
-            var seedService = new TestSeedService(testDt.AddMinutes(-2));
+            var seedService = new TestSeedService
+            {
+                Seed = new Seed(testDt.AddMinutes(-2))
+            };
 
             var api = _apiFxt.StartWithProxy(srv =>
             {
@@ -140,7 +143,8 @@ namespace FuncTests
             Assert.Single(found);
             Assert.Equal(testDoc.Id, found[0].Id);
             Assert.Equal(testDoc.Content, found[0].Content);
-            Assert.True(seedService.DtSeed > testDt);
+            Assert.True(seedService.Seed.IsDateTime);
+            Assert.True(seedService.Seed.DataTime > testDt);
         }
 
         public Task InitializeAsync()
@@ -164,37 +168,17 @@ namespace FuncTests
 
         class TestSeedService : ISeedService
         {
-            public DateTime DtSeed { get; private set; }
-            public long IdSeed { get; set; }
-
-            public TestSeedService(DateTime initialDtSeed)
+            public Seed Seed { get; set; }
+            
+            public Task SaveSeedAsync(string indexId, Seed seed)
             {
-                DtSeed = initialDtSeed;
-            }
-            public TestSeedService(long initialIdSeed)
-            {
-                IdSeed = initialIdSeed;
-            }
-            public Task SaveSeedAsync(string indexId, long idSeed)
-            {
-                IdSeed = idSeed;
+                Seed = seed;
                 return Task.CompletedTask;
             }
 
-            public Task SaveSeedAsync(string indexId, DateTime dtSeed)
+            public Task<Seed> LoadSeedAsync(string indexId)
             {
-                DtSeed = dtSeed;
-                return Task.CompletedTask;
-            }
-
-            public Task<long> LoadIdSeedAsync(string indexId)
-            {
-                return Task.FromResult(IdSeed);
-            }
-
-            public Task<DateTime> LoadDtSeedAsync(string indexId)
-            {
-                return Task.FromResult(DtSeed);
+                return Task.FromResult(Seed);
             }
         }
     }
