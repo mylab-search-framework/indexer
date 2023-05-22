@@ -48,18 +48,7 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
-            var idxOpts = _options.GetIndexOptions(indexId);
-
-            string kickQueryPattern;
-
-            if (idxOpts.SyncDbQuery != null)
-            {
-                kickQueryPattern = idxOpts.SyncDbQuery;
-            }
-            else
-            {
-                kickQueryPattern = await _resourceProvider.ProvideKickQueryAsync(indexId);
-            }
+            string kickQueryPattern= await _resourceProvider.ProvideKickQueryAsync(indexId);
 
             await using var conn = _dbManager.Use();
             
@@ -82,19 +71,8 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)
         {
-            var idxOpts = _options.GetIndexOptions(indexId);
-
-            string syncQuery;
-
-            if (idxOpts.SyncDbQuery != null)
-            {
-                syncQuery = idxOpts.SyncDbQuery;
-            }
-            else
-            {
-                syncQuery = await _resourceProvider.ProvideSyncQueryAsync(indexId);
-            }
-
+            string syncQuery = await _resourceProvider.ProvideSyncQueryAsync(indexId);
+            
             DataParameter seedParameter;
             string seedStrValue;
 
@@ -120,7 +98,7 @@ namespace MyLab.Search.Indexer.Services
                     throw new ArgumentOutOfRangeException();
             }
             
-            var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, idxOpts.SyncPageSize);
+            var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, _options.SyncPageSize);
 
             _log?.Action("Sync data loading")
                 .AndFactIs("seed", seedStrValue)

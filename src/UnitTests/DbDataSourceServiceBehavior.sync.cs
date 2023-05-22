@@ -22,13 +22,15 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from docs where id > @seed"
+                IndexType = IndexType.Stream
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where id > @seed"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -50,12 +52,14 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from docs where last_change_dt > @seed"
+                IndexType = IndexType.Heap
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where last_change_dt > @seed"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -85,14 +89,19 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from docs where id > @seed limit @offset, @limit",
+                IndexType = IndexType.Stream
+            };
+
+            var options = new IndexerOptions
+            {
+                Indexes = new[] { indexOpts },
                 SyncPageSize = 1
             };
 
-            var options = new IndexerOptions { Indexes = new[] { indexOpts } };
-
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -127,14 +136,19 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit",
+                IndexType = IndexType.Heap
+            };
+
+            var options = new IndexerOptions
+            {
+                Indexes = new[] { indexOpts },
                 SyncPageSize = 1
             };
 
-            var options = new IndexerOptions { Indexes = new[] { indexOpts } };
-
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -172,14 +186,19 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
-                SyncDbQuery = "select id, content from docs where id > @seed limit @offset, @limit",
+                IndexType = IndexType.Stream
+            };
+
+            var options = new IndexerOptions
+            {
+                Indexes = new[] { indexOpts },
                 SyncPageSize = 1
             };
 
-            var options = new IndexerOptions { Indexes = new[] { indexOpts } };
-
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -215,14 +234,19 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap,
-                SyncDbQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit",
+                IndexType = IndexType.Heap
+            };
+
+            var options = new IndexerOptions
+            {
+                Indexes = new[] { indexOpts },
                 SyncPageSize = 1
             };
 
-            var options = new IndexerOptions { Indexes = new[] { indexOpts } };
-
-            var indexResProvider = new TestResourceProvider(indexOpts);
+            var indexResProvider = new TestResourceProvider
+            {
+                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
+            };
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 

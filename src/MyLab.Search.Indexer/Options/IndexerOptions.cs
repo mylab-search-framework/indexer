@@ -18,6 +18,8 @@ namespace MyLab.Search.Indexer.Options
         public bool EnableEsIndexAutoCreation { get; set; } = false;
         public bool EnableEsStreamAutoCreation { get; set; } = false;
 
+        public int SyncPageSize { get; set; } = 500;
+
         public IndexOptions GetIndexOptions(string indexId)
         {
             var foundOptions = GetIndexOptionsCore(indexId);

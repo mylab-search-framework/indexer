@@ -43,32 +43,6 @@ namespace UnitTests
         }
 
         [Fact]
-        public async Task ShouldLoadSyncQueryFromOptions()
-        {
-            //Arrange
-            var indexerOpts = new IndexerOptions
-            {
-                ResourcesPath = _resourcePath,
-                Indexes = new[]
-                {
-                    new IndexOptions
-                    {
-                        Id = "foo-index",
-                        SyncDbQuery = "-- sync query from options"
-                    }
-                }
-            };
-
-            var service = new FileResourceProvider(indexerOpts);
-
-            //Act
-            var syncQuery = await service.ProvideSyncQueryAsync("foo-index");
-
-            //Assert
-            Assert.Equal("-- sync query from options", syncQuery);
-        }
-
-        [Fact]
         public async Task ShouldLoadSyncQueryFromFile()
         {
             //Arrange
@@ -79,8 +53,7 @@ namespace UnitTests
                 {
                     new IndexOptions
                     {
-                        Id = "foo-index",
-                        SyncDbQuery = null
+                        Id = "foo-index"
                     }
                 }
             };
