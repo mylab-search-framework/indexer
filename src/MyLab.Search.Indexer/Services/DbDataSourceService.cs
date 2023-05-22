@@ -84,7 +84,7 @@ namespace MyLab.Search.Indexer.Services
 
             var seedParameter = new DataParameter(
                 QueryParameterNames.Seed, 
-                seed.ToString(), 
+                seed.IsLong ? seed.Long : seed.DataTime, 
                 seed.IsLong ? DataType.Int64 : DataType.DateTime
             );
 
