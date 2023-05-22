@@ -18,9 +18,9 @@ namespace MyLab.Search.Indexer.Services
         IResource[] ProvideComponentTemplates();
 
         IndexResourceDirectory IndexDirectory { get; }
-        IReadOnlyDictionary<string, IRes<LifecyclePolicyResource>> Lifecycles { get; }
-        IReadOnlyDictionary<string, IRes<IndexTemplateResource>> IndexTemplates { get; }
-        IReadOnlyDictionary<string, IRes<ComponentTemplateResource>> ComponentTemplates { get; }
+        IReadOnlyDictionary<string, LifecyclePolicyResource> Lifecycles { get; }
+        IReadOnlyDictionary<string, IndexTemplateResource> IndexTemplates { get; }
+        IReadOnlyDictionary<string, ComponentTemplateResource> ComponentTemplates { get; }
     }
 
 
