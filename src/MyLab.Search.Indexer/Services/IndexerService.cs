@@ -53,18 +53,6 @@ namespace MyLab.Search.Indexer.Services
 
             var bulkReq = new Func<BulkDescriptor, IBulkRequest>(d =>
                 {
-                    if (req.PostList != null && req.PostList.Length != 0)
-                    {
-                        d = req.PostList.Aggregate(
-                            d, 
-                            (curD, doc) => curD.Create<JObject>(
-                                cd => cd
-                                    .Document(doc)
-                                    .Id(doc.GetIdProperty())
-                                )
-                            );
-                    }
-
                     if (req.PutList != null && req.PutList.Length != 0)
                     {
                         d = req.PutList.Aggregate(
@@ -103,7 +91,7 @@ namespace MyLab.Search.Indexer.Services
                 }
             );
 
-            var esIdxName = _indexerOptions.GetEsIndexName(req.IndexId);
+            var esIdxName = _indexerOptions.GetEsName(req.IndexId);
 
             try
             {

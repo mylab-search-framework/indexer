@@ -18,11 +18,6 @@ namespace MyLab.Search.IndexerClient
         [JsonProperty("indexId")]
         public string IndexId { get; set; }
         /// <summary>
-        /// Post-list, which contains docs for insert only
-        /// </summary>
-        [JsonProperty("post")]
-        public JObject[] Post { get; set; }
-        /// <summary>
         /// Put-list, which contains docs for insert or replace if already indexed
         /// </summary>
         [JsonProperty("put")]

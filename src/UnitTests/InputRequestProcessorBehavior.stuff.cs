@@ -11,7 +11,6 @@ namespace UnitTests
 {
     public partial class InputRequestProcessorBehavior
     {
-        private readonly JObject _postEnt = JObject.FromObject(new TestDoc("post-id", "post-data"));
         private readonly JObject _putEnt = JObject.FromObject(new TestDoc("put-id", "put-data"));
         private readonly JObject _patchEnt = JObject.FromObject(new TestDoc("patch-id", "patch-data"));
         private readonly JObject _kickEnt = JObject.FromObject(new TestDoc("kick-id", "kick-data"));

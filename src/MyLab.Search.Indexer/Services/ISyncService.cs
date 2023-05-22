@@ -15,7 +15,7 @@ namespace MyLab.Search.Indexer.Services
     {
         Task<bool> IsSyncEnabledAsync(string indexName);
 
-        Task SyncAsync(string idxName, IndexType idxType, CancellationToken cancellationToken = default);
+        Task SyncAsync(string idxName, CancellationToken cancellationToken = default);
     }
 
     class SyncService : ISyncService
@@ -51,7 +51,7 @@ namespace MyLab.Search.Indexer.Services
             }
         }
 
-        public async Task SyncAsync(string idxName, IndexType idxType, CancellationToken cancellationToken = default)
+        public async Task SyncAsync(string idxName, CancellationToken cancellationToken = default)
         {
             _log.Action("Index sync started")
                 .AndFactIs("idx", idxName)
@@ -69,21 +69,7 @@ namespace MyLab.Search.Indexer.Services
                         IndexId = idxName
                     };
 
-                    switch (idxType)
-                    {
-                        case IndexType.Heap:
-                            {
-                                idxReq.PutList = data.Batch.Docs;
-                            }
-                            break;
-                        case IndexType.Stream:
-                            {
-                                idxReq.PostList = data.Batch.Docs;
-                            }
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    idxReq.PutList = data.Batch.Docs;
 
                     await _indexer.IndexAsync(idxReq, cancellationToken);
 

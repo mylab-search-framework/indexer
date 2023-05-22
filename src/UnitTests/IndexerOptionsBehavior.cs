@@ -66,7 +66,7 @@ namespace UnitTests
             };
 
             //Act
-            var foundName = opts.GetEsIndexName(value);
+            var foundName = opts.GetEsName(value);
 
             //Assert
             Assert.Equal(expected, foundName);

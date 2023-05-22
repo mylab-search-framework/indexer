@@ -11,12 +11,6 @@ namespace MyLab.Search.IndexerClient
     public interface IIndexerV2Api
     {
         /// <summary>
-        /// Index new doc
-        /// </summary>
-        [Post("{indexId}")]
-        Task PostAsync([Path] string indexId, [JsonContent] JObject doc);
-
-        /// <summary>
         /// Index new doc or reindex if already indexed
         /// </summary>
         [Put("{indexId}")]

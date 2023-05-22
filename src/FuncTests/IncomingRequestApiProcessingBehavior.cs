@@ -11,57 +11,6 @@ namespace FuncTests
 {
     public partial class IncomingRequestApiProcessingBehavior : IDisposable
     {
-        [Fact]
-        public async Task ShouldProcessPostWithoutId()
-        {
-            //Arrange
-            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
-
-            var api = _testApi.StartWithProxy(srv =>
-                    srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
-                );
-
-            var testDoc = TestDoc.Generate(null);
-
-            //Act
-            await api.PostAsync("foo-index", JObject.FromObject(testDoc));
-
-            var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
-            
-            var actualDoc = item?.ToObject<TestDoc>();
-
-            //Assert
-            Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualDoc);
-            Assert.Null(item.GetIdProperty());
-            Assert.Equal(testDoc.Content, actualDoc.Content);
-        }
-
-        [Fact]
-        public async Task ShouldProcessPost()
-        {
-            //Arrange
-            var inputSrvProc = new IncomingRequestApiProcessingBehavior.TestInputRequestProcessor();
-
-            var api = _testApi.StartWithProxy(srv =>
-                srv.AddSingleton<IInputRequestProcessor>(inputSrvProc)
-            );
-
-            var testDoc = TestDoc.Generate();
-
-            //Act
-            await api.PostAsync("foo-index", JObject.FromObject(testDoc));
-
-            var item = inputSrvProc.LastRequest?.PostList?.FirstOrDefault();
-            
-            var actualDoc = item?.ToObject<TestDoc>();
-
-            //Assert
-            Assert.Equal("foo-index", inputSrvProc.LastRequest?.IndexId);
-            Assert.NotNull(actualDoc);
-            Assert.Equal(testDoc.Id, item.GetIdProperty());
-            Assert.Equal(testDoc.Content, actualDoc.Content);
-        }
 
         [Fact]
         public async Task ShouldProcessPut()
