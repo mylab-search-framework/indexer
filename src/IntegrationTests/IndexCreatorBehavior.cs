@@ -51,16 +51,28 @@ namespace IntegrationTests
                 }
             };
 
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
+            
 
-            idxMappingProvider.Setup(p => p.ProvideAsync(It.Is<string>(s => s == _indexName)))
-                .Returns<string>(_ => Task.FromResult( 
-                    new IndexMappingDesc
+            var resourceProvider= new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
                     {
-                        Mapping = mapping,
-                        SourceHash = "hash"
-                    })
-                );
+                        {
+                            _indexName,
+                            new IndexResources
+                            {
+                                Mapping = new Resource<TypeMapping>
+                                {
+                                    Content = mapping,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -72,8 +84,8 @@ namespace IntegrationTests
                     o.EnableEsIndexAutoCreation = true;
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
                 .AddSingleton<IndexCreator>()
+                .AddSingleton(resourceProvider.Object)
                 .BuildServiceProvider();
 
             var indexCreator = srv.GetService<IndexCreator>();
@@ -135,16 +147,26 @@ namespace IntegrationTests
                 },
             };
 
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
-
-            idxMappingProvider.Setup(p => p.ProvideAsync(It.Is<string>(s => s == _indexName)))
-                .Returns<string>(_ => Task.FromResult(
-                    new IndexMappingDesc
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
                     {
-                        Mapping = mapping,
-                        SourceHash = "hash"
-                    })
-                );
+                        {
+                            _indexName,
+                            new IndexResources
+                            {
+                                Mapping = new Resource<TypeMapping>
+                                {
+                                    Content = mapping,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -157,7 +179,7 @@ namespace IntegrationTests
                     o.AppId = "test-app";
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
+                .AddSingleton(resourceProvider.Object)
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 
@@ -196,7 +218,7 @@ namespace IntegrationTests
         public async Task ShouldNotCreateIndexWhenAutoCreationIsDisabled()
         {
             //Arrange
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
+            var resourceProvider = new Mock<IResourceProvider>();
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -208,7 +230,7 @@ namespace IntegrationTests
                     o.EnableEsIndexAutoCreation = false;
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
+                .AddSingleton(resourceProvider.Object)
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 

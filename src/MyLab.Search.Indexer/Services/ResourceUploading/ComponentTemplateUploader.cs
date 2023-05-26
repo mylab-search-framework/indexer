@@ -6,6 +6,7 @@ using MyLab.Search.Indexer.Options;
 using Nest;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Threading;
 using MyLab.Search.Indexer.Tools;
@@ -35,9 +36,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             public string ResourceSetName => "Component templates";
             public string OneResourceName => "Component template";
 
-            public IResource[] GetResources(IResourceProvider resourceProvider)
+            public IResource<ComponentTemplate>[] GetResources(IResourceProvider resourceProvider)
             {
-                return resourceProvider.ProvideComponentTemplates();
+                return resourceProvider.ComponentTemplates.Values
+                    .Cast<IResource<ComponentTemplate>>()
+                    .ToArray();
             }
 
             public Task<ComponentTemplate> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)

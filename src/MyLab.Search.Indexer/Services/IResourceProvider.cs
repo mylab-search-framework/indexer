@@ -1,30 +1,83 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
-using System.Text;
-using System.Threading.Tasks;
-using MyLab.Search.Indexer.Tools;
+using System.Linq;
 using Nest;
 
 namespace MyLab.Search.Indexer.Services
 {
     public interface IResourceProvider
     {
-        Task<string> ProvideKickQueryAsync(string indexId);
-        Task<string> ProvideSyncQueryAsync(string indexId);
-        Task<string> ProvideIndexMappingAsync(string indexId);
-
-        IResource[] ProvideLifecyclePolicies();
-        IResource[] ProvideIndexTemplates();
-        IResource[] ProvideComponentTemplates();
-
         IndexResourceDirectory IndexDirectory { get; }
-        IReadOnlyDictionary<string, LifecyclePolicyResource> Lifecycles { get; }
-        IReadOnlyDictionary<string, IndexTemplateResource> IndexTemplates { get; }
-        IReadOnlyDictionary<string, ComponentTemplateResource> ComponentTemplates { get; }
+        NamedResources<LifecyclePolicy> LifecyclePolicies { get; }
+        NamedResources<IndexTemplate> IndexTemplates { get; }
+        NamedResources<ComponentTemplate> ComponentTemplates { get; }
+    }
+
+    public class NamedResources<T> : ReadOnlyDictionary<string, IResource<T>> where T : class, new()
+    {
+        public NamedResources(IDictionary<string, IResource<T>> dictionary) : base(dictionary)
+        {
+        }
+
+        public NamedResources(IDictionary<string, Resource<T>> dictionary) 
+            : base(dictionary
+                .Select(kv => new KeyValuePair<string,IResource<T>>(kv.Key, kv.Value))
+                .ToDictionary(kv => kv.Key, kv => kv.Value))
+        {
+        }
+
+        public NamedResources(string name, T content, string hash = null)            
+            : base(new Dictionary<string, IResource<T>> 
+            {
+                { name,  new Resource<T>(){ Content = content, Name = name, Hash = hash}}
+            })
+        {
+            
+        }
+    }
+
+    public static class ResourceProviderExtensions
+    {
+        public static IResource<string> ProvideKickQuery(this IResourceProvider resourceProvider, string indexId)
+        {
+            var indexResources = ProvideIndexResources(resourceProvider, indexId);
+
+            return indexResources?.KickQuery;
+        }
+
+        public static IResource<string> ProvideSyncQuery(this IResourceProvider resourceProvider, string indexId)
+        {
+            var indexResources = ProvideIndexResources(resourceProvider, indexId);
+
+            return indexResources?.SyncQuery;
+        }
+
+        public static IResource<TypeMapping> ProvideIndexMapping(this IResourceProvider resourceProvider, string indexId)
+        {
+            var indexResources = ProvideIndexResources(resourceProvider, indexId);
+
+            return indexResources?.Mapping;
+        }
+
+        static IndexResources ProvideIndexResources(IResourceProvider resourceProvider, string indexId)
+        {
+            if (resourceProvider == null) throw new ArgumentNullException(nameof(resourceProvider));
+            if (indexId == null) throw new ArgumentNullException(nameof(indexId));
+
+            if (resourceProvider.IndexDirectory.Named == null)
+                return null;
+
+            if (!resourceProvider.IndexDirectory.Named.TryGetValue(indexId, out var indexResources))
+                return null;
+
+            return indexResources;
+        }
     }
 
 
-    public interface IRes<T>
+    public interface IResource<T>
     {
         string Name { get; }
         string Hash { get; }
@@ -34,71 +87,23 @@ namespace MyLab.Search.Indexer.Services
     public class IndexResources 
     {
         public string IndexId { get; init; }
-        public SqlResource KickQuery { get; init; }
-        public SqlResource  SyncQuery { get; init; }
-        public MappingResource Mapping { get; init; }
+        public IResource<string> KickQuery { get; init; }
+        public IResource<string> SyncQuery { get; init; }
+        public IResource<TypeMapping> Mapping { get; init; }
     }
 
     public class IndexResourceDirectory
     {
         public IReadOnlyDictionary<string, IndexResources> Named { get; init; }
-        public MappingResource DefaultMapping { get; init; }
+        public IResource<TypeMapping> CommonMapping { get; init; }
 
     }
 
-    public abstract class ResBase
+    public class Resource<T> : IResource<T>
     {
-        public string Name { get; init;  }
-        public string Hash { get; init; }
+        public string Name { get; set;  }
+        public string Hash { get; set; }
+        public T Content { get; set; }
     }
-
-    public class SqlResource : ResBase, IRes<string>
-    {
-        public string Content { get; init; }
-    }
-
-    public class MappingResource : ResBase, IRes<TypeMapping>
-    {
-        public TypeMapping Content { get; init; }
-    }
-
-    public class LifecyclePolicyResource : ResBase,  IRes<LifecyclePolicy>
-    {
-        public LifecyclePolicy Content { get; init; }
-    }
-
-    public class IndexTemplateResource : ResBase, IRes<IndexTemplate>
-    {
-        public IndexTemplate Content { get; init; }
-    }
-
-    public class ComponentTemplateResource : ResBase, IRes<ComponentTemplate>
-    {
-        public ComponentTemplate Content { get; init; }
-    }
-
-
-    public interface IResource
-    {
-        string Name { get; }
-
-        Stream OpenRead();
-    }
-
-    class FileResource : IResource
-    {
-        private readonly FileInfo _file;
-        public string Name { get; }
-        public Stream OpenRead()
-        {
-            return _file.OpenRead();
-        }
-        
-        public FileResource(FileInfo file)
-        {
-            Name = Path.GetFileNameWithoutExtension(file.Name);
-            _file = file;
-        }
-
-    }
+    
 }

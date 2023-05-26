@@ -11,7 +11,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
     {
         string ResourceSetName { get; }
         string OneResourceName { get; }
-        IResource[] GetResources(IResourceProvider resourceProvider);
+        IResource<TEsComponent>[] GetResources(IResourceProvider resourceProvider);
         Task<TEsComponent> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken);
         TEsComponent DeserializeComponent(IEsSerializer serializer, Stream inStream);
         bool HasAbsentNode(TEsComponent component, out string absentNodeName);

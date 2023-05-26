@@ -37,13 +37,12 @@ namespace MyLab.Search.Indexer
             services.AddControllers(opt => opt.AddExceptionProcessing());
 
             services
-                .AddSingleton<IResourceProvider, FileResourceProvider>()
+                .AddSingleton<FileResourceProvider>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
                 .AddSingleton<IIndexerService,IndexerService>()
                 .AddSingleton<IIndexCreator,IndexCreator>()
-                .AddSingleton<IIndexMappingProvider,IndexMappingProvider>()
                 .AddSingleton<ISyncService, SyncService>()
                 .AddRabbit()
                 .AddRabbitConsumers<IndexerRabbitRegistrar>()

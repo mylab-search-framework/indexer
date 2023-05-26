@@ -1,4 +1,8 @@
-﻿using System.IO;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Runtime.ConstrainedExecution;
+using System.Security.Policy;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,56 +14,29 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ResourceUploading;
+using Nest;
 using Xunit;
 using Xunit.Abstractions;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
 {
-    public class LifecyclePolicyUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public partial class LifecyclePolicyUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
     {
-        private readonly EsFixture<TestEsFixtureStrategy> _fxt;
-        private readonly ITestOutputHelper _output;
-        private readonly string _indexerVer;
-
-        public LifecyclePolicyUploaderBehavior(EsFixture<TestEsFixtureStrategy> fxt, ITestOutputHelper output)
-        {
-            _fxt = fxt;
-            _output = output;
-            fxt.Output = output;
-
-            _indexerVer = typeof(IResourceUploader).Assembly.GetName().Version?.ToString();
-        }
-
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task DisposeAsync()
-        {
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").DeleteAsync();
-        }
-
         [Fact]
         public async Task ShouldUploadIfDoesNotExists()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-            
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example.json");
+            var newPolicy = CreatePolicy("foo", "1", "hash");
+            var resourceProvider = CreateResourceProvider("lifecycle-test", newPolicy);
 
-            var resourceHash = await TestTools.GetResourceHashAsync(policyResource);
-
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
-            
             var services = new ServiceCollection()
                 .AddLogging(l => l
                         .SetMinimumLevel(LogLevel.Trace)
                         .AddXUnit(_output)
                     )            
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
@@ -82,23 +59,20 @@ namespace IntegrationTests
             //Assert
             Assert.NotNull(componentMetadata);
             Assert.Equal("foo", componentMetadata.Owner);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("1", ver);
         }
+
+        
 
         [Fact]
         public async Task ShouldUpdateIfExists()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-            
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example-2.json");
+            var originPolicy = CreateLifecyclePutRequest("lifecycle-test-policy", "foo", "1", "origin-hash");
+            var newPolicy = CreatePolicy("foo", "2", "hash");
+            var resourceProvider = CreateResourceProvider("lifecycle-test", newPolicy);
 
-            var resourceHash = await TestTools.GetResourceHashAsync(policyResource);
-
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
-            
             var services = new ServiceCollection()
                 .AddLogging(l => l
                         .SetMinimumLevel(LogLevel.Trace)
@@ -106,16 +80,15 @@ namespace IntegrationTests
                     )
                 .AddSingleton(_fxt.Tools)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .BuildServiceProvider();
 
             var uploader = ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(services);
 
             ComponentMetadata componentMetadata = null;
             string ver = null;
-
-            var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(existentPolicyJson);
+            
+            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(originPolicy);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -130,7 +103,7 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(componentMetadata);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("2", ver);
         }
@@ -139,14 +112,9 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-
-            var policyResource = new TestResource("lifecycle-test", "resources\\lifecycle-example.json");
-
-            var resourceHash = await TestTools.GetResourceHashAsync(policyResource);
-
-            idxResProviderMock.Setup(p => p.ProvideLifecyclePolicies())
-                .Returns(() => new IResource[] { policyResource });
+            var originPolicy = CreateLifecyclePutRequest("lifecycle-test-policy", "foo", "1", "origin-hash");
+            var newPolicy = CreatePolicy("foo", "2", "hash");
+            var resourceProvider = CreateResourceProvider("lifecycle-test", newPolicy);
 
             var lifecyclePolicyToolMock = new Mock<IEsLifecyclePolicyTool>();
             lifecyclePolicyToolMock.Setup(t => t.TryGetAsync(It.IsAny<CancellationToken>()))
@@ -165,7 +133,7 @@ namespace IntegrationTests
                         .AddXUnit(_output)
                     )
                 .AddSingleton(toolsMock.Object)
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
@@ -191,26 +159,10 @@ namespace IntegrationTests
             //Assert
             Assert.NotNull(componentMetadata);
             Assert.Equal("foo", componentMetadata.Owner);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("1", ver);
             lifecyclePolicyToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 
-        }
-
-        class TestResource : IResource
-        {
-            private readonly string _filename;
-            public string Name { get; }
-            public Stream OpenRead()
-            {
-                return File.OpenRead(_filename);
-            }
-
-            public TestResource(string name, string filename)
-            {
-                Name = name;
-                _filename = filename;
-            }
         }
     }
 }

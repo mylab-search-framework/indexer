@@ -61,23 +61,13 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             }
         }
 
-        private async Task TryUploadResourceAsync(IResource resource, CancellationToken cancellationToken)
+        private async Task TryUploadResourceAsync(IResource<TEsComponent> resource, CancellationToken cancellationToken)
         {
             var resId = _options.GetEsName(resource.Name);
 
             try
             {
-                await using var readStream = resource.OpenRead();
-                
-                var resourceBinBuff = new byte[readStream.Length];
-                
-                // ReSharper disable once MustUseReturnValue
-                await readStream.ReadAsync(resourceBinBuff, cancellationToken);
-
-                var resourceComponentHash = HashCalculator.Calculate(resourceBinBuff);
-
-                using var memStream = new MemoryStream(resourceBinBuff);
-                var resourceComponent = _strategy.DeserializeComponent(_esTools.Serializer, memStream);
+                var resourceComponent = resource.Content;
 
                 if (_strategy.HasAbsentNode(resourceComponent, out var absentNodeName))
                 {
@@ -101,7 +91,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 {
                     _log?.Action($"{_strategy.OneResourceName} not found in ES and will be uploaded").Write();
 
-                    componentMetadata.SourceHash = resourceComponentHash;
+                    componentMetadata.SourceHash = resource.Hash;
                     componentMetadata.Save(resultMeta);
                     
                     _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
@@ -125,11 +115,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                         return;
                     }
 
-                    if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resourceComponentHash)
+                    if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resource.Hash)
                     {
 
                         _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
-                            .AndFactIs("hash", resourceComponentHash)
+                            .AndFactIs("hash", resource.Hash)
                             .Write();
 
                         return;
@@ -138,7 +128,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
                 _log?.Action($"{_strategy.OneResourceName} has different version and will be uploaded").Write();
 
-                componentMetadata.SourceHash = resourceComponentHash;
+                componentMetadata.SourceHash = resource.Hash;
                 componentMetadata.Save(resultMeta);
 
                 _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);

@@ -33,6 +33,8 @@ namespace UnitTests
                 }
             };
 
+            
+
             var service = new FileResourceProvider(indexerOpts);
 
             //Act

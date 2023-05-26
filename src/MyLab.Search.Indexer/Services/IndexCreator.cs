@@ -20,27 +20,27 @@ namespace MyLab.Search.Indexer.Services
 {
     class IndexCreator : IIndexCreator
     {
-        private readonly IIndexMappingProvider _indexMappingProvider;
+        private readonly IResourceProvider _resourceProvider;
         private readonly IEsTools _esTools;
         private readonly IDslLogger _log;
         private readonly IndexerOptions _opts;
 
         public IndexCreator(
             IOptions<IndexerOptions> opts,
-            IIndexMappingProvider indexMappingProvider,
+            IResourceProvider resourceProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
-            :this(opts.Value, indexMappingProvider, esTools, logger)
+            :this(opts.Value, resourceProvider, esTools, logger)
         {
         }
 
         public IndexCreator(
             IndexerOptions opts,
-            IIndexMappingProvider indexMappingProvider,
+            IResourceProvider resourceProvider,
             IEsTools esTools,
             ILogger<IndexCreator> logger = null)
         {
-            _indexMappingProvider = indexMappingProvider;
+            _resourceProvider = resourceProvider;
             _esTools = esTools;
             _log = logger?.Dsl();
             _opts = opts;
@@ -58,12 +58,12 @@ namespace MyLab.Search.Indexer.Services
                 {
                     try
                     {
-                        var mappingStr = await _indexMappingProvider.ProvideAsync(idxId);
+                        var mappingObj = _resourceProvider.ProvideIndexMapping(idxId);
 
                         if (!_opts.EnableEsIndexAutoCreation)
                             throw new IndexCreationDeniedException();
 
-                        await CreateEsIndexCoreAsync(esIndexName, mappingStr, stoppingToken);
+                        await CreateEsIndexCoreAsync(esIndexName, mappingObj, stoppingToken);
                     }
                     catch (FileNotFoundException)
                     {
@@ -111,7 +111,7 @@ namespace MyLab.Search.Indexer.Services
                 .Write();
         }
 
-        private async Task CreateEsIndexCoreAsync(string esIndexName, IndexMappingDesc indexMapping, CancellationToken stoppingToken)
+        private async Task CreateEsIndexCoreAsync(string esIndexName, IResource<TypeMapping> indexMapping, CancellationToken stoppingToken)
         {
             if (indexMapping != null)
             {
@@ -120,16 +120,16 @@ namespace MyLab.Search.Indexer.Services
                     Creator = new MappingMetadata.CreatorDesc
                     {
                         Owner = _opts.AppId,
-                        SourceHash = indexMapping.SourceHash
+                        SourceHash = indexMapping.Hash
                     }
                 };
                 
-                var metaDict = indexMapping.Mapping.Meta ??= new Dictionary<string, object>();
+                var metaDict = indexMapping.Content.Meta ??= new Dictionary<string, object>();
                 mappingMeta.Save(metaDict);
 
                 ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
                 {
-                    Mappings = indexMapping.Mapping
+                    Mappings = indexMapping.Content
                 };
 
                 await _esTools.Index(esIndexName).CreateAsync(d => req, stoppingToken);

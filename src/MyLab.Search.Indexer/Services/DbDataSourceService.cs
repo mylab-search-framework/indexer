@@ -48,8 +48,8 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
-            string kickQueryPattern= await _resourceProvider.ProvideKickQueryAsync(indexId);
-
+            string kickQueryPattern = _resourceProvider.ProvideKickQuery(indexId)?.Content;
+            
             await using var conn = _dbManager.Use();
             
             var kickQuery = KickQuery.Build(kickQueryPattern, idList);
@@ -71,7 +71,7 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<IAsyncEnumerable<DataSourceLoad>> LoadSyncAsync(string indexId)
         {
-            string syncQuery = await _resourceProvider.ProvideSyncQueryAsync(indexId);
+            string syncQuery = _resourceProvider.ProvideSyncQuery(indexId)?.Content;
 
             var totalIndexType = _options.GetTotalIndexType(indexId);
             var seed = await _seedService.LoadSeedAsync(indexId);

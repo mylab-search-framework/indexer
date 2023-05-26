@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -35,9 +36,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         public string ResourceSetName => "Lifecycle policies";
         public string OneResourceName => "Lifecycle policy";
 
-        public IResource[] GetResources(IResourceProvider resourceProvider)
+        public IResource<LifecyclePolicy>[] GetResources(IResourceProvider resourceProvider)
         {
-            return resourceProvider.ProvideLifecyclePolicies();
+            return resourceProvider.LifecyclePolicies.Values
+                .Cast<IResource<LifecyclePolicy>>()
+                .ToArray();
         }
 
         public Task<LifecyclePolicy> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)

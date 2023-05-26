@@ -13,6 +13,7 @@ using Newtonsoft.Json.Linq;
 using Microsoft.Extensions.Hosting;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Tools;
+using MySql.Data.MySqlClient;
 using Nest;
 
 namespace MyLab.Search.Indexer.Services
@@ -21,14 +22,19 @@ namespace MyLab.Search.Indexer.Services
     {
         private readonly IEsTools _esTools;
         private readonly IndexerOptions _opts;
-        private readonly string _indexResourcePath;
-        private readonly string _lifecyclePoliciesPath;
-        private readonly string _indexTemplatesPath;
-        private readonly string _componentTemplatesPath;
 
         private const string KickFilename = "kick.sql";
         private const string SyncFilename = "sync.sql";
         private const string MappingFilename = "mapping.json";
+        private const string IndexTemplatesDirname = "index-templates";
+        private const string ComponentTemplatesDirname = "component-templates";
+        private const string LifecyclesDirname = "lifecycle-policies";
+        private const string IndexesDirname = "indexes";
+
+        public IndexResourceDirectory IndexDirectory { get; private set; }
+        public NamedResources<LifecyclePolicy> LifecyclePolicies { get; private set; }
+        public NamedResources<IndexTemplate> IndexTemplates { get; private set; }
+        public NamedResources<ComponentTemplate> ComponentTemplates { get; private set; }
 
         public FileResourceProvider(
             IEsTools esTools,
@@ -46,155 +52,63 @@ namespace MyLab.Search.Indexer.Services
             _opts = opts;
         }
 
-        public async Task<string> ProvideKickQueryAsync(string indexId)
-        {
-            var filePath = Path.Combine(_indexResourcePath, indexId, KickFilename);
-
-            return await ReadFileAsync(filePath);
-        }
-
-        public async Task<string> ProvideSyncQueryAsync(string indexId)
-        {
-            var filePath = Path.Combine(_indexResourcePath, indexId, SyncFilename);
-
-            return await ReadFileAsync(filePath);
-        }
-
-        public async Task<string> ProvideIndexMappingAsync(string indexId)
-        {
-            var mappingJsonPath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
-            var mappingJson = await ReadFileAsync(mappingJsonPath, throwIfDoesNotExists: false);
-
-            var commonMappingJsonPath = Path.Combine(_indexResourcePath, MappingFilename);
-            var commonMappingJson = await ReadFileAsync(commonMappingJsonPath, throwIfDoesNotExists: false);
-
-            if (mappingJson == null && commonMappingJson == null)
-                throw new FileNotFoundException("Mapping not found")
-                    .AndFactIs("index-id", indexId)
-                    .AndFactIs("mapping-file", mappingJsonPath)
-                    .AndFactIs("common-file", commonMappingJsonPath);
-
-            if (commonMappingJson == null)
-                return mappingJson;
-
-            if (mappingJson == null)
-                return commonMappingJson;
-
-            var mappingJObj = JObject.Parse(mappingJson);
-            var resultMappingJson = JObject.Parse(commonMappingJson);
-
-            resultMappingJson.Merge(mappingJObj);
-
-            return resultMappingJson.ToString(Formatting.None);
-        }
-
-        public IResource[] ProvideLifecyclePolicies()
-        {
-            return ProvideJsonResources(_lifecyclePoliciesPath);
-        }
-
-        public IResource[] ProvideIndexTemplates()
-        {
-            return ProvideJsonResources(_indexTemplatesPath);
-        }
-
-        public IResource[] ProvideComponentTemplates()
-        {
-            return ProvideJsonResources(_componentTemplatesPath);
-        }
-
-        public IndexResourceDirectory IndexDirectory { get; private set; }
-        public IReadOnlyDictionary<string, LifecyclePolicyResource> Lifecycles { get; private set; }
-        public IReadOnlyDictionary<string, IndexTemplateResource> IndexTemplates { get; private set; }
-        public IReadOnlyDictionary<string, ComponentTemplateResource> ComponentTemplates { get; private set; }
-
-        async Task<string> ReadFileAsync(string path, bool throwIfDoesNotExists = true)
-        {
-            if (!File.Exists(path))
-            {
-                if (!throwIfDoesNotExists)
-                    return null;
-
-                throw new FileNotFoundException("Resource file not found")
-                    .AndFactIs("full-path", path);
-            }
-
-            return await File.ReadAllTextAsync(path);
-        }
-        
-        IResource[] ProvideJsonResources(string dirPath)
-        {
-            var resDir = new DirectoryInfo(dirPath);
-
-            if (!resDir.Exists)
-                return Array.Empty<IResource>();
-
-            var fileList = resDir
-                .EnumerateFiles("*.json")
-                .ToArray();
-
-            if (fileList.Length == 0)
-                return Array.Empty<IResource>();
-
-            var res = new List<IResource>();
-
-            foreach (var file in fileList)
-            {
-                using var stream = file.OpenText();
-
-                res.Add(new FileResource(file));
-            }
-
-            return res.ToArray();
-        }
-
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             await LoadIndexesDirectoryAsync(cancellationToken);
 
-            var lifecyclesData = await LoadComponentsAsync<LifecyclePolicy>("lifecycle-policies", cancellationToken);
+            var lifecyclesData = await LoadComponentsAsync<LifecyclePolicy>(LifecyclesDirname, cancellationToken);
             if (lifecyclesData != null)
             {
-                Lifecycles = lifecyclesData.ToDictionary(l => l.Name, l => new LifecyclePolicyResource
-                {
-                    Name = l.Name,
-                    Hash = l.Hash,
-                    Content = l.Content
-                });
+                LifecyclePolicies = new NamedResources<LifecyclePolicy>(
+                    lifecyclesData.ToDictionary(
+                        l => l.Name, 
+                        l => new Resource<LifecyclePolicy>()
+                        {
+                            Name = l.Name,
+                            Hash = l.Hash,
+                            Content = l.Content
+                        }
+                    )
+                );
             }
 
-            var indexTemplatesData = await LoadComponentsAsync<IndexTemplate>("index-templates", cancellationToken);
+            var indexTemplatesData = await LoadComponentsAsync<IndexTemplate>(IndexTemplatesDirname, cancellationToken);
             if (indexTemplatesData != null)
             {
-                IndexTemplates = indexTemplatesData.ToDictionary(l => l.Name, l => new IndexTemplateResource
-                {
-                    Name = l.Name,
-                    Hash = l.Hash,
-                    Content = l.Content
-                });
+                IndexTemplates = new NamedResources<IndexTemplate>(
+                    indexTemplatesData.ToDictionary(
+                        l => l.Name, 
+                        l => new Resource<IndexTemplate>()
+                        {
+                            Name = l.Name,
+                            Hash = l.Hash,
+                            Content = l.Content
+                        }
+                    )
+                );
             }
 
-            var componentTemplatesData = await LoadComponentsAsync<ComponentTemplate>("component-templates", cancellationToken);
+            var componentTemplatesData = await LoadComponentsAsync<ComponentTemplate>(ComponentTemplatesDirname, cancellationToken);
             if (componentTemplatesData != null)
             {
-                ComponentTemplates = componentTemplatesData.ToDictionary(l => l.Name, l => new ComponentTemplateResource
-                {
-                    Name = l.Name,
-                    Hash = l.Hash,
-                    Content = l.Content
-                });
+                ComponentTemplates = new NamedResources<ComponentTemplate>(
+                    componentTemplatesData.ToDictionary(
+                        l => l.Name, 
+                        l => new Resource<ComponentTemplate>()
+                        {
+                            Name = l.Name,
+                            Hash = l.Hash,
+                            Content = l.Content
+                        }
+                    )
+                );
             }
-
-            //_lifecyclePoliciesPath = Path.Combine(_opts.ResourcesPath, "lifecycle-policies");
-            //_indexTemplatesPath = Path.Combine(_opts.ResourcesPath, "index-templates");
-            //_componentTemplatesPath = Path.Combine(_opts.ResourcesPath, "component-templates");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
             return Task.CompletedTask;
         }
-
 
         async Task<IEnumerable<(string Name, string Hash, T Content)>> LoadComponentsAsync<T>(string subDirName, CancellationToken cancellationToken)
         {
@@ -209,7 +123,7 @@ namespace MyLab.Search.Indexer.Services
             foreach (var file in subDir.GetFiles("*.json"))
             {
                 var componentData = await LoadResourceAsync<T>(file, cancellationToken);
-                res.Add(componentData);
+                res.Add((componentData.Name, componentData.Hash, componentData.Content));
             }
 
             return res;
@@ -217,38 +131,40 @@ namespace MyLab.Search.Indexer.Services
 
         private async Task LoadIndexesDirectoryAsync(CancellationToken cancellationToken)
         {
-            var indexResourcePath = Path.Combine(_opts.ResourcesPath, "indexes");
+            var indexResourcePath = Path.Combine(_opts.ResourcesPath, IndexesDirname);
             var resDir = new DirectoryInfo(indexResourcePath);
 
             if (!resDir.Exists)
                 throw new InvalidOperationException("Index directory not found")
                     .AndFactIs("path", indexResourcePath);
 
-            MappingResource defaultMapping = null;
+            Resource<TypeMapping> commonMapping = null;
+            byte[] commonMappingBin = null;
 
-            var defaultMappingFile = new FileInfo(Path.Combine(indexResourcePath, MappingFilename));
-            if (defaultMappingFile.Exists)
+            var commonMappingFile = new FileInfo(Path.Combine(indexResourcePath, MappingFilename));
+            if (commonMappingFile.Exists)
             {
-                var defaultMappingData = await LoadResourceAsync<TypeMapping>(defaultMappingFile, cancellationToken);
-                defaultMapping = new MappingResource
+                var commonMappingData = await LoadResourceAsync<TypeMapping>(commonMappingFile, cancellationToken);
+                commonMapping = new Resource<TypeMapping>()
                 {
-                    Name = defaultMappingData.Name,
-                    Content = defaultMappingData.Content,
-                    Hash = defaultMappingData.Hash
+                    Name = commonMappingData.Name,
+                    Content = commonMappingData.Content,
+                    Hash = commonMappingData.Hash
                 };
+                commonMappingBin = commonMappingData.Bin;
             }
 
             var namedDirs = new Dictionary<string, IndexResources>();
 
             foreach (var directoryInfo in resDir.GetDirectories())
             {
-                MappingResource mappingResource = null;
+                Resource<TypeMapping> mappingResource = null;
                 var mappingFile = new FileInfo(Path.Combine(directoryInfo.FullName, MappingFilename));
                 if (mappingFile.Exists)
                 {
-                    var mappingResourceData = await LoadResourceAsync<TypeMapping>(mappingFile, cancellationToken);
+                    var mappingResourceData = await LoadAndMergeMappingAsync(mappingFile, commonMappingBin, cancellationToken);
 
-                    mappingResource = new MappingResource
+                    mappingResource = new Resource<TypeMapping>
                     {
                         Name = mappingResourceData.Name,
                         Content = mappingResourceData.Content,
@@ -256,13 +172,13 @@ namespace MyLab.Search.Indexer.Services
                     };
                 }
 
-                SqlResource kickQueryResource = null;
+                Resource<string> kickQueryResource = null;
                 var kickQueryFile = new FileInfo(Path.Combine(directoryInfo.FullName, KickFilename));
                 if (kickQueryFile.Exists)
                 {
                     var kickQueryResourceData = await LoadResourceAsync<string>(kickQueryFile, cancellationToken);
 
-                    kickQueryResource = new SqlResource
+                    kickQueryResource = new Resource<string>
                     {
                         Name = kickQueryResourceData.Name,
                         Content = kickQueryResourceData.Content,
@@ -270,13 +186,13 @@ namespace MyLab.Search.Indexer.Services
                     };
                 }
 
-                SqlResource syncQueryResource = null;
+                Resource<string> syncQueryResource = null;
                 var syncQueryFile = new FileInfo(Path.Combine(directoryInfo.FullName, SyncFilename));
                 if (syncQueryFile.Exists)
                 {
                     var syncQueryResourceData = await LoadResourceAsync<string>(syncQueryFile, cancellationToken);
 
-                    syncQueryResource = new SqlResource
+                    syncQueryResource = new Resource<string>
                     {
                         Name = syncQueryResourceData.Name,
                         Content = syncQueryResourceData.Content,
@@ -295,62 +211,58 @@ namespace MyLab.Search.Indexer.Services
 
             IndexDirectory = new IndexResourceDirectory
             {
-                DefaultMapping = defaultMapping,
+                CommonMapping = commonMapping,
                 Named = namedDirs
             };
         }
 
-        async Task<(string Name, string Hash, T Content)> LoadResourceAsync<T>(FileInfo file, CancellationToken cancellationToken)
+        async Task<(string Name, string Hash, byte[] Bin, T Content)> LoadResourceAsync<T>(FileInfo file, CancellationToken cancellationToken)
         {
             var buff = new byte[file.Length];
             await using var readStream = file.OpenRead();
             // ReSharper disable once MustUseReturnValue
             await readStream.ReadAsync(buff, cancellationToken);
 
-            T content;
+            await using var stream = new MemoryStream(buff);
+                var content = _esTools.Serializer.Deserialize<T>(stream);
+                
+            var hash = HashCalculator.Calculate(buff);
 
-            //if (typeof(T) == typeof(string))
-            //{
-            //    content = (T)Encoding.UTF8.GetString(buff);
-            //}
-            //else
-            //{
-                await using var stream = new MemoryStream(buff);
-                content = _esTools.Serializer.Deserialize<T>(stream);
-            //}
-            
+            return (Path.GetFileNameWithoutExtension(file.Name), hash, buff, content);
+        }
+
+        async Task<(string Name, string Hash, TypeMapping Content)> LoadAndMergeMappingAsync(FileInfo file, byte[] commonPart, CancellationToken cancellationToken)
+        {
+            var buff = new byte[file.Length];
+            await using var readStream = file.OpenRead();
+            // ReSharper disable once MustUseReturnValue
+            await readStream.ReadAsync(buff, cancellationToken);
+
+            byte[] resultMappingBin;
+
+            if (commonPart != null)
+            {
+
+                var commonMappingJson = Encoding.UTF8.GetString(commonPart);
+                var mappingJson = Encoding.UTF8.GetString(buff);
+
+                var mappingJObj = JObject.Parse(mappingJson);
+                var resultMappingJson = JObject.Parse(commonMappingJson);
+                resultMappingJson.Merge(mappingJObj);
+
+                resultMappingBin = Encoding.UTF8.GetBytes(resultMappingJson.ToString(Formatting.None));
+            }
+            else
+            {
+                resultMappingBin = buff;
+            }
+
+            await using var stream = new MemoryStream(resultMappingBin);
+            var content = _esTools.Serializer.Deserialize<TypeMapping>(stream);
 
             var hash = HashCalculator.Calculate(buff);
 
             return (Path.GetFileNameWithoutExtension(file.Name), hash, content);
-        }
-
-        public async Task<string> ProvideIndexMappingAsync(string indexId)
-        {
-            var mappingJsonPath = Path.Combine(_indexResourcePath, indexId, MappingFilename);
-            var mappingJson = await ReadFileAsync(mappingJsonPath, throwIfDoesNotExists: false);
-
-            var commonMappingJsonPath = Path.Combine(_indexResourcePath, MappingFilename);
-            var commonMappingJson = await ReadFileAsync(commonMappingJsonPath, throwIfDoesNotExists: false);
-
-            if (mappingJson == null && commonMappingJson == null)
-                throw new FileNotFoundException("Mapping not found")
-                    .AndFactIs("index-id", indexId)
-                    .AndFactIs("mapping-file", mappingJsonPath)
-                    .AndFactIs("common-file", commonMappingJsonPath);
-
-            if (commonMappingJson == null)
-                return mappingJson;
-
-            if (mappingJson == null)
-                return commonMappingJson;
-
-            var mappingJObj = JObject.Parse(mappingJson);
-            var resultMappingJson = JObject.Parse(commonMappingJson);
-
-            resultMappingJson.Merge(mappingJObj);
-
-            return resultMappingJson.ToString(Formatting.None);
         }
     }
 }

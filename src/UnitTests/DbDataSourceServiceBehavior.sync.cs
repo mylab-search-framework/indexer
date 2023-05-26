@@ -27,10 +27,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where id > @seed");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -56,11 +53,8 @@ namespace UnitTests
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed"
-            };
-
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where last_change_dt > @seed");
+            
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
@@ -98,10 +92,7 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where id > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -145,10 +136,10 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index",
+                "select id, content from docs where last_change_dt > @seed limit @offset, @limit");
+
+
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -195,10 +186,8 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index",
+                "select id, content from docs where id > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -243,10 +232,7 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where last_change_dt > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
