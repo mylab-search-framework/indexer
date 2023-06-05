@@ -49,7 +49,7 @@
     <None Update="for-loadres-test\indexes\mapping.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Update="for-loadres-test\lifecycle-templates\foo-lifecycle.json">
+    <None Update="for-loadres-test\lifecycle-policies\foo-lifecycle.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="resources\existent-component-template.json">

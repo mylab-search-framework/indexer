@@ -176,7 +176,7 @@ namespace MyLab.Search.Indexer.Services
                 var kickQueryFile = new FileInfo(Path.Combine(directoryInfo.FullName, KickFilename));
                 if (kickQueryFile.Exists)
                 {
-                    var kickQueryResourceData = await LoadResourceAsync<string>(kickQueryFile, cancellationToken);
+                    var kickQueryResourceData = await LoadStringResourceAsync(kickQueryFile, cancellationToken);
 
                     kickQueryResource = new Resource<string>
                     {
@@ -190,7 +190,7 @@ namespace MyLab.Search.Indexer.Services
                 var syncQueryFile = new FileInfo(Path.Combine(directoryInfo.FullName, SyncFilename));
                 if (syncQueryFile.Exists)
                 {
-                    var syncQueryResourceData = await LoadResourceAsync<string>(syncQueryFile, cancellationToken);
+                    var syncQueryResourceData = await LoadStringResourceAsync(syncQueryFile, cancellationToken);
 
                     syncQueryResource = new Resource<string>
                     {
@@ -214,6 +214,21 @@ namespace MyLab.Search.Indexer.Services
                 CommonMapping = commonMapping,
                 Named = namedDirs
             };
+        }
+
+        async Task<(string Name, string Hash, byte[] Bin, string Content)> LoadStringResourceAsync(FileInfo file, CancellationToken cancellationToken)
+        {
+            var buff = new byte[file.Length];
+            await using var readStream = file.OpenRead();
+            // ReSharper disable once MustUseReturnValue
+            await readStream.ReadAsync(buff, cancellationToken);
+
+            var content = Encoding.UTF8.GetString(buff);
+
+            await using var stream = new MemoryStream(buff);
+            var hash = HashCalculator.Calculate(buff);
+
+            return (Path.GetFileNameWithoutExtension(file.Name), hash, buff, content);
         }
 
         async Task<(string Name, string Hash, byte[] Bin, T Content)> LoadResourceAsync<T>(FileInfo file, CancellationToken cancellationToken)
