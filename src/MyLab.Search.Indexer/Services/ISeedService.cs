@@ -53,5 +53,45 @@ namespace MyLab.Search.Indexer.Services
 
         public static implicit operator Seed(long longValue) => new (longValue);
         public static implicit operator Seed(DateTime dateTimeValue) => new (dateTimeValue);
+
+        public static bool operator ==(Seed seed, long longValue) => seed is { IsLong: true } && seed.Long == longValue;
+        public static bool operator !=(Seed seed, long longValue) => !(seed == longValue);
+        public static bool operator ==(Seed seed, DateTime dateTimeValue) => seed is {IsDateTime: true } && seed.DataTime == dateTimeValue;
+        public static bool operator !=(Seed seed, DateTime dateTimeValue) => !(seed== dateTimeValue);
+
+        public override bool Equals(object obj)
+        {
+            if(obj == null) return false;
+
+            if (obj is DateTime dateTimeValue)
+                return Equals(dateTimeValue);
+
+            if (obj is long longValue)
+                return Equals(longValue);
+
+            if (obj is Seed seedVal)
+                return Equals(seedVal);
+
+            return base.Equals(obj);
+        }
+
+        protected bool Equals(DateTime dtValue)
+        {
+            return this == dtValue;
+        }
+
+        protected bool Equals(long longValue)
+        {
+            return this == longValue;
+        }
+        protected bool Equals(Seed other)
+        {
+            return Long == other.Long && DataTime.Equals(other.DataTime) && IsLong == other.IsLong && IsDateTime == other.IsDateTime;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Long, DataTime, IsLong, IsDateTime);
+        }
     }
 }
