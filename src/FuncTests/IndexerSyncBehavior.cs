@@ -144,7 +144,7 @@ namespace FuncTests
             Assert.Equal(testDoc.Id, found[0].Id);
             Assert.Equal(testDoc.Content, found[0].Content);
             Assert.True(seedService.Seed.IsDateTime);
-            Assert.True(seedService.Seed.DataTime > testDt);
+            Assert.True(seedService.Seed.DateTime > testDt);
         }
 
         public Task InitializeAsync()

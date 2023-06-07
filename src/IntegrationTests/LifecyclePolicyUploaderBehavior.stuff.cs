@@ -32,7 +32,9 @@ namespace IntegrationTests
 
         public async Task DisposeAsync()
         {
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").DeleteAsync();
+            var exists = await _fxt.Tools.LifecyclePolicy("lifecycle-test").ExistsAsync();
+            if(exists)
+                await _fxt.Tools.LifecyclePolicy("lifecycle-test").DeleteAsync();
         }
 
         private IResourceProvider CreateResourceProvider(string idxId, LifecyclePolicy policy)
@@ -53,13 +55,14 @@ namespace IntegrationTests
         private IPutLifecycleRequest CreateLifecyclePutRequest(string id, string owner, string ver, string hash)
         {
             var newPolicyMetaDict = new Dictionary<string, object> { { "ver", ver } };
-            IPutLifecycleRequest newPolicyReq = new PutLifecycleRequest(id)
-            {
-                Policy =
-                {
-                    Meta = newPolicyMetaDict
-                }
-            };
+            
+            IPutLifecycleRequest newPolicyDesc = new PutLifecycleDescriptor(id)
+                .Policy(pd => pd
+                    .Meta(newPolicyMetaDict)
+                    .Phases(phd => phd
+                        .Cold(cd => cd
+                            .MinimumAge("1d")
+                            .Actions(la => la.Delete(_ => new DeleteLifecycleAction() )))));
 
             var newPolicyMetadata = new ComponentMetadata
             {
@@ -68,19 +71,21 @@ namespace IntegrationTests
             };
             newPolicyMetadata.Save(newPolicyMetaDict);
 
-            return newPolicyReq;
+            return newPolicyDesc;
         }
 
         private LifecyclePolicy CreatePolicy(string owner, string ver, string hash)
         {
             var newPolicyMetaDict = new Dictionary<string, object> { { "ver", ver } };
-            var newPolicy = new LifecyclePolicy
+            var newPolicy = new LifecyclePolicy();
+
+            var nestedPolicy = new Policy
             {
-                Policy =
-                {
-                    Meta = newPolicyMetaDict
-                }
+                Meta = newPolicyMetaDict
             };
+
+            typeof(LifecyclePolicy).GetProperty(nameof(LifecyclePolicy.Policy))
+                .SetValue(newPolicy, nestedPolicy, null);
 
             var newPolicyMetadata = new ComponentMetadata
             {

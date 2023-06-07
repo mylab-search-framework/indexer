@@ -43,7 +43,7 @@ namespace MyLab.Search.Indexer.Services
             var file = new FileInfo(fullPath);
 
             if (!file.Exists || file.Length == 0)
-                return -1;
+                return Seed.Empty;
 
             var line = await ReadLineAsync(file);
 

@@ -73,19 +73,21 @@ namespace MyLab.Search.Indexer.Services
         {
             string syncQuery = _resourceProvider.ProvideSyncQuery(indexId)?.Content;
 
-            var totalIndexType = _options.GetTotalIndexType(indexId);
+            var indexOptions = _options.GetIndexOptions(indexId);
+
             var seed = await _seedService.LoadSeedAsync(indexId);
+            
+            var seedType = indexOptions.SeedType == SeedType.Undefined 
+                ? (indexOptions.IndexType == IndexType.Heap ? SeedType.DateTime : throw new InvalidOperationException("An index seed type specification required"))
+                : indexOptions.SeedType;
 
-            if (totalIndexType == IndexType.Heap && !seed.IsDateTime)
-                throw new InvalidOperationException("A DateTime seed is not suitable for Heap index");
-
-            if (totalIndexType == IndexType.Stream && !seed.IsLong)
-                throw new InvalidOperationException("A Long seed is not suitable for Stream index");
-
+            if (!seed.IsEmpty && (seed.IsLong ? seedType == SeedType.DateTime : seedType == SeedType.Long))
+                throw new InvalidOperationException("Real seed type is not match to options seed type");
+            
             var seedParameter = new DataParameter(
                 QueryParameterNames.Seed, 
-                seed.IsLong ? seed.Long : seed.DataTime, 
-                seed.IsLong ? DataType.Int64 : DataType.DateTime
+                seedType == SeedType.Long ? seed.Long : seed.DateTime,
+                seedType == SeedType.Long ? DataType.Int64 : DataType.DateTime
             );
 
             var batchEnumerable = new DataSourceLoadBatchEnumerable(_dbManager, syncQuery, seedParameter, _options.SyncPageSize);
@@ -94,7 +96,7 @@ namespace MyLab.Search.Indexer.Services
                 .AndFactIs("seed", seed.ToString())
                 .Write();
 
-            return new DataSourceLoadEnumerable(indexId, totalIndexType, _seedService, batchEnumerable);
+            return new DataSourceLoadEnumerable(indexId, indexOptions.IndexType, _seedService, batchEnumerable);
         }
     }
 }

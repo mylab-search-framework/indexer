@@ -107,8 +107,8 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var originTemplate = CreateTemplatePutRequest("component-template-test", "foo", "1", "origin-hash");
-            var newTemplate = CreateTemplate("foo", "2", "hash");
+            var originTemplate = CreateTemplatePutRequest("component-template-test", "foo", "1", "same-hash");
+            var newTemplate = CreateTemplate("foo", "2", "same-hash");
             var resourceProvider = CreateResourceProvider("component-template-test", newTemplate);
 
             var componentTemplateToolMock = new Mock<IEsComponentTemplateTool>();
@@ -152,7 +152,7 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(componentMetadata);
-            Assert.Equal("bar", componentMetadata.SourceHash);
+            Assert.Equal("same-hash", componentMetadata.SourceHash);
             Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("1", ver);
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using MyLab.Log;
+using Org.BouncyCastle.Asn1.Cms;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -12,11 +13,15 @@ namespace MyLab.Search.Indexer.Services
 
     public class Seed
     {
-        public long Long { get; }
-        public DateTime DataTime { get; }
+        public static readonly Seed Empty = new ();
+
+        public long Long { get; } = -1;
+        public DateTime DateTime { get; }
         
         public bool IsLong { get; }
         public bool IsDateTime { get; }
+
+        public bool IsEmpty => !IsLong && !IsDateTime || IsLong && Long == -1 || IsDateTime && DateTime == default;
 
         public Seed(long longValue)
         {
@@ -26,13 +31,17 @@ namespace MyLab.Search.Indexer.Services
 
         public Seed(DateTime dateTimeValue)
         {
-            DataTime = dateTimeValue;
+            DateTime = dateTimeValue;
             IsDateTime = true;
+        }
+        
+        public Seed()
+        {
         }
 
         public override string ToString()
         {
-            return IsLong ? Long.ToString("D") : DataTime.ToString("O");
+            return IsEmpty ? "empty" : IsLong ? Long.ToString("D") : DateTime.ToString("O");
         }
 
         public static Seed Parse(string strValue)
@@ -56,7 +65,7 @@ namespace MyLab.Search.Indexer.Services
 
         public static bool operator ==(Seed seed, long longValue) => seed is { IsLong: true } && seed.Long == longValue;
         public static bool operator !=(Seed seed, long longValue) => !(seed == longValue);
-        public static bool operator ==(Seed seed, DateTime dateTimeValue) => seed is {IsDateTime: true } && seed.DataTime == dateTimeValue;
+        public static bool operator ==(Seed seed, DateTime dateTimeValue) => seed is {IsDateTime: true } && seed.DateTime == dateTimeValue;
         public static bool operator !=(Seed seed, DateTime dateTimeValue) => !(seed== dateTimeValue);
 
         public override bool Equals(object obj)
@@ -86,12 +95,14 @@ namespace MyLab.Search.Indexer.Services
         }
         protected bool Equals(Seed other)
         {
-            return Long == other.Long && DataTime.Equals(other.DataTime) && IsLong == other.IsLong && IsDateTime == other.IsDateTime;
+            if (other.IsEmpty && IsEmpty) return true;
+
+            return Long == other.Long && DateTime.Equals(other.DateTime) && IsLong == other.IsLong && IsDateTime == other.IsDateTime;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(Long, DataTime, IsLong, IsDateTime);
+            return HashCode.Combine(Long, DateTime, IsLong, IsDateTime);
         }
     }
 }

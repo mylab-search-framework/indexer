@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Runtime.ConstrainedExecution;
-using System.Security.Policy;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -12,11 +7,8 @@ using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ResourceUploading;
-using Nest;
 using Xunit;
-using Xunit.Abstractions;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
@@ -112,8 +104,8 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var originPolicy = CreateLifecyclePutRequest("lifecycle-test-policy", "foo", "1", "origin-hash");
-            var newPolicy = CreatePolicy("foo", "2", "hash");
+            var originPolicy = CreateLifecyclePutRequest("lifecycle-test-policy", "foo", "1", "same-hash");
+            var newPolicy = CreatePolicy("foo", "2", "same-hash");
             var resourceProvider = CreateResourceProvider("lifecycle-test", newPolicy);
 
             var lifecyclePolicyToolMock = new Mock<IEsLifecyclePolicyTool>();
@@ -141,9 +133,8 @@ namespace IntegrationTests
 
             ComponentMetadata componentMetadata = null;
             string ver = null;
-
-            var existentPolicyJson = await File.ReadAllTextAsync("resources\\existent-lifecycle.json");
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(existentPolicyJson);
+            
+            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(originPolicy);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -159,7 +150,7 @@ namespace IntegrationTests
             //Assert
             Assert.NotNull(componentMetadata);
             Assert.Equal("foo", componentMetadata.Owner);
-            Assert.Equal("hash", componentMetadata.SourceHash);
+            Assert.Equal("same-hash", componentMetadata.SourceHash);
             Assert.Equal("1", ver);
             lifecyclePolicyToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
 

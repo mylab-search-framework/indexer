@@ -103,7 +103,8 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     return;
                 }
 
-                if(ComponentMetadata.TryGet(resultMeta, out var esSrvMetadata))
+                var esComponentMeta = _strategy.ProvideMeta(esComponent);
+                if(ComponentMetadata.TryGet(esComponentMeta, out var esSrvMetadata))
                 {
                     if (esSrvMetadata.Owner != _options.AppId)
                     {
@@ -118,7 +119,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                     if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resource.Hash)
                     {
 
-                        _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
+                        _log?.Action($"Uploading will be skipped due to actual {_strategy.ResourceSetName.ToLower()} version")
                             .AndFactIs("hash", resource.Hash)
                             .Write();
 

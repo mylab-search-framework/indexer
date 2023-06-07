@@ -17,12 +17,13 @@ namespace UnitTests
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService{ Seed = Seed.Empty };
 
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IndexType = IndexType.Stream,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
@@ -45,7 +46,7 @@ namespace UnitTests
         {
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService{ Seed = Seed.Empty };
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
@@ -78,12 +79,16 @@ namespace UnitTests
 
             var dbMgr = await _dbFxt.CreateDbAsync(tableFiller);
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService
+            {
+                Seed = Seed.Empty
+            };
 
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IndexType = IndexType.Stream,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions
@@ -99,6 +104,7 @@ namespace UnitTests
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
             //Act
+
             var loads = await enumerable.ToArrayAsync();
 
             //Assert
@@ -122,7 +128,10 @@ namespace UnitTests
 
             var dbMgr = await _dbFxt.CreateDbAsync(tableFiller);
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService
+            {
+                Seed = Seed.Empty
+            };
 
             var indexOpts = new IndexOptions
             {
@@ -138,8 +147,6 @@ namespace UnitTests
 
             var indexResProvider = CreateSyncResourceProvider("foo-index",
                 "select id, content from docs where last_change_dt > @seed limit @offset, @limit");
-
-
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -177,7 +184,8 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IndexType = IndexType.Stream,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions
