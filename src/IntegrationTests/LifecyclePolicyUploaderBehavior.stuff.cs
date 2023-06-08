@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Moq;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Nest;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ namespace IntegrationTests
             _output = output;
             fxt.Output = output;
 
-            _indexerVer = typeof(IResourceUploader).Assembly.GetName().Version?.ToString();
+            _indexerVer = typeof(IComponentUploader).Assembly.GetName().Version?.ToString();
         }
 
         public Task InitializeAsync()
@@ -55,14 +55,17 @@ namespace IntegrationTests
         private IPutLifecycleRequest CreateLifecyclePutRequest(string id, string owner, string ver, string hash)
         {
             var newPolicyMetaDict = new Dictionary<string, object> { { "ver", ver } };
-            
+
             IPutLifecycleRequest newPolicyDesc = new PutLifecycleDescriptor(id)
                 .Policy(pd => pd
                     .Meta(newPolicyMetaDict)
                     .Phases(phd => phd
                         .Cold(cd => cd
-                            .MinimumAge("1d")
-                            .Actions(la => la.Delete(_ => new DeleteLifecycleAction() )))));
+                                .MinimumAge("1d")
+                            .Actions(la => la)
+                        )
+                    )
+                );
 
             var newPolicyMetadata = new ComponentMetadata
             {
@@ -81,7 +84,15 @@ namespace IntegrationTests
 
             var nestedPolicy = new Policy
             {
-                Meta = newPolicyMetaDict
+                Meta = newPolicyMetaDict,
+                Phases = new Phases()
+                {
+                    Cold = new Phase
+                    {
+                        MinimumAge = new Time("1d"),
+                        Actions = new LifecycleActions(new Dictionary<string, ILifecycleAction>())
+                    }
+                }
             };
 
             typeof(LifecyclePolicy).GetProperty(nameof(LifecyclePolicy.Policy))

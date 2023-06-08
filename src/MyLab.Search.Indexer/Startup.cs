@@ -13,7 +13,7 @@ using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;
@@ -37,7 +37,7 @@ namespace MyLab.Search.Indexer
             services.AddControllers(opt => opt.AddExceptionProcessing());
 
             services
-                .AddSingleton<FileResourceProvider>()
+                .AddSingleton<IResourceProvider, FileResourceProvider>()
                 .AddSingleton<IDataSourceService, DbDataSourceService>()
                 .AddSingleton<ISeedService, FileSeedService>()
                 .AddSingleton<IInputRequestProcessor,InputRequestProcessor>()
@@ -52,7 +52,7 @@ namespace MyLab.Search.Indexer
                 .AddLogging(l => l.AddMyLabConsole())
                 .AddUrlBasedHttpMetrics()
                 .AddTaskLogic<SyncTaskLogic>()
-                .AddHostedService<StartupResourceUploaderService>();
+                .AddHostedService<StartupService>();
 
             services
                 .ConfigureRabbit(Configuration)

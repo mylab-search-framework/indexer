@@ -12,7 +12,7 @@ using MyLab.Log.Dsl;
 using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using Nest;
 

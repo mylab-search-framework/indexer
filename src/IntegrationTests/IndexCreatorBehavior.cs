@@ -13,7 +13,7 @@ using MyLab.Log.XUnit;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using Nest;
 using Newtonsoft.Json;

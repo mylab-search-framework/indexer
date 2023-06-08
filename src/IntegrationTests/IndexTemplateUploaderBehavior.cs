@@ -7,7 +7,7 @@ using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Xunit;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -88,7 +88,7 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(componentMetadata);
-            Assert.Equal("bar", componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("1", ver);
         }
@@ -97,9 +97,9 @@ namespace IntegrationTests
         public async Task ShouldUpdateIfExists()
         {
             //Arrange
-            var originTemplate = CreateTemplatePutRequest("component-template-test", "foo", "1", "origin-hash");
+            var originTemplate = CreateTemplatePutRequest("index-template-test", "foo", "1", "origin-hash");
             var newTemplate = CreateTemplate("foo", "2", "hash");
-            var resourceProvider = CreateResourceProvider("component-template-test", newTemplate);
+            var resourceProvider = CreateResourceProvider("index-template-test", newTemplate);
 
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -131,7 +131,7 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(componentMetadata);
-            Assert.Equal("bar", componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("2", ver);
         }
@@ -140,8 +140,8 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var originTemplate = CreateTemplatePutRequest("index-template-test", "foo", "1", "origin-hash");
-            var newTemplate = CreateTemplate("foo", "2", "hash");
+            var originTemplate = CreateTemplatePutRequest("index-template-test", "foo", "1", "same-hash");
+            var newTemplate = CreateTemplate("foo", "2", "same-hash");
             var resourceProvider = CreateResourceProvider("index-template-test", newTemplate);
 
             var indexTemplateToolMock = new Mock<IEsIndexTemplateTool>();
@@ -185,7 +185,7 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(srvMeta);
-            Assert.Equal("bar", srvMeta.SourceHash);
+            Assert.Equal("same-hash", srvMeta.SourceHash);
             Assert.Equal("foo", srvMeta.Owner);
             Assert.Equal("1", ver);
             indexTemplateToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);

@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Nest;
 
 namespace MyLab.Search.Indexer.Services
@@ -13,6 +15,9 @@ namespace MyLab.Search.Indexer.Services
         NamedResources<LifecyclePolicy> LifecyclePolicies { get; }
         NamedResources<IndexTemplate> IndexTemplates { get; }
         NamedResources<ComponentTemplate> ComponentTemplates { get; }
+
+        Task LoadAsync(CancellationToken cancellationToken);
+
     }
 
     public class NamedResources<T> : ReadOnlyDictionary<string, IResource<T>> where T : class, new()
@@ -66,7 +71,7 @@ namespace MyLab.Search.Indexer.Services
             if (resourceProvider == null) throw new ArgumentNullException(nameof(resourceProvider));
             if (indexId == null) throw new ArgumentNullException(nameof(indexId));
 
-            if (resourceProvider.IndexDirectory.Named == null)
+            if (resourceProvider.IndexDirectory?.Named == null)
                 return null;
 
             if (!resourceProvider.IndexDirectory.Named.TryGetValue(indexId, out var indexResources))

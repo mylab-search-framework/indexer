@@ -6,18 +6,21 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyLab.Log.Dsl;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
-    class StartupResourceUploaderService : BackgroundService
+    class StartupService : BackgroundService
     {
-        private readonly IResourceUploader[] _uploaders;
+        private readonly IResourceProvider _resourceProvider;
+        private readonly IComponentUploader[] _resourceUploaders;
         private readonly IDslLogger _log;
 
-        public StartupResourceUploaderService(
+        public StartupService(
             IServiceProvider serviceProvider,
-            ILogger<StartupResourceUploaderService> logger = null)
+            IResourceProvider resourceProvider,
+            ILogger<StartupService> logger = null)
         {
-            _uploaders = new IResourceUploader[]
+            _resourceProvider = resourceProvider;
+            _resourceUploaders = new IComponentUploader[]
             {
                 ActivatorUtilities.CreateInstance<LifecyclePolicyUploader>(serviceProvider),
                 ActivatorUtilities.CreateInstance<IndexTemplateUploader>(serviceProvider),
@@ -29,8 +32,25 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            foreach (var uploader in _uploaders)
+            await UploadComponents(stoppingToken);
+
+            try
             {
+                await _resourceProvider.LoadAsync(stoppingToken);
+            }
+            catch (Exception e)
+            {
+                _log.Error("Resource loading error", e).Write();
+            }
+        }
+
+        private async Task UploadComponents(CancellationToken stoppingToken)
+        {
+            foreach (var uploader in _resourceUploaders)
+            {
+                if(stoppingToken.IsCancellationRequested)
+                    return;
+
                 try
                 {
                     await uploader.UploadAsync(stoppingToken);

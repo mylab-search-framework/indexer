@@ -1,19 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using Nest;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using System.Threading;
-using MyLab.Search.Indexer.Tools;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
-    class ComponentTemplateUploader : ResourceUploader<ComponentTemplate>
+    class ComponentTemplateUploader : ComponentUploader<ComponentTemplate>
     {
         public ComponentTemplateUploader(
             IEsTools esTools,
@@ -31,10 +29,9 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             
         }
 
-        class ComponentTemplateUploaderStrategy : IResourceUploaderStrategy<ComponentTemplate>
+        class ComponentTemplateUploaderStrategy : IComponentUploaderStrategy<ComponentTemplate>
         {
             public string ResourceSetName => "Component templates";
-            public string OneResourceName => "Component template";
 
             public IResource<ComponentTemplate>[] GetResources(IResourceProvider resourceProvider)
             {
@@ -46,11 +43,6 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             public Task<ComponentTemplate> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)
             {
                 return esTools.ComponentTemplate(componentId).TryGetAsync(cancellationToken);
-            }
-
-            public ComponentTemplate DeserializeComponent(IEsSerializer serializer, Stream inStream)
-            {
-                return serializer.Deserialize<ComponentTemplate>(inStream);
             }
 
             public bool HasAbsentNode(ComponentTemplate component, out string absentNodeName)
@@ -81,7 +73,8 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 var req = new PutComponentTemplateRequest(componentId)
                 {
                     Template = component.Template,
-                    Meta = new Dictionary<string, object>(component.Meta)
+                    Meta = new Dictionary<string, object>(component.Meta),
+                    Version = component.Version
                 };
 
                 return esTools.ComponentTemplate(componentId).PutAsync(req, cancellationToken);

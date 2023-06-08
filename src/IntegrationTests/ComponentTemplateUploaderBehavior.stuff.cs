@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Moq;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Nest;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ namespace IntegrationTests
             _output = output;
             fxt.Output = output;
 
-            _indexerVer = typeof(IResourceUploader).Assembly.GetName().Version?.ToString();
+            _indexerVer = typeof(IComponentUploader).Assembly.GetName().Version?.ToString();
         }
 
         public Task InitializeAsync()

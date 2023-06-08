@@ -156,7 +156,7 @@ namespace IntegrationTests
 
         public Task InitializeAsync()
         {
-            return _resourceProvider.StartAsync(CancellationToken.None);
+            return _resourceProvider.LoadAsync(CancellationToken.None);
         }
 
         public Task DisposeAsync()

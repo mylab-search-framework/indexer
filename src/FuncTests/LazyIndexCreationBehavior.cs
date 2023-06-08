@@ -16,7 +16,7 @@ using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using MyLab.Search.IndexerClient;
 using Newtonsoft.Json.Linq;

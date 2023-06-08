@@ -18,7 +18,7 @@ using Nest;
 
 namespace MyLab.Search.Indexer.Services
 {
-    class FileResourceProvider : IResourceProvider, IHostedService
+    class FileResourceProvider : IResourceProvider
     {
         private readonly IEsTools _esTools;
         private readonly IndexerOptions _opts;
@@ -52,7 +52,7 @@ namespace MyLab.Search.Indexer.Services
             _opts = opts;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task LoadAsync(CancellationToken cancellationToken)
         {
             await LoadIndexesDirectoryAsync(cancellationToken);
 
@@ -103,11 +103,6 @@ namespace MyLab.Search.Indexer.Services
                     )
                 );
             }
-        }
-
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            return Task.CompletedTask;
         }
 
         async Task<IEnumerable<(string Name, string Hash, T Content)>> LoadComponentsAsync<T>(string subDirName, CancellationToken cancellationToken)

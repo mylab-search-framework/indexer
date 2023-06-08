@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Moq;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Nest;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ namespace IntegrationTests
             _output = output;
             fxt.Output = output;
 
-            _indexerVer = typeof(IResourceUploader).Assembly.GetName().Version?.ToString();
+            _indexerVer = typeof(IComponentUploader).Assembly.GetName().Version?.ToString();
         }
 
         public Task InitializeAsync()
@@ -55,6 +55,8 @@ namespace IntegrationTests
             var newTemplateMetaDict = new Dictionary<string, object> { { "ver", ver } };
             IPutIndexTemplateV2Request newTemplateReq = new PutIndexTemplateV2Request(id)
             {
+                IndexPatterns = new[]{ Guid.NewGuid().ToString("N") + "*" },
+                Priority = 1000,
                 Template = new Template(),
                 Meta = newTemplateMetaDict
             };
@@ -74,7 +76,12 @@ namespace IntegrationTests
             var newTemplateMetaDict = new Dictionary<string, object> { { "ver", ver } };
             var newTemplate = new IndexTemplate
             {
-                Template = new Template(),
+                IndexPatterns = new[]{ Guid.NewGuid().ToString("N") + "*" },
+                Priority = 1000,
+                Template = new Template
+                {
+                    Mappings = new TypeMapping()
+                },
                 Meta = newTemplateMetaDict
             };
 

@@ -7,7 +7,7 @@ using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Services.ResourceUploading;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Xunit;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -16,7 +16,7 @@ namespace IntegrationTests
     public partial class LifecyclePolicyUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
     {
         [Fact]
-        public async Task ShouldUploadIfDoesNotExists()
+        public async Task  ShouldUploadIfDoesNotExists()
         {
             //Arrange
             var newPolicy = CreatePolicy("foo", "1", "hash");
@@ -63,7 +63,7 @@ namespace IntegrationTests
             //Arrange
             var originPolicy = CreateLifecyclePutRequest("lifecycle-test-policy", "foo", "1", "origin-hash");
             var newPolicy = CreatePolicy("foo", "2", "hash");
-            var resourceProvider = CreateResourceProvider("lifecycle-test", newPolicy);
+            var resourceProvider = CreateResourceProvider("lifecycle-test-policy", newPolicy);
 
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -80,12 +80,12 @@ namespace IntegrationTests
             ComponentMetadata componentMetadata = null;
             string ver = null;
             
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(originPolicy);
+            await _fxt.Tools.LifecyclePolicy("lifecycle-test-policy").PutAsync(originPolicy);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
 
-            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test").TryGetAsync();
+            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test-policy").TryGetAsync();
 
             if (policyInfo != null)
             {
@@ -134,12 +134,12 @@ namespace IntegrationTests
             ComponentMetadata componentMetadata = null;
             string ver = null;
             
-            await _fxt.Tools.LifecyclePolicy("lifecycle-test").PutAsync(originPolicy);
+            await _fxt.Tools.LifecyclePolicy("lifecycle-test-policy").PutAsync(originPolicy);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
 
-            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test").TryGetAsync();
+            var policyInfo = await _fxt.Tools.LifecyclePolicy("lifecycle-test-policy").TryGetAsync();
 
             if (policyInfo != null)
             {

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using MyLab.Search.Indexer.Tools;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
     class ComponentMetadata
     {
