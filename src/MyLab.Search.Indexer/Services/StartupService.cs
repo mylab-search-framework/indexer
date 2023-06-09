@@ -5,8 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyLab.Log.Dsl;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 
-namespace MyLab.Search.Indexer.Services.ComponentUploading
+namespace MyLab.Search.Indexer.Services
 {
     class StartupService : BackgroundService
     {
@@ -32,8 +33,6 @@ namespace MyLab.Search.Indexer.Services.ComponentUploading
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await UploadComponents(stoppingToken);
-
             try
             {
                 await _resourceProvider.LoadAsync(stoppingToken);
@@ -42,13 +41,15 @@ namespace MyLab.Search.Indexer.Services.ComponentUploading
             {
                 _log.Error("Resource loading error", e).Write();
             }
+
+            await UploadComponents(stoppingToken);
         }
 
         private async Task UploadComponents(CancellationToken stoppingToken)
         {
             foreach (var uploader in _resourceUploaders)
             {
-                if(stoppingToken.IsCancellationRequested)
+                if (stoppingToken.IsCancellationRequested)
                     return;
 
                 try

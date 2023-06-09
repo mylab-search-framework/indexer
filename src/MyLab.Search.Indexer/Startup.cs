@@ -13,7 +13,6 @@ using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Queue;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using MyLab.StatusProvider;
 using MyLab.TaskApp;

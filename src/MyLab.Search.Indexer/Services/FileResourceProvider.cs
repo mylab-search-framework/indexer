@@ -71,6 +71,12 @@ namespace MyLab.Search.Indexer.Services
                     )
                 );
             }
+            else
+            {
+                LifecyclePolicies = new NamedResources<LifecyclePolicy>(
+                        new Dictionary<string, IResource<LifecyclePolicy>>()
+                    );
+            }
 
             var indexTemplatesData = await LoadComponentsAsync<IndexTemplate>(IndexTemplatesDirname, cancellationToken);
             if (indexTemplatesData != null)
@@ -87,6 +93,12 @@ namespace MyLab.Search.Indexer.Services
                     )
                 );
             }
+            else
+            {
+                IndexTemplates = new NamedResources<IndexTemplate>(
+                    new Dictionary<string, IResource<IndexTemplate>>()
+                );
+            }
 
             var componentTemplatesData = await LoadComponentsAsync<ComponentTemplate>(ComponentTemplatesDirname, cancellationToken);
             if (componentTemplatesData != null)
@@ -101,6 +113,12 @@ namespace MyLab.Search.Indexer.Services
                             Content = l.Content
                         }
                     )
+                );
+            }
+            else
+            {
+                ComponentTemplates = new NamedResources<ComponentTemplate>(
+                    new Dictionary<string, IResource<ComponentTemplate>>()
                 );
             }
         }
@@ -256,8 +274,8 @@ namespace MyLab.Search.Indexer.Services
                 var commonMappingJson = Encoding.UTF8.GetString(commonPart);
                 var mappingJson = Encoding.UTF8.GetString(buff);
 
-                var mappingJObj = JObject.Parse(mappingJson);
-                var resultMappingJson = JObject.Parse(commonMappingJson);
+                var mappingJObj = JObject.Parse(TrimContent(mappingJson));
+                var resultMappingJson = JObject.Parse(TrimContent(commonMappingJson));
                 resultMappingJson.Merge(mappingJObj);
 
                 resultMappingBin = Encoding.UTF8.GetBytes(resultMappingJson.ToString(Formatting.None));
@@ -274,5 +292,7 @@ namespace MyLab.Search.Indexer.Services
 
             return (Path.GetFileNameWithoutExtension(file.Name), hash, content);
         }
+
+        string TrimContent(string content) => content.Trim('\uFEFF', '\u200B');
     }
 }
