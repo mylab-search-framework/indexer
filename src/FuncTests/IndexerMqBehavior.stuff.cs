@@ -61,6 +61,7 @@ namespace FuncTests
         {
             _dbMgr = await _dbFxt.CreateDbAsync();
 
+            await TryDeleteIndex();
             await _esFxt.Tools.Index("baz").CreateAsync();
 
             var indexNameProvider = new SingleIndexNameProvider("baz");
@@ -104,6 +105,11 @@ namespace FuncTests
         public async Task DisposeAsync()
         {
             _queue.Remove();
+            await TryDeleteIndex();
+        }
+
+        async Task TryDeleteIndex()
+        {
             var exists = await _esFxt.Tools.Index("baz").ExistsAsync();
             if (exists) await _esFxt.Tools.Index("baz").DeleteAsync();
         }

@@ -134,6 +134,7 @@ namespace FuncTests
             var searchP = new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(testDoc.Id)));
 
             //Act
+            await Task.Delay(500);
             await api.StartSynchronizationAsync();
             await Task.Delay(2000);
 

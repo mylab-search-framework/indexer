@@ -241,7 +241,7 @@ namespace MyLab.Search.Indexer.Services
             await using var stream = new MemoryStream(buff);
             var hash = HashCalculator.Calculate(buff);
 
-            return (Path.GetFileNameWithoutExtension(file.Name), hash, buff, content);
+            return (Path.GetFileNameWithoutExtension(file.Name), hash, buff, TrimContent(content));
         }
 
         async Task<(string Name, string Hash, byte[] Bin, T Content)> LoadResourceAsync<T>(FileInfo file, CancellationToken cancellationToken)

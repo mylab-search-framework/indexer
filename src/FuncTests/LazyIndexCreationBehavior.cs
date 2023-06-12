@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,14 +7,10 @@ using Microsoft.Extensions.Logging;
 using MyLab.ApiClient.Test;
 using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter;
-using MyLab.Search.EsAdapter.Indexing;
-using MyLab.Search.EsAdapter.Inter;
-using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services.ComponentUploading;
-using MyLab.Search.Indexer.Tools;
 using MyLab.Search.IndexerClient;
 using Newtonsoft.Json.Linq;
 using Xunit;
@@ -116,7 +109,7 @@ namespace FuncTests
             Assert.NotNull(metaObj);
             Assert.Null(metaObj.Template);
             Assert.Equal("test", metaObj.Creator.Owner);
-            Assert.Equal("ce8cf6d2c39e169ce7daf8a06380619e", metaObj.Creator.SourceHash);
+            Assert.Equal("ab32e71ac91c75ecdca810cfa0bb8196", metaObj.Creator.SourceHash);
             
         }
 

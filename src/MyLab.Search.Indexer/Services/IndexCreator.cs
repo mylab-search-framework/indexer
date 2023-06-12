@@ -113,19 +113,21 @@ namespace MyLab.Search.Indexer.Services
 
         private async Task CreateEsIndexCoreAsync(string esIndexName, IResource<TypeMapping> indexMapping, CancellationToken stoppingToken)
         {
+            var mappingMeta = new MappingMetadata
+            {
+                Creator = new MappingMetadata.CreatorDesc
+                {
+                    Owner = _opts.AppId,
+                    SourceHash = indexMapping?.Hash
+                }
+            };
+
+            var metaDict = indexMapping?.Content.Meta ?? new Dictionary<string, object>();
+            mappingMeta.Save(metaDict);
+
             if (indexMapping != null)
             {
-                var mappingMeta = new MappingMetadata
-                {
-                    Creator = new MappingMetadata.CreatorDesc
-                    {
-                        Owner = _opts.AppId,
-                        SourceHash = indexMapping.Hash
-                    }
-                };
-                
-                var metaDict = indexMapping.Content.Meta ??= new Dictionary<string, object>();
-                mappingMeta.Save(metaDict);
+                indexMapping.Content.Meta = metaDict;
 
                 ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
                 {
@@ -137,7 +139,7 @@ namespace MyLab.Search.Indexer.Services
             else
             {
                 await _esTools.Index(esIndexName).CreateAsync(d => d
-                        .Map(md => md)
+                        .Map(md => md.Meta(new Dictionary<string, object>(metaDict)))
                     , stoppingToken);
             }
 
