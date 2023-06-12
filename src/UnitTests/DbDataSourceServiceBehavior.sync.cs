@@ -22,7 +22,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
+                IsStream = true,
                 SeedType = SeedType.Long
             };
 
@@ -50,7 +50,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
@@ -87,7 +87,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
+                IsStream = true,
                 SeedType = SeedType.Long
             };
 
@@ -136,7 +136,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
 
             var options = new IndexerOptions
@@ -184,7 +184,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream,
+                IsStream = true,
                 SeedType = SeedType.Long
             };
 
@@ -231,7 +231,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
 
             var options = new IndexerOptions

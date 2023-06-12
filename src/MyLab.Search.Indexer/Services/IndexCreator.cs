@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,6 @@ using MyLab.Log.Scopes;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services.ComponentUploading;
-using MyLab.Search.Indexer.Tools;
 using Nest;
 
 namespace MyLab.Search.Indexer.Services
@@ -46,8 +44,10 @@ namespace MyLab.Search.Indexer.Services
             _opts = opts;
         }
 
-        public async Task CreateIndexAsync(string idxId, string esIndexName, CancellationToken stoppingToken)
+        public async Task CreateIndexAsync(string idxId, CancellationToken stoppingToken)
         {
+            string esIndexName = _opts.GetEsName(idxId);
+
             using (_log.BeginScope(new LabelLogScope(new Dictionary<string, string>
                    {
                        {"index-id", idxId},
@@ -67,28 +67,17 @@ namespace MyLab.Search.Indexer.Services
                     }
                     catch (FileNotFoundException)
                     {
-                        var idxOpts = _opts.Indexes?.FirstOrDefault(i => i.Id == idxId);
-
-                        var idxType = idxOpts?.IndexType ?? _opts.DefaultIndexOptions.IndexType;
-
-                        switch (idxType)
+                        if(_opts.IsIndexAStream(idxId))
                         {
-                            case IndexType.Heap:
-                            {
-                                if (!_opts.EnableEsIndexAutoCreation)
-                                    throw new IndexCreationDeniedException();
-                                await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
-                            }
-                                break;
-                            case IndexType.Stream:
-                            {
-                                if (!_opts.EnableEsStreamAutoCreation)
-                                    throw new IndexCreationDeniedException();
-                                await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
-                            }
-                                break;
-                            default:
-                                throw new ArgumentOutOfRangeException();
+                            if (!_opts.EnableEsStreamAutoCreation)
+                                throw new IndexCreationDeniedException();
+                            await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
+                        }
+                        else
+                        {
+                            if (!_opts.EnableEsIndexAutoCreation)
+                                throw new IndexCreationDeniedException();
+                            await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
                         }
                     }
                 }

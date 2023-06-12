@@ -78,7 +78,7 @@ namespace MyLab.Search.Indexer.Services
             var seed = await _seedService.LoadSeedAsync(indexId);
             
             var seedType = indexOptions.SeedType == SeedType.Undefined 
-                ? (indexOptions.IndexType == IndexType.Heap ? SeedType.DateTime : throw new InvalidOperationException("An index seed type specification required"))
+                ? (indexOptions.IsStream ? throw new InvalidOperationException("An index seed type specification required for stream") : SeedType.DateTime)
                 : indexOptions.SeedType;
 
             if (!seed.IsEmpty && (seed.IsLong ? seedType == SeedType.DateTime : seedType == SeedType.Long))
@@ -96,7 +96,9 @@ namespace MyLab.Search.Indexer.Services
                 .AndFactIs("seed", seed.ToString())
                 .Write();
 
-            return new DataSourceLoadEnumerable(indexId, indexOptions.IndexType, _seedService, batchEnumerable);
+            return indexOptions.IsStream 
+                ? new StreamDataSourceLoadEnumerable(indexId, _seedService, batchEnumerable)
+                : new IndexDataSourceLoadEnumerable(indexId, _seedService, batchEnumerable);
         }
     }
 }

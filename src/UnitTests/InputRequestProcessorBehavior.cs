@@ -63,7 +63,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "index-id",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
             IndexerOptions options = new IndexerOptions { Indexes = new[] { indexOpts } };
 

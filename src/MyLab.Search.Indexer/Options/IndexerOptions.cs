@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using MyLab.Log;
-using Nest;
 
 namespace MyLab.Search.Indexer.Options
 {
@@ -38,17 +36,14 @@ namespace MyLab.Search.Indexer.Options
             return $"{EsNamePrefix?.ToLower()}{name.ToLower()}{EsNamePostfix?.ToLower()}";
         }
 
-        public IndexType GetTotalIndexType(string idxId)
+        public bool IsIndexAStream(string idxId)
         {
             var idxOpts = GetIndexOptionsCore(idxId);
 
             if (idxOpts != null)
-                return idxOpts.IndexType;
-
-            if (DefaultIndexOptions == null)
-                return IndexType.Heap;
-
-            return DefaultIndexOptions.IndexType;
+                return idxOpts.IsStream;
+            
+            return DefaultIndexOptions is { IsStream: true };
         }
 
         IndexOptions GetIndexOptionsCore(string indexId)

@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Elasticsearch.Net;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -14,12 +10,9 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ComponentUploading;
-using MyLab.Search.Indexer.Tools;
 using Nest;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
-using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
@@ -88,10 +81,10 @@ namespace IntegrationTests
                 .AddSingleton(resourceProvider.Object)
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
 
             //Act
-            await indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None);
+            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
             var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
 
@@ -183,10 +176,10 @@ namespace IntegrationTests
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
 
             //Act
-            await indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None);
+            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
             var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
 
@@ -234,19 +227,11 @@ namespace IntegrationTests
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
 
             //Act & Assert
             await Assert.ThrowsAsync<IndexCreationDeniedException>(() =>
-                indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None));
-        }
-
-        string SerializeMapping(TypeMapping mapping)
-        {
-            using var stream = new MemoryStream();
-            _fxt.Tools.Serializer.Serialize(mapping, stream, SerializationFormatting.Indented);
-
-            return Encoding.UTF8.GetString(stream.ToArray());
+                indexCreator.CreateIndexAsync(_indexName, CancellationToken.None));
         }
 
         public Task InitializeAsync()

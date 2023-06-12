@@ -65,7 +65,7 @@ namespace MyLab.Search.Indexer.Services
 
             return indexResources != null 
                 ? indexResources.Mapping
-                : resourceProvider.IndexDirectory.CommonMapping;
+                : resourceProvider?.IndexDirectory?.CommonMapping;
         }
 
         static IndexResources ProvideIndexResources(IResourceProvider resourceProvider, string indexId)
