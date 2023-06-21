@@ -33,7 +33,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldCreateIndexWithSettings()
+        public async Task ShouldCreateIndexWithMapping()
         {
             //Arrange
             TypeMapping mapping = new TypeMapping
@@ -43,8 +43,6 @@ namespace IntegrationTests
                     { new PropertyName("text"), new TextProperty() }
                 }
             };
-
-            
 
             var resourceProvider= new Mock<IResourceProvider>();
             resourceProvider.SetupGet(p => p.IndexDirectory)
@@ -94,6 +92,40 @@ namespace IntegrationTests
             Assert.NotNull(indexInfo.Mappings.Properties);
             Assert.Single(indexInfo.Mappings.Properties);
             Assert.Contains(indexInfo.Mappings.Properties, p => p.Key == "text" && p.Value is TextProperty);
+        }
+
+        [Fact]
+        public async Task ShouldCreateStream()
+        {
+            //Arrange
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory());
+
+            var srv = new ServiceCollection()
+                .AddLogging(l => l
+                    .SetMinimumLevel(LogLevel.Trace)
+                    .AddXUnit(_output)
+                )
+                .Configure<IndexerOptions>(o =>
+                {
+                    o.EnableEsIndexAutoCreation = true;
+                    o.DefaultIndex.IsStream = true;
+                })
+                .AddSingleton(_fxt.Tools)
+                .AddSingleton<IndexCreator>()                          
+                .AddSingleton(resourceProvider.Object)                          
+                .BuildServiceProvider();
+
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
+
+            //Act
+            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+
+            var streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+
+            //Assert
+            Assert.True(streamExists);
         }
 
         [Fact]
@@ -242,9 +274,14 @@ namespace IntegrationTests
         public async Task DisposeAsync()
         {
             _fxt.Output = null;
+
             var indexExists = await _fxt.Tools.Index(_indexName).ExistsAsync();
             if(indexExists)
                 await _fxt.Tools.Index(_indexName).DeleteAsync();
+
+            var streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+            if (streamExists)
+                await _fxt.Tools.Stream(_indexName).DeleteAsync();
         }
     }
 }

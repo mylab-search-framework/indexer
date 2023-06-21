@@ -7,7 +7,7 @@ namespace MyLab.Search.Indexer.Options
     {
         public string AppId { get; set; } = "mylab-indexer";
         public IndexOptions[] Indexes { get; set; }
-        public IndexOptionsBase DefaultIndexOptions { get; set; } = new();
+        public IndexOptionsBase DefaultIndex { get; set; } = new();
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
         public string ResourcesPath { get; set; } = "/etc/mylab-indexer";
         public string MqQueue { get; set; }
@@ -43,7 +43,7 @@ namespace MyLab.Search.Indexer.Options
             if (idxOpts != null)
                 return idxOpts.IsStream;
             
-            return DefaultIndexOptions is { IsStream: true };
+            return DefaultIndex is { IsStream: true };
         }
 
         IndexOptions GetIndexOptionsCore(string indexId)

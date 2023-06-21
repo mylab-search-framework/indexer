@@ -122,7 +122,7 @@ namespace FuncTests
             var api = _apiFxt.StartWithProxy(srv => srv.Configure<IndexerOptions>(
                 opt =>
                 {
-                    opt.DefaultIndexOptions.IsStream = true;
+                    opt.DefaultIndex.IsStream = true;
                     opt.Indexes = indexesOptions;
                 })
             );
