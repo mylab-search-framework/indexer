@@ -17,8 +17,10 @@ namespace MyLab.Search.Indexer.Services
 {
     interface IIndexCreator
     {
-        Task CreateIndexAsync(string idxId, CancellationToken stoppingToken);
+        Task<CreatedIndexDescription> CreateIndexAsync(string idxId, CancellationToken stoppingToken);
     }
+
+    record CreatedIndexDescription(string Id, string Name, string Alias, bool IsStream, IAsyncDisposable Deleter);
 
     class IndexCreator : IIndexCreator
     {
@@ -48,63 +50,58 @@ namespace MyLab.Search.Indexer.Services
             _opts = opts;
         }
 
-        public async Task CreateIndexAsync(string idxId, CancellationToken stoppingToken)
+        public async Task<CreatedIndexDescription> CreateIndexAsync(string idxId, CancellationToken stoppingToken)
         {
-            string esIndexName = _opts.GetEsName(idxId);
+            if (!_opts.EnableAutoCreation)
+                throw new IndexCreationDeniedException();
+
+            string idxAlias = _opts.GetEsName(idxId);
+            var idxName = idxAlias + "-" + Guid.NewGuid().ToString("N");
+
+            bool streamCreated = false;
+            IAsyncDisposable deleter;
 
             using (_log.BeginScope(new LabelLogScope(new Dictionary<string, string>
                    {
                        {"index-id", idxId},
-                       {"index-name", esIndexName}
+                       {"index-name", idxName},
+                       {"alias-name", idxAlias}
                    })))
             {
-                try
+                var mappingObj = _resourceProvider.ProvideIndexMapping(idxId);
+
+                if (mappingObj != null)
                 {
-                    try
-                    {
-                        var mappingObj = _resourceProvider.ProvideIndexMapping(idxId);
-
-                        if (!_opts.EnableEsIndexAutoCreation)
-                            throw new IndexCreationDeniedException();
-
-                        await CreateEsIndexCoreAsync(esIndexName, mappingObj, stoppingToken);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        if (_opts.IsIndexAStream(idxId))
-                        {
-                            if (!_opts.EnableEsStreamAutoCreation)
-                                throw new IndexCreationDeniedException();
-                            await CreateEsStreamCoreAsync(esIndexName, stoppingToken);
-                        }
-                        else
-                        {
-                            if (!_opts.EnableEsIndexAutoCreation)
-                                throw new IndexCreationDeniedException();
-                            await CreateEsIndexCoreAsync(esIndexName, null, stoppingToken);
-                        }
-                    }
+                    deleter = await CreateEsIndexCoreAsync(idxAlias, idxName, mappingObj, stoppingToken);
                 }
-                catch (IndexCreationDeniedException e)
+                else
                 {
-                    e.AndFactIs("index-id", idxId)
-                        .AndFactIs("index-name", esIndexName);
-
-                    throw;
+                    if (_opts.IsIndexAStream(idxId))
+                    {
+                        deleter = await CreateEsStreamCoreAsync(idxAlias, idxName, stoppingToken);
+                        streamCreated = true;
+                    }
+                    else
+                    {
+                        deleter = await CreateEsIndexCoreAsync(idxAlias, idxName, null, stoppingToken);
+                    }
                 }
             }
+
+            return new CreatedIndexDescription(idxId, idxName, idxAlias, streamCreated, deleter);
         }
 
-        private async Task CreateEsStreamCoreAsync(string esIndexName, CancellationToken stoppingToken)
+        private async Task<IAsyncDisposable> CreateEsStreamCoreAsync(string alias, string name, CancellationToken stoppingToken)
         {
-            await _esTools.Stream(esIndexName).CreateAsync(stoppingToken);
+            var deleter = await _esTools.Stream(name).CreateAsync(stoppingToken);
+            await _esTools.Stream(name).Alias(alias).PutAsync(null, stoppingToken);
 
-            _log?.Action("Elasticsearch stream has been created")
-                .AndFactIs("stream-name", esIndexName)
-                .Write();
+            _log?.Action("A stream has been created").Write();
+
+            return deleter;
         }
 
-        private async Task CreateEsIndexCoreAsync(string esIndexName, IResource<TypeMapping> indexMapping, CancellationToken stoppingToken)
+        private async Task<IAsyncDisposable> CreateEsIndexCoreAsync(string alias, string name, IResource<TypeMapping> indexMapping, CancellationToken stoppingToken)
         {
             var mappingMeta = new MappingMetadata
             {
@@ -118,27 +115,31 @@ namespace MyLab.Search.Indexer.Services
             var metaDict = indexMapping?.Content.Meta ?? new Dictionary<string, object>();
             mappingMeta.Save(metaDict);
 
+            IAsyncDisposable deleter;
+
             if (indexMapping != null)
             {
                 indexMapping.Content.Meta = metaDict;
 
-                ICreateIndexRequest req = new CreateIndexRequest(esIndexName)
+                ICreateIndexRequest req = new CreateIndexRequest(name)
                 {
                     Mappings = indexMapping.Content
                 };
 
-                await _esTools.Index(esIndexName).CreateAsync(d => req, stoppingToken);
+                deleter = await _esTools.Index(name).CreateAsync(d => req, stoppingToken);
             }
             else
             {
-                await _esTools.Index(esIndexName).CreateAsync(d => d
+                deleter = await _esTools.Index(name).CreateAsync(d => d
                         .Map(md => md.Meta(new Dictionary<string, object>(metaDict)))
                     , stoppingToken);
             }
 
-            _log?.Action("Elasticsearch index has been created")
-                .AndFactIs("index-name", esIndexName)
-                .Write();
+            await _esTools.Index(name).Alias(alias).PutAsync(null, stoppingToken);
+
+            _log?.Action("An index has been created").Write();
+
+            return deleter;
         }
     }
 

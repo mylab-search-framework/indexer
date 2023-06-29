@@ -13,8 +13,7 @@ namespace MyLab.Search.Indexer.Options
         public string MqQueue { get; set; }
         public string EsNamePrefix { get; set; }
         public string EsNamePostfix { get; set; }
-        public bool EnableEsIndexAutoCreation { get; set; } = false;
-        public bool EnableEsStreamAutoCreation { get; set; } = false;
+        public bool EnableAutoCreation { get; set; } = false;
 
         public int SyncPageSize { get; set; } = 500;
 

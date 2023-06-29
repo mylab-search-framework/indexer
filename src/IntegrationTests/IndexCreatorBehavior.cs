@@ -17,7 +17,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
 {
-    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>
     {
         private readonly EsFixture<TestEsFixtureStrategy> _fxt;
         private readonly ITestOutputHelper _output;
@@ -72,7 +72,7 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = true;
+                    o.EnableAutoCreation = true;
                 })
                 .AddSingleton(_fxt.Tools)
                 .AddSingleton<IndexCreator>()
@@ -80,11 +80,19 @@ namespace IntegrationTests
                 .BuildServiceProvider();
 
             var indexCreator = srv.GetRequiredService<IndexCreator>();
+            IndexState indexInfo;
 
             //Act
-            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
-            var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
+            try
+            {
+                indexInfo = await _fxt.Tools.Index(createdIndexDescription.Name).TryGetAsync();
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
+            }
 
             //Assert
             Assert.NotNull(indexInfo);
@@ -109,7 +117,7 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = true;
+                    o.EnableAutoCreation = true;
                     o.DefaultIndex.IsStream = true;
                 })
                 .AddSingleton(_fxt.Tools)
@@ -118,11 +126,19 @@ namespace IntegrationTests
                 .BuildServiceProvider();
 
             var indexCreator = srv.GetRequiredService<IndexCreator>();
+            bool streamExists;
 
             //Act
-            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
-            var streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+            try
+            {
+                streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
+            }
 
             //Assert
             Assert.True(streamExists);
@@ -159,7 +175,7 @@ namespace IntegrationTests
                         Meta = idxTemplateMappingMetaDict
                     }
                 },
-                IndexPatterns = new[] { _indexName }
+                IndexPatterns = new[] { _indexName + "*" }
             };
 
             await using var idxTemplateDisposer = await _fxt.Tools.IndexTemplate(indexTemplateName).PutAsync(indexTemplateRequest);
@@ -200,7 +216,7 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = true;
+                    o.EnableAutoCreation = true;
                     o.AppId = "test-app";
                 })
                 .AddSingleton(_fxt.Tools)
@@ -209,20 +225,32 @@ namespace IntegrationTests
                 .BuildServiceProvider();
 
             var indexCreator = srv.GetRequiredService<IndexCreator>();
-
-            //Act
-            await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
-
-            var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
-
+            IndexState indexInfo;
             MappingMetadata idxMappingMeta = null;
 
-            if (indexInfo?.Mappings?.Meta != null)
+            //Act
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+
+            try
             {
-                MappingMetadata.TryGet(indexInfo.Mappings.Meta, out idxMappingMeta);
+                indexInfo = await _fxt.Tools.Index(createdIndexDescription.Name).TryGetAsync();
+
+                if (indexInfo?.Mappings?.Meta != null)
+                {
+                    MappingMetadata.TryGet(indexInfo.Mappings.Meta, out idxMappingMeta);
+                }
+
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
             }
 
             //Assert
+            Assert.False(createdIndexDescription.IsStream);
+            Assert.Equal(_indexName, createdIndexDescription.Alias);
+            Assert.StartsWith(_indexName, createdIndexDescription.Name);
+
             Assert.NotNull(indexInfo);
             Assert.NotNull(indexInfo.Mappings);
             Assert.NotNull(indexInfo.Mappings.Properties);
@@ -252,7 +280,7 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = false;
+                    o.EnableAutoCreation = false;
                 })
                 .AddSingleton(_fxt.Tools)
                 .AddSingleton(resourceProvider.Object)
@@ -264,24 +292,6 @@ namespace IntegrationTests
             //Act & Assert
             await Assert.ThrowsAsync<IndexCreationDeniedException>(() =>
                 indexCreator.CreateIndexAsync(_indexName, CancellationToken.None));
-        }
-
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task DisposeAsync()
-        {
-            _fxt.Output = null;
-
-            var indexExists = await _fxt.Tools.Index(_indexName).ExistsAsync();
-            if(indexExists)
-                await _fxt.Tools.Index(_indexName).DeleteAsync();
-
-            var streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
-            if (streamExists)
-                await _fxt.Tools.Stream(_indexName).DeleteAsync();
         }
     }
 }
