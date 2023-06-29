@@ -14,7 +14,6 @@ namespace UnitTests
         {
             //Arrange
             var seedSrv = new FileSeedService(Directory.GetCurrentDirectory());
-            var indexId = Guid.NewGuid().ToString("N");
 
             //Act
             var seed = await seedSrv.LoadSeedAsync("foo");

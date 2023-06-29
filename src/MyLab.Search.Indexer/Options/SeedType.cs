@@ -1,9 +1,9 @@
 ﻿namespace MyLab.Search.Indexer.Options
 {
-    public enum IndexType
+    public enum SeedType
     {
         Undefined,
-        Heap,
-        Stream
+        Long,
+        DateTime
     }
 }

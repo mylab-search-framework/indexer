@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Services;
 
 namespace MyLab.Search.Indexer.Tools

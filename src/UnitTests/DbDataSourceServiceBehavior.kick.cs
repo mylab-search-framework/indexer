@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-using LinqToDB.Async;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Tools;
 using Xunit;
+using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 
 namespace UnitTests
 {
@@ -30,12 +29,10 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                KickQuery = "select id, content from docs where id in (@id)"
-            };
-
-            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
+            var resourceProvider =
+                CreateKickResourceProvider("foo-index", "select id, content from docs where id in (@id)"); 
+                
+            IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, resourceProvider, options);
 
             //Act
             var load = await srv.LoadKickAsync("foo-index", new[] { "1" });
@@ -67,10 +64,7 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                KickQuery = "select id, content from docs where id in (@id)"
-            };
+            var indexResProvider = CreateKickResourceProvider("foo-index", "select id, content from docs where id in (@id)");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -104,11 +98,8 @@ namespace UnitTests
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                KickQuery = "select id, content from docs where content in (@id)"
-            };
-
+            var indexResProvider = CreateKickResourceProvider("foo-index", "select id, content from docs where content in (@id)");
+            
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             //Act
@@ -140,11 +131,8 @@ namespace UnitTests
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
-
-            var indexResProvider = new TestResourceProvider
-            {
-                KickQuery = "select id, content from docs where content in (@id)"
-            };
+            
+            var indexResProvider = CreateKickResourceProvider("foo-index", "select id, content from docs where content in (@id)");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 

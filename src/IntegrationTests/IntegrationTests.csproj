@@ -9,10 +9,10 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="Moq" Version="4.18.4" />
-    <PackageReference Include="MyLab.ApiClient.Test" Version="1.4.6" />
+    <PackageReference Include="MyLab.ApiClient.Test" Version="1.6.7" />
     <PackageReference Include="MyLab.DbTest" Version="1.0.2" />
     <PackageReference Include="MyLab.Log.XUnit" Version="1.0.1" />
-    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.19" />
+    <PackageReference Include="MyLab.Search.EsAdapter" Version="2.2.20" />
     <PackageReference Include="MyLab.Search.EsTest" Version="2.1.3" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
@@ -31,6 +31,27 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="for-loadres-test\component-templates\foo-c-template.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\index-templates\foo-i-template.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\indexes\foo-index\kick.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\indexes\foo-index\mapping.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\indexes\foo-index\sync.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\indexes\mapping.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="for-loadres-test\lifecycle-policies\foo-lifecycle.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="resources\existent-component-template.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

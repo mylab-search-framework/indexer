@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
@@ -12,59 +10,30 @@ using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
-using MyLab.Search.Indexer.Tools;
-using Org.BouncyCastle.Asn1;
+using MyLab.Search.Indexer.Services.ComponentUploading;
+using Nest;
 using Xunit;
 using Xunit.Abstractions;
+using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
 {
-    public class ComponentTemplateUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public partial class ComponentTemplateUploaderBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
     {
-        private readonly EsFixture<TestEsFixtureStrategy> _fxt;
-        private readonly ITestOutputHelper _output;
-        private readonly string _indexerVer;
-
-        public ComponentTemplateUploaderBehavior(EsFixture<TestEsFixtureStrategy> fxt, ITestOutputHelper output)
-        {
-            _fxt = fxt;
-            _output = output;
-            fxt.Output = output;
-
-            _indexerVer = typeof(IResourceUploader).Assembly.GetName().Version?.ToString();
-        }
-
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task DisposeAsync()
-        {
-            await _fxt.Tools.ComponentTemplate("component-template-test").DeleteAsync();
-        }
-
         [Fact]
         public async Task ShouldUploadIfDoesNotExists()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-            
-            var templateResource = new TestResource("component-template-test", "resources\\component-template-example.json");
+            var newTemplate = CreateTemplate("foo", "1", "hash");
+            var resourceProvider = CreateResourceProvider("component-template-test", newTemplate);
 
-            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
-
-            idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
-                .Returns(() => new IResource[] { templateResource });
-            
             var services = new ServiceCollection()
                 .AddLogging(l => l
                         .SetMinimumLevel(LogLevel.Trace)
                         .AddXUnit(_output)
                     )            
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
@@ -87,7 +56,7 @@ namespace IntegrationTests
             //Assert
             Assert.NotNull(componentMetadata);
             Assert.Equal("foo", componentMetadata.Owner);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("1", ver);
         }
 
@@ -95,14 +64,9 @@ namespace IntegrationTests
         public async Task ShouldUpdateIfExists()
         {
             //Arrange
-            var idxResProviderMock = new Mock<IResourceProvider>();
-            
-            var templateResource = new TestResource("component-template-test", "resources\\component-template-example-2.json");
-
-            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
-
-            idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
-                .Returns(() => new IResource[] { templateResource });
+            var originTemplate = CreateTemplatePutRequest("component-template-test","foo", "1", "origin-hash");
+            var newTemplate = CreateTemplate("foo", "2", "hash");
+            var resourceProvider = CreateResourceProvider("component-template-test", newTemplate);
             
             var services = new ServiceCollection()
                 .AddLogging(l => l
@@ -110,7 +74,7 @@ namespace IntegrationTests
                         .AddXUnit(_output)
                     )
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
@@ -118,9 +82,8 @@ namespace IntegrationTests
 
             string ver = null;
             ComponentMetadata componentMetadata = null;
-
-            var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
-            await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(templateJson);
+            
+            await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(originTemplate);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -136,7 +99,7 @@ namespace IntegrationTests
             //Assert
             Assert.NotNull(componentMetadata);
             Assert.Equal("foo", componentMetadata.Owner);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("hash", componentMetadata.SourceHash);
             Assert.Equal("2", ver);
         }
 
@@ -144,13 +107,9 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var templateResource = new TestResource("component-template-test", "resources\\component-template-example.json");
-
-            var resourceHash = await TestTools.GetResourceHashAsync(templateResource);
-
-            var idxResProviderMock = new Mock<IResourceProvider>();
-            idxResProviderMock.Setup(p => p.ProvideComponentTemplates())
-                .Returns(() => new IResource[] { templateResource });
+            var originTemplate = CreateTemplatePutRequest("component-template-test", "foo", "1", "same-hash");
+            var newTemplate = CreateTemplate("foo", "2", "same-hash");
+            var resourceProvider = CreateResourceProvider("component-template-test", newTemplate);
 
             var componentTemplateToolMock = new Mock<IEsComponentTemplateTool>();
             componentTemplateToolMock.Setup(t => t.TryGetAsync(It.IsAny<CancellationToken>()))
@@ -169,7 +128,7 @@ namespace IntegrationTests
                         .AddXUnit(_output)
                     )
                 .AddSingleton(toolsMock.Object)
-                .AddSingleton(idxResProviderMock.Object)
+                .AddSingleton(resourceProvider)
                 .Configure<IndexerOptions>(o => o.AppId = "foo")
                 .BuildServiceProvider();
 
@@ -177,9 +136,8 @@ namespace IntegrationTests
 
             ComponentMetadata componentMetadata = null;
             string ver = null;
-
-            var templateJson = await File.ReadAllTextAsync("resources\\existent-component-template.json");
-            await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(templateJson);
+            
+            await _fxt.Tools.ComponentTemplate("component-template-test").PutAsync(originTemplate);
 
             //Act
             await uploader.UploadAsync(CancellationToken.None);
@@ -194,27 +152,11 @@ namespace IntegrationTests
 
             //Assert
             Assert.NotNull(componentMetadata);
-            Assert.Equal(resourceHash, componentMetadata.SourceHash);
+            Assert.Equal("same-hash", componentMetadata.SourceHash);
             Assert.Equal("foo", componentMetadata.Owner);
             Assert.Equal("1", ver);
 
             componentTemplateToolMock.Verify(t => t.PutAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        }
-
-        class TestResource : IResource
-        {
-            private readonly string _filename;
-            public string Name { get; }
-            public Stream OpenRead()
-            {
-                return File.OpenRead(_filename);
-            }
-
-            public TestResource(string name, string filename)
-            {
-                Name = name;
-                _filename = filename;
-            }
         }
     }
 }

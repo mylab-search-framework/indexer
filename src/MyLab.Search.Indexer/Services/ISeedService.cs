@@ -1,6 +1,10 @@
-﻿using System;
+﻿using System.IO;
+using System;
 using System.Threading.Tasks;
-using MyLab.Log;
+using Microsoft.Extensions.Options;
+using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Options;
+using Org.BouncyCastle.Asn1.Cms;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -10,48 +14,58 @@ namespace MyLab.Search.Indexer.Services
         Task<Seed> LoadSeedAsync(string indexId);
     }
 
-    public class Seed
+    class FileSeedService : ISeedService
     {
-        public long Long { get; }
-        public DateTime DataTime { get; }
-        
-        public bool IsLong { get; }
-        public bool IsDateTime { get; }
+        private readonly string _basePath;
 
-        public Seed(long longValue)
+        public FileSeedService(IOptions<IndexerOptions> opts)
+            : this(opts.Value.SeedPath)
         {
-            Long = longValue;
-            IsLong = true;
+
         }
 
-        public Seed(DateTime dateTimeValue)
+        public FileSeedService(string basePath)
         {
-            DataTime = dateTimeValue;
-            IsDateTime = true;
+            if (string.IsNullOrWhiteSpace(basePath))
+                throw new InvalidOperationException("Base seed path is not defined");
+
+            _basePath = basePath;
         }
 
-        public override string ToString()
+        public async Task SaveSeedAsync(string indexId, Seed seed)
         {
-            return IsLong ? Long.ToString("D") : DataTime.ToString("O");
+            if (!Directory.Exists(_basePath))
+                Directory.CreateDirectory(_basePath);
+
+            var fullPath = GetIndexSeedFilePath(indexId);
+
+            await File.WriteAllTextAsync(fullPath, seed.ToString());
         }
 
-        public static Seed Parse(string strValue)
+        public async Task<Seed> LoadSeedAsync(string indexId)
         {
-            if (long.TryParse(strValue, out var longVal))
-            {
-                return new Seed(longVal);
-            }
+            var fullPath = GetIndexSeedFilePath(indexId);
 
-            if (DateTime.TryParse(strValue, out var dtVal))
-            {
-                return new Seed(dtVal);
-            }
+            var file = new FileInfo(fullPath);
 
-            throw new FormatException("A seed has wrong format")
-                .AndFactIs("origin-value", strValue);
+            if (!file.Exists || file.Length == 0)
+                return Seed.Empty;
+
+            var line = await ReadLineAsync(file);
+
+            return Seed.Parse(line);
         }
 
-        public static implicit operator Seed(long longValue) => new (longValue);
-        public static implicit operator Seed(DateTime dateTimeValue) => new (dateTimeValue);
+        string GetIndexSeedFilePath(string indexId)
+        {
+            return Path.Combine(_basePath, indexId);
+        }
+
+        async Task<string> ReadLineAsync(FileInfo file)
+        {
+            using var rdr = file.OpenText();
+
+            return await rdr.ReadLineAsync();
+        }
     }
 }

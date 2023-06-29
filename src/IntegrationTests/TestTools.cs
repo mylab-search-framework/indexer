@@ -10,18 +10,18 @@ namespace IntegrationTests
 {
     static class TestTools
     {
-        public static async Task<string> GetResourceHashAsync(IResource resource)
-        {
-            await using var readStream = resource.OpenRead();
+        //public static async Task<string> GetResourceHashAsync(IResource resource)
+        //{
+        //    await using var readStream = resource.OpenRead();
 
-            byte[] buff = new byte[readStream.Length];
+        //    byte[] buff = new byte[readStream.Length];
 
-            await readStream.ReadAsync(buff);
+        //    await readStream.ReadAsync(buff);
 
-            var hashBin = MD5.HashData(buff);
+        //    var hashBin = MD5.HashData(buff);
 
-            return BitConverter.ToString(hashBin).Replace("-", "").ToLower();
-        }
+        //    return BitConverter.ToString(hashBin).Replace("-", "").ToLower();
+        //}
 
         public static string GetComponentVer(IReadOnlyDictionary<string, object> metadata)
         {

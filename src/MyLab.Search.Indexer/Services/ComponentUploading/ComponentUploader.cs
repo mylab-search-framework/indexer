@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,18 +11,18 @@ using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
-    class ResourceUploader<TEsComponent> : IResourceUploader
+    class ComponentUploader<TEsComponent> : IComponentUploader
     {
-        private readonly IResourceUploaderStrategy<TEsComponent> _strategy;
+        private readonly IComponentUploaderStrategy<TEsComponent> _strategy;
         private readonly IEsTools _esTools;
         private readonly IResourceProvider _resourceProvider;
         private readonly IDslLogger _log;
         private readonly IndexerOptions _options;
 
-        protected ResourceUploader(
-            IResourceUploaderStrategy<TEsComponent> strategy,
+        protected ComponentUploader(
+            IComponentUploaderStrategy<TEsComponent> strategy,
             IEsTools esTools,
             IResourceProvider resourceProvider,
             IOptions<IndexerOptions> options,
@@ -61,27 +59,17 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             }
         }
 
-        private async Task TryUploadResourceAsync(IResource resource, CancellationToken cancellationToken)
+        private async Task TryUploadResourceAsync(IResource<TEsComponent> resource, CancellationToken cancellationToken)
         {
             var resId = _options.GetEsName(resource.Name);
 
             try
             {
-                await using var readStream = resource.OpenRead();
-                
-                var resourceBinBuff = new byte[readStream.Length];
-                
-                // ReSharper disable once MustUseReturnValue
-                await readStream.ReadAsync(resourceBinBuff, cancellationToken);
-
-                var resourceComponentHash = HashCalculator.Calculate(resourceBinBuff);
-
-                using var memStream = new MemoryStream(resourceBinBuff);
-                var resourceComponent = _strategy.DeserializeComponent(_esTools.Serializer, memStream);
+                var resourceComponent = resource.Content;
 
                 if (_strategy.HasAbsentNode(resourceComponent, out var absentNodeName))
                 {
-                    _log?.Error($"{_strategy.OneResourceName} resource has no inner node")
+                    _log?.Error("The resource has no inner node")
                         .AndFactIs("absent-node", absentNodeName)
                         .Write();
 
@@ -99,25 +87,26 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
 
                 if (esComponent == null)
                 {
-                    _log?.Action($"{_strategy.OneResourceName} not found in ES and will be uploaded").Write();
+                    _log?.Action("A ES-component not found and will be uploaded").Write();
 
-                    componentMetadata.SourceHash = resourceComponentHash;
+                    componentMetadata.SourceHash = resource.Hash;
                     componentMetadata.Save(resultMeta);
                     
                     _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
 
                     await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
 
-                    _log?.Action($"{_strategy.OneResourceName} was uploaded").Write();
+                    _log?.Action("A component was uploaded").Write();
                     
                     return;
                 }
 
-                if(ComponentMetadata.TryGet(resultMeta, out var esSrvMetadata))
+                var esComponentMeta = _strategy.ProvideMeta(esComponent);
+                if(ComponentMetadata.TryGet(esComponentMeta, out var esSrvMetadata))
                 {
                     if (esSrvMetadata.Owner != _options.AppId)
                     {
-                        _log.Warning("Another owner component detected")
+                        _log.Warning("An another owner component detected")
                             .AndFactIs("my-app-id", _options.AppId)
                             .AndFactIs("component-owner", esSrvMetadata.Owner)
                             .Write();
@@ -125,31 +114,37 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                         return;
                     }
 
-                    if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resourceComponentHash)
+                    if (HashCalculator.NormalizeHash(esSrvMetadata.SourceHash) == resource.Hash)
                     {
-
-                        _log?.Action($"Uploading canceled due to actual {_strategy.ResourceSetName.ToLower()} version")
-                            .AndFactIs("hash", resourceComponentHash)
+                        _log?.Action("An actual version detected")
+                            .AndFactIs("hash", resource.Hash)
+                            .Write();
+                    }
+                    else
+                    {
+                        _log?.Action("A ES-component has different version and will be uploaded")
+                            .AndFactIs("es-hash", esSrvMetadata.SourceHash)
+                            .AndFactIs("local-hash", resource.Hash)
                             .Write();
 
-                        return;
+                        componentMetadata.SourceHash = resource.Hash;
+                        componentMetadata.Save(resultMeta);
+
+                        _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
+
+                        await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
+
+                        _log?.Action("A component was just uploaded").Write();
                     }
                 }
-
-                _log?.Action($"{_strategy.OneResourceName} has different version and will be uploaded").Write();
-
-                componentMetadata.SourceHash = resourceComponentHash;
-                componentMetadata.Save(resultMeta);
-
-                _strategy.SetMeta(resource.Name, _options.AppId, resourceComponent, resultMeta);
-
-                await _strategy.UploadComponentAsync(resId, resourceComponent, _esTools, cancellationToken);
-
-                _log?.Action($"{_strategy.OneResourceName} was uploaded").Write();
+                else
+                {
+                    _log.Warning("A ES-component has no service metadata").Write();
+                }
             }
             catch (Exception e)
             {
-                _log.Error($"Unable to upload {_strategy.ResourceSetName.ToLower()}", e)
+                _log.Error("Unable to upload component", e)
                     .Write();
             }
         }

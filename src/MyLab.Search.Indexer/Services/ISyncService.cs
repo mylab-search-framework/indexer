@@ -13,7 +13,7 @@ namespace MyLab.Search.Indexer.Services
 {
     public interface ISyncService
     {
-        Task<bool> IsSyncEnabledAsync(string indexName);
+        bool IsSyncEnabled(string indexId);
 
         Task SyncAsync(string idxName, CancellationToken cancellationToken = default);
     }
@@ -37,18 +37,10 @@ namespace MyLab.Search.Indexer.Services
             _log = logger?.Dsl();
         }
 
-        public async Task<bool> IsSyncEnabledAsync(string indexName)
+        public bool IsSyncEnabled(string indexId)
         {
-            try
-            {
-                var kickQuery = await _resourceProvider.ProvideKickQueryAsync(indexName);
-
-                return kickQuery != null;
-            }
-            catch (FileNotFoundException)
-            {
-                return false;
-            }
+            return _resourceProvider.IndexDirectory.Named.TryGetValue(indexId, out var idxRes) &&
+                   idxRes.KickQuery != null;
         }
 
         public async Task SyncAsync(string idxName, CancellationToken cancellationToken = default)

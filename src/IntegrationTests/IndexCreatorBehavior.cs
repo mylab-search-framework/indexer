@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Elasticsearch.Net;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -13,18 +9,15 @@ using MyLab.Log.XUnit;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
-using MyLab.Search.Indexer.Services.ResourceUploading;
-using MyLab.Search.Indexer.Tools;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using Nest;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
-using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
 {
-    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>, IAsyncLifetime
+    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>
     {
         private readonly EsFixture<TestEsFixtureStrategy> _fxt;
         private readonly ITestOutputHelper _output;
@@ -40,7 +33,7 @@ namespace IntegrationTests
         }
 
         [Fact]
-        public async Task ShouldCreateIndexWithSettings()
+        public async Task ShouldCreateIndexWithMapping()
         {
             //Arrange
             TypeMapping mapping = new TypeMapping
@@ -51,16 +44,26 @@ namespace IntegrationTests
                 }
             };
 
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
-
-            idxMappingProvider.Setup(p => p.ProvideAsync(It.Is<string>(s => s == _indexName)))
-                .Returns<string>(_ => Task.FromResult( 
-                    new IndexMappingDesc
+            var resourceProvider= new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
                     {
-                        Mapping = mapping,
-                        SourceHash = "hash"
-                    })
-                );
+                        {
+                            _indexName,
+                            new IndexResources
+                            {
+                                Mapping = new Resource<TypeMapping>
+                                {
+                                    Content = mapping,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -69,19 +72,27 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = true;
+                    o.EnableAutoCreation = true;
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
                 .AddSingleton<IndexCreator>()
+                .AddSingleton(resourceProvider.Object)
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
+            IndexState indexInfo;
 
             //Act
-            await indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None);
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
-            var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
+            try
+            {
+                indexInfo = await _fxt.Tools.Index(createdIndexDescription.Name).TryGetAsync();
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
+            }
 
             //Assert
             Assert.NotNull(indexInfo);
@@ -89,6 +100,48 @@ namespace IntegrationTests
             Assert.NotNull(indexInfo.Mappings.Properties);
             Assert.Single(indexInfo.Mappings.Properties);
             Assert.Contains(indexInfo.Mappings.Properties, p => p.Key == "text" && p.Value is TextProperty);
+        }
+
+        [Fact]
+        public async Task ShouldCreateStream()
+        {
+            //Arrange
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory());
+
+            var srv = new ServiceCollection()
+                .AddLogging(l => l
+                    .SetMinimumLevel(LogLevel.Trace)
+                    .AddXUnit(_output)
+                )
+                .Configure<IndexerOptions>(o =>
+                {
+                    o.EnableAutoCreation = true;
+                    o.DefaultIndex.IsStream = true;
+                })
+                .AddSingleton(_fxt.Tools)
+                .AddSingleton<IndexCreator>()                          
+                .AddSingleton(resourceProvider.Object)                          
+                .BuildServiceProvider();
+
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
+            bool streamExists;
+
+            //Act
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+
+            try
+            {
+                streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
+            }
+
+            //Assert
+            Assert.True(streamExists);
         }
 
         [Fact]
@@ -122,7 +175,7 @@ namespace IntegrationTests
                         Meta = idxTemplateMappingMetaDict
                     }
                 },
-                IndexPatterns = new[] { _indexName }
+                IndexPatterns = new[] { _indexName + "*" }
             };
 
             await using var idxTemplateDisposer = await _fxt.Tools.IndexTemplate(indexTemplateName).PutAsync(indexTemplateRequest);
@@ -135,16 +188,26 @@ namespace IntegrationTests
                 },
             };
 
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
-
-            idxMappingProvider.Setup(p => p.ProvideAsync(It.Is<string>(s => s == _indexName)))
-                .Returns<string>(_ => Task.FromResult(
-                    new IndexMappingDesc
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
                     {
-                        Mapping = mapping,
-                        SourceHash = "hash"
-                    })
-                );
+                        {
+                            _indexName,
+                            new IndexResources
+                            {
+                                Mapping = new Resource<TypeMapping>
+                                {
+                                    Content = mapping,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -153,29 +216,41 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = true;
+                    o.EnableAutoCreation = true;
                     o.AppId = "test-app";
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
+                .AddSingleton(resourceProvider.Object)
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
-
-            //Act
-            await indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None);
-
-            var indexInfo = await _fxt.Tools.Index(_indexName).TryGetAsync();
-
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
+            IndexState indexInfo;
             MappingMetadata idxMappingMeta = null;
 
-            if (indexInfo?.Mappings?.Meta != null)
+            //Act
+            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+
+            try
             {
-                MappingMetadata.TryGet(indexInfo.Mappings.Meta, out idxMappingMeta);
+                indexInfo = await _fxt.Tools.Index(createdIndexDescription.Name).TryGetAsync();
+
+                if (indexInfo?.Mappings?.Meta != null)
+                {
+                    MappingMetadata.TryGet(indexInfo.Mappings.Meta, out idxMappingMeta);
+                }
+
+            }
+            finally
+            {
+                await createdIndexDescription.Deleter.DisposeAsync();
             }
 
             //Assert
+            Assert.False(createdIndexDescription.IsStream);
+            Assert.Equal(_indexName, createdIndexDescription.Alias);
+            Assert.StartsWith(_indexName, createdIndexDescription.Name);
+
             Assert.NotNull(indexInfo);
             Assert.NotNull(indexInfo.Mappings);
             Assert.NotNull(indexInfo.Mappings.Properties);
@@ -196,7 +271,7 @@ namespace IntegrationTests
         public async Task ShouldNotCreateIndexWhenAutoCreationIsDisabled()
         {
             //Arrange
-            var idxMappingProvider = new Mock<IIndexMappingProvider>();
+            var resourceProvider = new Mock<IResourceProvider>();
 
             var srv = new ServiceCollection()
                 .AddLogging(l => l
@@ -205,39 +280,18 @@ namespace IntegrationTests
                 )
                 .Configure<IndexerOptions>(o =>
                 {
-                    o.EnableEsIndexAutoCreation = false;
+                    o.EnableAutoCreation = false;
                 })
                 .AddSingleton(_fxt.Tools)
-                .AddSingleton(idxMappingProvider.Object)
+                .AddSingleton(resourceProvider.Object)
                 .AddSingleton<IndexCreator>()
                 .BuildServiceProvider();
 
-            var indexCreator = srv.GetService<IndexCreator>();
+            var indexCreator = srv.GetRequiredService<IndexCreator>();
 
             //Act & Assert
             await Assert.ThrowsAsync<IndexCreationDeniedException>(() =>
-                indexCreator.CreateIndexAsync(_indexName, _indexName, CancellationToken.None));
-        }
-
-        string SerializeMapping(TypeMapping mapping)
-        {
-            using var stream = new MemoryStream();
-            _fxt.Tools.Serializer.Serialize(mapping, stream, SerializationFormatting.Indented);
-
-            return Encoding.UTF8.GetString(stream.ToArray());
-        }
-
-        public Task InitializeAsync()
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task DisposeAsync()
-        {
-            _fxt.Output = null;
-            var indexExists = await _fxt.Tools.Index(_indexName).ExistsAsync();
-            if(indexExists)
-                await _fxt.Tools.Index(_indexName).DeleteAsync();
+                indexCreator.CreateIndexAsync(_indexName, CancellationToken.None));
         }
     }
 }

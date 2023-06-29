@@ -4,7 +4,9 @@ using System.Threading.Tasks;
 using LinqToDB;
 using LinqToDB.Data;
 using LinqToDB.Mapping;
+using Moq;
 using MyLab.DbTest;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json.Linq;
@@ -29,42 +31,7 @@ namespace UnitTests
             Assert.Equal(doc.Id, jObject.Property("id").Value.Value<int>());
             Assert.Equal(doc.Content, jObject.Property("content").Value.Value<string>());
         }
-
-        private class TestResourceProvider : IResourceProvider
-        {
-            public string KickQuery { get; set; }
-            public string SyncQuery { get; set; }
-            
-            public Task<string> ProvideKickQueryAsync(string indexId)
-            {
-                return Task.FromResult(KickQuery);
-            }
-
-            public Task<string> ProvideSyncQueryAsync(string indexId)
-            {
-                return Task.FromResult(SyncQuery);
-            }
-
-            public Task<string> ProvideIndexMappingAsync(string indexId)
-            {
-                throw new NotImplementedException();
-            }
-
-            public IResource[] ProvideLifecyclePolicies()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IResource[] ProvideIndexTemplates()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IResource[] ProvideComponentTemplates()
-            {
-                throw new NotImplementedException();
-            }
-        }
+        
 
         private class TestSeedService : ISeedService
         {
@@ -110,6 +77,58 @@ namespace UnitTests
             [PrimaryKey, Column("id")] public long Id { get; set; }
             [Column("content")] public string Content { get; set; }
             [Column("last_change_dt")] public DateTime LastChangeDt { get; set; }
+        }
+
+        IResourceProvider CreateKickResourceProvider(string indexId, string kickQuery)
+        {
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
+                    {
+                        {
+                            indexId,
+                            new IndexResources
+                            {
+                                KickQuery = new Resource<string>
+                                {
+                                    Content = kickQuery,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
+
+            return resourceProvider.Object;
+        }
+
+        IResourceProvider CreateSyncResourceProvider(string indexId, string syncQuery)
+        {
+            var resourceProvider = new Mock<IResourceProvider>();
+            resourceProvider.SetupGet(p => p.IndexDirectory)
+                .Returns(() => new IndexResourceDirectory
+                {
+                    Named = new Dictionary<string, IndexResources>
+                    {
+                        {
+                            indexId,
+                            new IndexResources
+                            {
+                                SyncQuery = new Resource<string>
+                                {
+                                    Content = syncQuery,
+                                    Name = "foo",
+                                    Hash = "hash"
+                                }
+                            }
+                        }
+                    }
+                });
+
+            return resourceProvider.Object;
         }
     }
 }

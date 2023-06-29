@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using LinqToDB.Async;
 using MyLab.DbTest;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;
@@ -17,20 +18,18 @@ namespace UnitTests
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService{ Seed = Seed.Empty };
 
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IsStream = true,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where id > @seed");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -48,19 +47,16 @@ namespace UnitTests
         {
             //Arrange
             var dbMgr = await _dbFxt.CreateDbAsync();
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService{ Seed = Seed.Empty };
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
             var options = new IndexerOptions { Indexes = new[] { indexOpts } };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed"
-            };
-
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where last_change_dt > @seed");
+            
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
@@ -84,12 +80,16 @@ namespace UnitTests
 
             var dbMgr = await _dbFxt.CreateDbAsync(tableFiller);
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService
+            {
+                Seed = Seed.Empty
+            };
 
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IsStream = true,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions
@@ -98,16 +98,14 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where id > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
             var enumerable = await srv.LoadSyncAsync("foo-index");
 
             //Act
+
             var loads = await enumerable.ToArrayAsync();
 
             //Assert
@@ -131,12 +129,15 @@ namespace UnitTests
 
             var dbMgr = await _dbFxt.CreateDbAsync(tableFiller);
 
-            var seedSrv = new TestSeedService();
+            var seedSrv = new TestSeedService
+            {
+                Seed = Seed.Empty
+            };
 
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
 
             var options = new IndexerOptions
@@ -145,10 +146,8 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index",
+                "select id, content from docs where last_change_dt > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -186,7 +185,8 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Stream
+                IsStream = true,
+                SeedType = SeedType.Long
             };
 
             var options = new IndexerOptions
@@ -195,10 +195,8 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where id > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index",
+                "select id, content from docs where id > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 
@@ -234,7 +232,7 @@ namespace UnitTests
             var indexOpts = new IndexOptions
             {
                 Id = "foo-index",
-                IndexType = IndexType.Heap
+                IsStream = false
             };
 
             var options = new IndexerOptions
@@ -243,10 +241,7 @@ namespace UnitTests
                 SyncPageSize = 1
             };
 
-            var indexResProvider = new TestResourceProvider
-            {
-                SyncQuery = "select id, content from docs where last_change_dt > @seed limit @offset, @limit"
-            };
+            var indexResProvider = CreateSyncResourceProvider("foo-index", "select id, content from docs where last_change_dt > @seed limit @offset, @limit");
 
             IDataSourceService srv = new DbDataSourceService(dbMgr, seedSrv, indexResProvider, options);
 

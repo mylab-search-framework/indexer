@@ -1,16 +1,17 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
 using Nest;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading.Tasks;
-using System.Threading;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
-    class IndexTemplateUploader : ResourceUploader<IndexTemplate>
+    class IndexTemplateUploader : ComponentUploader<IndexTemplate>
     {
         public IndexTemplateUploader(
             IEsTools esTools,
@@ -27,24 +28,20 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
         {
         }
 
-        class IndexTemplateUploaderStrategy : IResourceUploaderStrategy<IndexTemplate>
+        class IndexTemplateUploaderStrategy : IComponentUploaderStrategy<IndexTemplate>
         {
             public string ResourceSetName => "Index templates";
-            public string OneResourceName => "Index template";
 
-            public IResource[] GetResources(IResourceProvider resourceProvider)
+            public IResource<IndexTemplate>[] GetResources(IResourceProvider resourceProvider)
             {
-                return resourceProvider.ProvideIndexTemplates();
+                return resourceProvider.IndexTemplates.Values
+                    .Cast<IResource<IndexTemplate>>()
+                    .ToArray();
             }
 
             public Task<IndexTemplate> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)
             {
                 return esTools.IndexTemplate(componentId).TryGetAsync(cancellationToken);
-            }
-
-            public IndexTemplate DeserializeComponent(IEsSerializer serializer, Stream inStream)
-            {
-                return serializer.Deserialize<IndexTemplate>(inStream);
             }
 
             public bool HasAbsentNode(IndexTemplate component, out string absentNodeName)
@@ -63,9 +60,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             {
                 component.Meta = new Dictionary<string, object>(newMeta);
 
-                var originMappingMetadata = component.Template?.Mappings;
-                if (originMappingMetadata != null)
+                var originMapping = component.Template?.Mappings;
+                if (originMapping != null)
                 {
+                    originMapping.Meta ??= new Dictionary<string, object>();
+
                     var mappingMetadataObj = new MappingMetadata
                     {   
                         Template = new MappingMetadata.TemplateDesc
@@ -75,7 +74,7 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                         }
                     };
 
-                    mappingMetadataObj.Save(originMappingMetadata.Meta ??= new Dictionary<string, object>());
+                    mappingMetadataObj.Save(originMapping.Meta);
                 }
             }
 
@@ -93,7 +92,11 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
                 {
                     Template = component.Template,
                     IndexPatterns = component.IndexPatterns,
-                    Meta = component.Meta
+                    Meta = component.Meta,
+                    Priority = component.Priority,
+                    ComposedOf = component.ComposedOf,
+                    DataStream = component.DataStream,
+                    Version = component.Version
                 };
 
                 return esTools.IndexTemplate(componentId).PutAsync(req, cancellationToken);

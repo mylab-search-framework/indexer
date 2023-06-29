@@ -41,7 +41,7 @@ namespace MyLab.Search.Indexer.Services
 
             foreach (var idx in _opts.Indexes)
             {
-                var idxSyncEnabled = await _syncService.IsSyncEnabledAsync(idx.Id);
+                var idxSyncEnabled = _syncService.IsSyncEnabled(idx.Id);
 
                 if (!idxSyncEnabled)
                 {

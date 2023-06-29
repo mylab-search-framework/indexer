@@ -1,18 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using MyLab.Search.EsAdapter.Inter;
 using MyLab.Search.EsAdapter.Tools;
 using MyLab.Search.Indexer.Options;
-using MyLab.Search.Indexer.Tools;
 using Nest;
 
-namespace MyLab.Search.Indexer.Services.ResourceUploading
+namespace MyLab.Search.Indexer.Services.ComponentUploading
 {
-    class LifecyclePolicyUploader : ResourceUploader<LifecyclePolicy>
+    class LifecyclePolicyUploader : ComponentUploader<LifecyclePolicy>
     {
         public LifecyclePolicyUploader(
             IEsTools esTools,
@@ -30,24 +29,20 @@ namespace MyLab.Search.Indexer.Services.ResourceUploading
             
         }
 
-        class LifecyclePolicyUploaderStrategy : IResourceUploaderStrategy<LifecyclePolicy>
+        class LifecyclePolicyUploaderStrategy : IComponentUploaderStrategy<LifecyclePolicy>
     {
         public string ResourceSetName => "Lifecycle policies";
-        public string OneResourceName => "Lifecycle policy";
 
-        public IResource[] GetResources(IResourceProvider resourceProvider)
+        public IResource<LifecyclePolicy>[] GetResources(IResourceProvider resourceProvider)
         {
-            return resourceProvider.ProvideLifecyclePolicies();
+            return resourceProvider.LifecyclePolicies.Values
+                .Cast<IResource<LifecyclePolicy>>()
+                .ToArray();
         }
 
         public Task<LifecyclePolicy> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)
         {
             return esTools.LifecyclePolicy(componentId).TryGetAsync(cancellationToken);
-        }
-
-        public LifecyclePolicy DeserializeComponent(IEsSerializer serializer, Stream inStream)
-        {
-            return serializer.Deserialize<LifecyclePolicy>(inStream);
         }
 
         public bool HasAbsentNode(LifecyclePolicy component, out string absentNodeName)

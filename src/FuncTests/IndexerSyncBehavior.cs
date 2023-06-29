@@ -17,6 +17,7 @@ using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.IndexerClient;
@@ -134,6 +135,7 @@ namespace FuncTests
             var searchP = new EsSearchParams<TestDoc>(q => q.Ids(idd => idd.Values(testDoc.Id)));
 
             //Act
+            await Task.Delay(500);
             await api.StartSynchronizationAsync();
             await Task.Delay(2000);
 
@@ -144,7 +146,7 @@ namespace FuncTests
             Assert.Equal(testDoc.Id, found[0].Id);
             Assert.Equal(testDoc.Content, found[0].Content);
             Assert.True(seedService.Seed.IsDateTime);
-            Assert.True(seedService.Seed.DataTime > testDt);
+            Assert.True(seedService.Seed.DateTime > testDt);
         }
 
         public Task InitializeAsync()

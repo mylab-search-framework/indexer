@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Linq;
-using MyLab.Log;
-using Nest;
 
 namespace MyLab.Search.Indexer.Options
 {
@@ -9,14 +7,13 @@ namespace MyLab.Search.Indexer.Options
     {
         public string AppId { get; set; } = "mylab-indexer";
         public IndexOptions[] Indexes { get; set; }
-        public IndexOptionsBase DefaultIndexOptions { get; set; } = new();
+        public IndexOptionsBase DefaultIndex { get; set; } = new();
         public string SeedPath { get; set; } = "/var/lib/mylab-indexer/seeds";
         public string ResourcesPath { get; set; } = "/etc/mylab-indexer";
         public string MqQueue { get; set; }
         public string EsNamePrefix { get; set; }
         public string EsNamePostfix { get; set; }
-        public bool EnableEsIndexAutoCreation { get; set; } = false;
-        public bool EnableEsStreamAutoCreation { get; set; } = false;
+        public bool EnableAutoCreation { get; set; } = false;
 
         public int SyncPageSize { get; set; } = 500;
 
@@ -38,17 +35,14 @@ namespace MyLab.Search.Indexer.Options
             return $"{EsNamePrefix?.ToLower()}{name.ToLower()}{EsNamePostfix?.ToLower()}";
         }
 
-        public IndexType GetTotalIndexType(string idxId)
+        public bool IsIndexAStream(string idxId)
         {
             var idxOpts = GetIndexOptionsCore(idxId);
 
             if (idxOpts != null)
-                return idxOpts.IndexType;
-
-            if (DefaultIndexOptions == null)
-                return IndexType.Heap;
-
-            return DefaultIndexOptions.IndexType;
+                return idxOpts.IsStream;
+            
+            return DefaultIndex is { IsStream: true };
         }
 
         IndexOptions GetIndexOptionsCore(string indexId)

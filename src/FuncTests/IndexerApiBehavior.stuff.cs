@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using MyLab.ApiClient.Test;
 using MyLab.Db;
@@ -23,14 +25,14 @@ namespace FuncTests
     public partial class IndexerApiBehavior :
         IClassFixture<EsFixture<TestEsFixtureStrategy>>,
         IClassFixture<TmpDbFixture<TestDbInitializer>>,
-        IClassFixture<TestApi<Startup, IIndexerV2Api>>,
+        IClassFixture<TestApiFixture<Startup, IIndexerV2Api>>,
         IAsyncLifetime
     {
         private IIndexerV2Api _api;
         private EsIndexer<TestDoc> _indexer;
         private EsSearcher<TestDoc> _searcher;
         private readonly TmpDbFixture<TestDbInitializer> _dbFxt;
-        private readonly TestApi<Startup, IIndexerV2Api> _apiFxt;
+        private readonly TestApiFixture<Startup, IIndexerV2Api> _apiFxt;
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
         private IDbManager _dbMgr;
@@ -38,7 +40,7 @@ namespace FuncTests
         public IndexerApiBehavior(
             TmpDbFixture<TestDbInitializer> dbFxt,
             EsFixture<TestEsFixtureStrategy> esFxt,
-            TestApi<Startup, IIndexerV2Api> apiFxt,
+            TestApiFixture<Startup, IIndexerV2Api> apiFxt,
             ITestOutputHelper output)
         {
             _output = output;
@@ -67,7 +69,7 @@ namespace FuncTests
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);
             _searcher = new EsSearcher<TestDoc>(_esFxt.Searcher, indexNameProvider);
 
-            _api = _apiFxt.StartWithProxy(srv =>
+            var testApiAsset = _apiFxt.StartWithProxy(srv =>
             {
                 srv.Configure<IndexerOptions>(opt =>
                     {
@@ -89,6 +91,8 @@ namespace FuncTests
                     )
                     .AddSingleton(_dbMgr);
             });
+
+            _api = testApiAsset.ApiClient;
         }
 
         public async Task DisposeAsync()

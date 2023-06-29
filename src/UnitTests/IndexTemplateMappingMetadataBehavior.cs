@@ -1,6 +1,6 @@
-﻿using MyLab.Search.Indexer.Services.ResourceUploading;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.Indexer.Tools;
 using Xunit;
 
