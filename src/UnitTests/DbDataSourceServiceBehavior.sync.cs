@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using LinqToDB.Async;
 using MyLab.DbTest;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Tools;

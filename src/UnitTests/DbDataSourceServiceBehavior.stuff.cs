@@ -6,6 +6,7 @@ using LinqToDB.Data;
 using LinqToDB.Mapping;
 using Moq;
 using MyLab.DbTest;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using Newtonsoft.Json.Linq;

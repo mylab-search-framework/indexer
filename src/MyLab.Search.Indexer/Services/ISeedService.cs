@@ -1,6 +1,9 @@
-﻿using System;
+﻿using System.IO;
+using System;
 using System.Threading.Tasks;
-using MyLab.Log;
+using Microsoft.Extensions.Options;
+using MyLab.Search.Indexer.Models;
+using MyLab.Search.Indexer.Options;
 using Org.BouncyCastle.Asn1.Cms;
 
 namespace MyLab.Search.Indexer.Services
@@ -11,98 +14,58 @@ namespace MyLab.Search.Indexer.Services
         Task<Seed> LoadSeedAsync(string indexId);
     }
 
-    public class Seed
+    class FileSeedService : ISeedService
     {
-        public static readonly Seed Empty = new ();
+        private readonly string _basePath;
 
-        public long Long { get; } = -1;
-        public DateTime DateTime { get; }
-        
-        public bool IsLong { get; }
-        public bool IsDateTime { get; }
-
-        public bool IsEmpty => !IsLong && !IsDateTime || IsLong && Long == -1 || IsDateTime && DateTime == default;
-
-        public Seed(long longValue)
+        public FileSeedService(IOptions<IndexerOptions> opts)
+            : this(opts.Value.SeedPath)
         {
-            Long = longValue;
-            IsLong = true;
+
         }
 
-        public Seed(DateTime dateTimeValue)
+        public FileSeedService(string basePath)
         {
-            DateTime = dateTimeValue;
-            IsDateTime = true;
-        }
-        
-        public Seed()
-        {
+            if (string.IsNullOrWhiteSpace(basePath))
+                throw new InvalidOperationException("Base seed path is not defined");
+
+            _basePath = basePath;
         }
 
-        public override string ToString()
+        public async Task SaveSeedAsync(string indexId, Seed seed)
         {
-            return IsEmpty ? "empty" : IsLong ? Long.ToString("D") : DateTime.ToString("O");
+            if (!Directory.Exists(_basePath))
+                Directory.CreateDirectory(_basePath);
+
+            var fullPath = GetIndexSeedFilePath(indexId);
+
+            await File.WriteAllTextAsync(fullPath, seed.ToString());
         }
 
-        public static Seed Parse(string strValue)
+        public async Task<Seed> LoadSeedAsync(string indexId)
         {
-            if (long.TryParse(strValue, out var longVal))
-            {
-                return new Seed(longVal);
-            }
+            var fullPath = GetIndexSeedFilePath(indexId);
 
-            if (DateTime.TryParse(strValue, out var dtVal))
-            {
-                return new Seed(dtVal);
-            }
+            var file = new FileInfo(fullPath);
 
-            throw new FormatException("A seed has wrong format")
-                .AndFactIs("origin-value", strValue);
+            if (!file.Exists || file.Length == 0)
+                return Seed.Empty;
+
+            var line = await ReadLineAsync(file);
+
+            return Seed.Parse(line);
         }
 
-        public static implicit operator Seed(long longValue) => new (longValue);
-        public static implicit operator Seed(DateTime dateTimeValue) => new (dateTimeValue);
-
-        public static bool operator ==(Seed seed, long longValue) => seed is { IsLong: true } && seed.Long == longValue;
-        public static bool operator !=(Seed seed, long longValue) => !(seed == longValue);
-        public static bool operator ==(Seed seed, DateTime dateTimeValue) => seed is {IsDateTime: true } && seed.DateTime == dateTimeValue;
-        public static bool operator !=(Seed seed, DateTime dateTimeValue) => !(seed== dateTimeValue);
-
-        public override bool Equals(object obj)
+        string GetIndexSeedFilePath(string indexId)
         {
-            if(obj == null) return false;
-
-            if (obj is DateTime dateTimeValue)
-                return Equals(dateTimeValue);
-
-            if (obj is long longValue)
-                return Equals(longValue);
-
-            if (obj is Seed seedVal)
-                return Equals(seedVal);
-
-            return base.Equals(obj);
+            return Path.Combine(_basePath, indexId);
         }
 
-        protected bool Equals(DateTime dtValue)
+        async Task<string> ReadLineAsync(FileInfo file)
         {
-            return this == dtValue;
-        }
+            using var rdr = file.OpenText();
 
-        protected bool Equals(long longValue)
-        {
-            return this == longValue;
-        }
-        protected bool Equals(Seed other)
-        {
-            if (other.IsEmpty && IsEmpty) return true;
-
-            return Long == other.Long && DateTime.Equals(other.DateTime) && IsLong == other.IsLong && IsDateTime == other.IsDateTime;
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Long, DateTime, IsLong, IsDateTime);
+            return await rdr.ReadLineAsync();
         }
     }
 }

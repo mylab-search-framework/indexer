@@ -17,6 +17,7 @@ using MyLab.Search.EsAdapter;
 using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
+using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.IndexerClient;
