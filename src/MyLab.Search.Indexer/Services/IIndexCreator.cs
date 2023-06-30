@@ -12,6 +12,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using MyLab.Log;
+using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -55,8 +56,9 @@ namespace MyLab.Search.Indexer.Services
             if (!_opts.EnableAutoCreation)
                 throw new IndexCreationDeniedException();
 
-            string idxAlias = _opts.GetEsName(idxId);
-            var idxName = idxAlias + "-" + Guid.NewGuid().ToString("N");
+            string idxName = _opts.GetEsName(idxId);
+            string idxAlias = idxName;
+            var finallyIdxName = UnderneathName.New(idxName);
 
             bool streamCreated = false;
             IAsyncDisposable deleter;
@@ -72,13 +74,13 @@ namespace MyLab.Search.Indexer.Services
 
                 if (mappingObj != null)
                 {
-                    deleter = await CreateEsIndexCoreAsync(idxAlias, idxName, mappingObj, stoppingToken);
+                    deleter = await CreateEsIndexCoreAsync(idxAlias, finallyIdxName, mappingObj, stoppingToken);
                 }
                 else
                 {
                     if (_opts.IsIndexAStream(idxId))
                     {
-                        deleter = await CreateEsStreamCoreAsync(idxAlias, idxName, stoppingToken);
+                        deleter = await CreateEsStreamCoreAsync(idxAlias, finallyIdxName, stoppingToken);
                         streamCreated = true;
                     }
                     else

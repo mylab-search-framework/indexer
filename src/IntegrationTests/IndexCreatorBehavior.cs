@@ -10,6 +10,7 @@ using MyLab.Search.EsTest;
 using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ComponentUploading;
+using MyLab.Search.Indexer.Tools;
 using Nest;
 using Xunit;
 using Xunit.Abstractions;
@@ -125,10 +126,14 @@ namespace IntegrationTests
                 .AddSingleton(resourceProvider.Object)                          
                 .BuildServiceProvider();
 
+            var indexTemplateName = "test-index-template" + Guid.NewGuid().ToString("N");
+            var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner");
+
             var indexCreator = srv.GetRequiredService<IndexCreator>();
             bool streamExists;
 
             //Act
+
             var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
 
             try
@@ -138,6 +143,7 @@ namespace IntegrationTests
             finally
             {
                 await createdIndexDescription.Deleter.DisposeAsync();
+                await templateDisposer.DisposeAsync();
             }
 
             //Assert
@@ -149,36 +155,6 @@ namespace IntegrationTests
         {
             //Arrange
             var indexTemplateName = "test-index-template" + Guid.NewGuid().ToString("N");
-
-            var idxTemplateMappingMeta = new MappingMetadata
-            {
-                Template = new MappingMetadata.TemplateDesc
-                {
-                    Owner = "foo-owner",
-                    SourceName = indexTemplateName
-                }
-            };
-
-            var idxTemplateMappingMetaDict = new Dictionary<string, object>();
-            idxTemplateMappingMeta.Save(idxTemplateMappingMetaDict);
-
-            var indexTemplateRequest = new PutIndexTemplateV2Request(indexTemplateName)
-            {
-                Template = new Template
-                {
-                    Mappings = new TypeMapping
-                    {
-                        Properties = new Properties
-                        {
-                            { "number", new NumberProperty() }
-                        },
-                        Meta = idxTemplateMappingMetaDict
-                    }
-                },
-                IndexPatterns = new[] { _indexName + "*" }
-            };
-
-            await using var idxTemplateDisposer = await _fxt.Tools.IndexTemplate(indexTemplateName).PutAsync(indexTemplateRequest);
 
             TypeMapping mapping = new TypeMapping
             {
@@ -229,7 +205,12 @@ namespace IntegrationTests
             MappingMetadata idxMappingMeta = null;
 
             //Act
-            var createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+            CreatedIndexDescription createdIndexDescription;
+
+            await using (var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner"))
+            {
+                createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
+            }
 
             try
             {
@@ -292,6 +273,40 @@ namespace IntegrationTests
             //Act & Assert
             await Assert.ThrowsAsync<IndexCreationDeniedException>(() =>
                 indexCreator.CreateIndexAsync(_indexName, CancellationToken.None));
+        }
+
+        private async Task<IAsyncDisposable> CreateIndexTemplate(string templateName, string owner)
+        {
+            var idxTemplateMappingMeta = new MappingMetadata
+            {
+                Template = new MappingMetadata.TemplateDesc
+                {
+                    Owner = owner,
+                    SourceName = templateName
+                }
+            };
+
+            var idxTemplateMappingMetaDict = new Dictionary<string, object>();
+            idxTemplateMappingMeta.Save(idxTemplateMappingMetaDict);
+
+            var indexTemplateRequest = new PutIndexTemplateV2Request(templateName)
+            {
+                Template = new Template
+                {
+                    Mappings = new TypeMapping
+                    {
+                        Properties = new Properties
+                        {
+                            { "number", new NumberProperty() }
+                        },
+                        Meta = idxTemplateMappingMetaDict
+                    }
+                },
+                IndexPatterns = new[] { UnderneathName.ToPattern(_indexName) },
+                DataStream = new DataStream()
+            };
+
+            return await _fxt.Tools.IndexTemplate(templateName).PutAsync(indexTemplateRequest);
         }
     }
 }
