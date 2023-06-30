@@ -120,7 +120,7 @@ namespace FuncTests
                                 Id = "baz"
                             }
                         };
-                        opt.EnableEsIndexAutoCreation = true;
+                        opt.EnableAutoCreation = true;
                     })
                     .AddDbTools(_dbConfig, new MySqlDataProvider(ProviderName.MySql))
                     .ConfigureEsTools(opt => opt.Url = EsUrl)

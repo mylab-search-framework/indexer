@@ -81,7 +81,7 @@ namespace FuncTests
                                 Id = "baz"
                             }
                         };
-                        opt.EnableEsIndexAutoCreation = true;
+                        opt.EnableAutoCreation = true;
                     })
                     .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
                     .AddLogging(l => l

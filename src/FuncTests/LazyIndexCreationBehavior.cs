@@ -49,7 +49,7 @@ namespace FuncTests
                     {
                         opt.AppId = "test";
                         opt.ResourcesPath = Path.Combine(Directory.GetCurrentDirectory(), "resources");
-                        opt.EnableEsIndexAutoCreation = true;
+                        opt.EnableAutoCreation = true;
                     })
                     .ConfigureEsTools(opt => { opt.Url = TestTools.EsUrl; })
                     .AddLogging(l => l
