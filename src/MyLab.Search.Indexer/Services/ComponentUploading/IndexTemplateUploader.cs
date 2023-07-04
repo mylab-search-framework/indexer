@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -88,18 +89,15 @@ namespace MyLab.Search.Indexer.Services.ComponentUploading
             public Task UploadComponentAsync(string componentId, IndexTemplate component, IEsTools esTools,
                 CancellationToken cancellationToken)
             {
-                var req = new PutIndexTemplateV2Request(componentId)
-                {
-                    Template = component.Template,
-                    IndexPatterns = component.IndexPatterns,
-                    Meta = component.Meta,
-                    Priority = component.Priority,
-                    ComposedOf = component.ComposedOf,
-                    DataStream = component.DataStream,
-                    Version = component.Version
-                };
-
-                return esTools.IndexTemplate(componentId).PutAsync(req, cancellationToken);
+                return esTools.IndexTemplate(componentId).PutAsync(d => d
+                        .Template(td => component.Template)
+                        .IndexPatterns(component.IndexPatterns)
+                        .Meta(md => new FluentDictionary<string, object>(component.Meta))
+                        .Priority(component.Priority)
+                        .ComposedOf(component.ComposedOf)
+                        .DataStream(component.DataStream)
+                        .Version(component.Version)
+                    , cancellationToken);
             }
         }
     }

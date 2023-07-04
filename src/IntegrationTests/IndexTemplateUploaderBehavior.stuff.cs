@@ -50,25 +50,23 @@ namespace IntegrationTests
             return resProviderMock.Object;
         }
 
-        private IPutIndexTemplateV2Request CreateTemplatePutRequest(string id, string owner, string ver, string hash)
+        private Func<PutIndexTemplateV2Descriptor, IPutIndexTemplateV2Request> CreateTemplatePutDescriptor(string owner, string ver, string hash)
         {
-            var newTemplateMetaDict = new Dictionary<string, object> { { "ver", ver } };
-            IPutIndexTemplateV2Request newTemplateReq = new PutIndexTemplateV2Request(id)
-            {
-                IndexPatterns = new[]{ Guid.NewGuid().ToString("N") + "*" },
-                Priority = 1000,
-                Template = new Template(),
-                Meta = newTemplateMetaDict
-            };
-
             var newTemplateMetadata = new ComponentMetadata
             {
                 Owner = owner,
                 SourceHash = hash
             };
-            newTemplateMetadata.Save(newTemplateMetaDict);
 
-            return newTemplateReq;
+            return d => d
+                .IndexPatterns(Guid.NewGuid().ToString("N") + "*")
+                .Priority(100)
+                .Template(t => t)
+                .Meta(fd =>
+                {
+                    newTemplateMetadata.Save(fd);
+                    return fd.Add("ver", ver);
+                });
         }
 
         private IndexTemplate CreateTemplate(string owner, string ver, string hash)

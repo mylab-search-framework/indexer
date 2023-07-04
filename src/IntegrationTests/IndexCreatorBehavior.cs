@@ -18,7 +18,7 @@ using LogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace IntegrationTests
 {
-    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>>
+    public class IndexCreatorBehavior : IClassFixture<EsFixture<TestEsFixtureStrategy>> , IAsyncLifetime
     {
         private readonly EsFixture<TestEsFixtureStrategy> _fxt;
         private readonly ITestOutputHelper _output;
@@ -127,7 +127,7 @@ namespace IntegrationTests
                 .BuildServiceProvider();
 
             var indexTemplateName = "test-index-template" + Guid.NewGuid().ToString("N");
-            var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner");
+            var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner", true);
 
             var indexCreator = srv.GetRequiredService<IndexCreator>();
             bool streamExists;
@@ -138,7 +138,7 @@ namespace IntegrationTests
 
             try
             {
-                streamExists = await _fxt.Tools.Stream(_indexName).ExistsAsync();
+                streamExists = await _fxt.Tools.Stream(createdIndexDescription.Name).ExistsAsync();
             }
             finally
             {
@@ -154,7 +154,7 @@ namespace IntegrationTests
         public async Task ShouldAddIndexMapping()
         {
             //Arrange
-            var indexTemplateName = "test-index-template" + Guid.NewGuid().ToString("N");
+            var indexTemplateName = "test-index-template-" + Guid.NewGuid().ToString("N");
 
             TypeMapping mapping = new TypeMapping
             {
@@ -207,7 +207,7 @@ namespace IntegrationTests
             //Act
             CreatedIndexDescription createdIndexDescription;
 
-            await using (var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner"))
+            await using (var templateDisposer = await CreateIndexTemplate(indexTemplateName, "foo-owner", false))
             {
                 createdIndexDescription = await indexCreator.CreateIndexAsync(_indexName, CancellationToken.None);
             }
@@ -230,7 +230,7 @@ namespace IntegrationTests
             //Assert
             Assert.False(createdIndexDescription.IsStream);
             Assert.Equal(_indexName, createdIndexDescription.Alias);
-            Assert.StartsWith(_indexName, createdIndexDescription.Name);
+            Assert.Contains(_indexName, createdIndexDescription.Name);
 
             Assert.NotNull(indexInfo);
             Assert.NotNull(indexInfo.Mappings);
@@ -275,7 +275,7 @@ namespace IntegrationTests
                 indexCreator.CreateIndexAsync(_indexName, CancellationToken.None));
         }
 
-        private async Task<IAsyncDisposable> CreateIndexTemplate(string templateName, string owner)
+        private async Task<IAsyncDisposable> CreateIndexTemplate(string templateName, string owner, bool forStream)
         {
             var idxTemplateMappingMeta = new MappingMetadata
             {
@@ -289,24 +289,35 @@ namespace IntegrationTests
             var idxTemplateMappingMetaDict = new Dictionary<string, object>();
             idxTemplateMappingMeta.Save(idxTemplateMappingMetaDict);
 
-            var indexTemplateRequest = new PutIndexTemplateV2Request(templateName)
+            Func<PutIndexTemplateV2Descriptor, IPutIndexTemplateV2Request> putDescriptor = d =>
             {
-                Template = new Template
-                {
-                    Mappings = new TypeMapping
-                    {
-                        Properties = new Properties
-                        {
-                            { "number", new NumberProperty() }
-                        },
-                        Meta = idxTemplateMappingMetaDict
-                    }
-                },
-                IndexPatterns = new[] { UnderneathName.ToPattern(_indexName) },
-                DataStream = new DataStream()
+                var res = d.Template(td => td
+                        .Mappings(md => md
+                            .Properties(pd => pd
+                                .Number(npd => npd.Name("number"))
+                            )
+                            .Meta(idxTemplateMappingMetaDict)
+                        )
+                    )
+                    .IndexPatterns(UnderneathName.ToPattern(_indexName));
+
+                if(forStream)
+                    res = res.DataStream(new DataStream());
+
+                return res;
             };
 
-            return await _fxt.Tools.IndexTemplate(templateName).PutAsync(indexTemplateRequest);
+            return await _fxt.Tools.IndexTemplate(templateName).PutAsync(putDescriptor);
+        }
+
+        public Task InitializeAsync()
+        {
+            return Task.CompletedTask;
+        }
+
+        public Task DisposeAsync()
+        {
+            return Task.CompletedTask;
         }
     }
 }

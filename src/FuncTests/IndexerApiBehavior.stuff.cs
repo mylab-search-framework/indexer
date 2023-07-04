@@ -36,6 +36,7 @@ namespace FuncTests
         private readonly ITestOutputHelper _output;
         private readonly EsFixture<TestEsFixtureStrategy> _esFxt;
         private IDbManager _dbMgr;
+        private readonly string _testIndexName;
 
         public IndexerApiBehavior(
             TmpDbFixture<TestDbInitializer> dbFxt,
@@ -53,6 +54,8 @@ namespace FuncTests
 
             _apiFxt = apiFxt;
             _apiFxt.Output = output;
+
+            _testIndexName = TestTools.CreateTestName<IndexerApiBehavior>();
         }
 
         Task<EsFound<TestDoc>> SearchByIdAsync(string id)
@@ -64,7 +67,7 @@ namespace FuncTests
         {
             _dbMgr = await _dbFxt.CreateDbAsync();
 
-            var indexNameProvider = new SingleIndexNameProvider("baz");
+            var indexNameProvider = new SingleIndexNameProvider(_testIndexName);
 
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);
             _searcher = new EsSearcher<TestDoc>(_esFxt.Searcher, indexNameProvider);
@@ -78,7 +81,7 @@ namespace FuncTests
                         {
                             new IndexOptions
                             {
-                                Id = "baz"
+                                Id = _testIndexName
                             }
                         };
                         opt.EnableAutoCreation = true;
@@ -89,7 +92,8 @@ namespace FuncTests
                         .AddFilter(f => true)
                         .AddXUnit(_output)
                     )
-                    .AddSingleton(_dbMgr);
+                    .AddSingleton(_dbMgr)
+                    .AddSingleton(TestTools.CreateResourceProviderWrapper(_testIndexName, "baz"));
             });
 
             _api = testApiAsset.ApiClient;
@@ -97,8 +101,8 @@ namespace FuncTests
 
         public async Task DisposeAsync()
         {
-            var exists = await _esFxt.Tools.Index("baz").ExistsAsync();
-            if (exists) await _esFxt.Tools.Index("baz").DeleteAsync();
+            var exists = await _esFxt.Tools.Index(_testIndexName).ExistsAsync();
+            if (exists) await _esFxt.Tools.Index(_testIndexName).DeleteAsync();
         }
     }
 }

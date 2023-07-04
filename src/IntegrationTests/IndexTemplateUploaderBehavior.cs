@@ -97,7 +97,7 @@ namespace IntegrationTests
         public async Task ShouldUpdateIfExists()
         {
             //Arrange
-            var originTemplate = CreateTemplatePutRequest("index-template-test", "foo", "1", "origin-hash");
+            var originTemplate = CreateTemplatePutDescriptor("foo", "1", "origin-hash");
             var newTemplate = CreateTemplate("foo", "2", "hash");
             var resourceProvider = CreateResourceProvider("index-template-test", newTemplate);
 
@@ -140,7 +140,7 @@ namespace IntegrationTests
         public async Task ShouldNotUpdateWithSameVersion()
         {
             //Arrange
-            var originTemplate = CreateTemplatePutRequest("index-template-test", "foo", "1", "same-hash");
+            var originTemplate = CreateTemplatePutDescriptor("foo", "1", "same-hash");
             var newTemplate = CreateTemplate("foo", "2", "same-hash");
             var resourceProvider = CreateResourceProvider("index-template-test", newTemplate);
 

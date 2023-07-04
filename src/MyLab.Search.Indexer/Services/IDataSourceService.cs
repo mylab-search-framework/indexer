@@ -6,6 +6,7 @@ using LinqToDB.Data;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MyLab.Db;
+using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Search.Indexer.Models;
 using MyLab.Search.Indexer.Options;
@@ -55,7 +56,15 @@ namespace MyLab.Search.Indexer.Services
 
         public async Task<DataSourceLoad> LoadKickAsync(string indexId, string[] idList)
         {
-            string kickQueryPattern = _resourceProvider.ProvideKickQuery(indexId)?.Content;
+            var kickQueryResource = _resourceProvider.ProvideKickQuery(indexId);
+
+            if (kickQueryResource == null)
+            {
+                throw new InvalidOperationException("Kick query resource not found")
+                    .AndFactIs("index-id", indexId);
+            }
+            
+            string kickQueryPattern = kickQueryResource.Content;
 
             await using var conn = _dbManager.Use();
 

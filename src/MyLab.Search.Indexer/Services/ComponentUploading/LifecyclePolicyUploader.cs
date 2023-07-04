@@ -35,9 +35,7 @@ namespace MyLab.Search.Indexer.Services.ComponentUploading
 
         public IResource<LifecyclePolicy>[] GetResources(IResourceProvider resourceProvider)
         {
-            return resourceProvider.LifecyclePolicies.Values
-                .Cast<IResource<LifecyclePolicy>>()
-                .ToArray();
+            return resourceProvider.LifecyclePolicies.Values.ToArray();
         }
 
         public Task<LifecyclePolicy> TryGetComponentFromEsAsync(string componentId, IEsTools esTools, CancellationToken cancellationToken)

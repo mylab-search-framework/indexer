@@ -16,7 +16,7 @@ namespace FuncTests
 
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
+                IndexId = _testIndexName,
                 Put = new[] { JObject.FromObject(doc) }
             };
 
@@ -43,7 +43,7 @@ namespace FuncTests
             
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
+                IndexId = _testIndexName,
                 Put = new[] { JObject.FromObject(docV2) }
             };
 
@@ -73,7 +73,7 @@ namespace FuncTests
 
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
+                IndexId = _testIndexName,
                 Patch = new[] { JObject.FromObject(docV2) }
             };
 
@@ -102,8 +102,8 @@ namespace FuncTests
 
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
-                Delete = new []{ doc.Id.ToString() }
+                IndexId = _testIndexName,
+                Delete = new []{ doc.Id }
             };
 
             await _indexer.IndexAsync(doc);
@@ -130,8 +130,8 @@ namespace FuncTests
 
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
-                Kick = new []{ doc.Id.ToString() }
+                IndexId = _testIndexName,
+                Kick = new []{ doc.Id }
             };
             
             var insertedCount = await _dbMgr.DoOnce().InsertAsync(doc);
@@ -160,8 +160,8 @@ namespace FuncTests
 
             var mqMsg = new IndexingMqMessage
             {
-                IndexId = "baz",
-                Kick = new[] { docV1.Id.ToString() }
+                IndexId = _testIndexName,
+                Kick = new[] { docV1.Id }
             };
 
             await _indexer.IndexAsync(docV1);

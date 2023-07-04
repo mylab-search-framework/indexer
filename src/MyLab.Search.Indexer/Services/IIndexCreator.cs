@@ -16,12 +16,12 @@ using MyLab.Search.Indexer.Tools;
 
 namespace MyLab.Search.Indexer.Services
 {
-    interface IIndexCreator
+    public interface IIndexCreator
     {
         Task<CreatedIndexDescription> CreateIndexAsync(string idxId, CancellationToken stoppingToken);
     }
-
-    record CreatedIndexDescription(string Id, string Name, string Alias, bool IsStream, IAsyncDisposable Deleter);
+    
+    public record CreatedIndexDescription(string Id, string Name, string Alias, bool IsStream, IAsyncDisposable Deleter);
 
     class IndexCreator : IIndexCreator
     {
@@ -90,7 +90,7 @@ namespace MyLab.Search.Indexer.Services
                 }
             }
 
-            return new CreatedIndexDescription(idxId, idxName, idxAlias, streamCreated, deleter);
+            return new CreatedIndexDescription(idxId, finallyIdxName, idxAlias, streamCreated, deleter);
         }
 
         private async Task<IAsyncDisposable> CreateEsStreamCoreAsync(string alias, string name, CancellationToken stoppingToken)

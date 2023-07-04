@@ -22,6 +22,11 @@ namespace MyLab.Search.Indexer.Services
 
     public class NamedResources<T> : ReadOnlyDictionary<string, IResource<T>> where T : class, new()
     {
+        public NamedResources() : base(new Dictionary<string, IResource<T>>())
+        {
+            
+        }
+
         public NamedResources(IDictionary<string, IResource<T>> dictionary) : base(dictionary)
         {
         }

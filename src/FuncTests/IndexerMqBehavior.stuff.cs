@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using MyLab.ApiClient.Test;
 using MyLab.Db;
 using MyLab.DbTest;
@@ -14,8 +18,11 @@ using MyLab.Search.EsAdapter.Search;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Services;
+using Nest;
 using Xunit;
 using Xunit.Abstractions;
+using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 
 namespace FuncTests
 {
@@ -34,6 +41,7 @@ namespace FuncTests
         private readonly TestApi<Startup, IApiKickerContract> _testApi;
         private IApiKickerContract _kickApi;
         private IDbManager _dbMgr;
+        private readonly string _testIndexName;
 
         public IndexerMqBehavior(
             TestApi<Startup, IApiKickerContract> testApi,
@@ -50,6 +58,8 @@ namespace FuncTests
 
             _esFxt = esFxt;
             _esFxt.Output = output;
+
+            _testIndexName = TestTools.CreateTestName<IndexerMqBehavior>();
         }
 
         private Task<EsFound<TestDoc>> SearchByIdAsync(string id)
@@ -62,9 +72,9 @@ namespace FuncTests
             _dbMgr = await _dbFxt.CreateDbAsync();
 
             await TryDeleteIndex();
-            await _esFxt.Tools.Index("baz").CreateAsync();
+            await _esFxt.Tools.Index(_testIndexName).CreateAsync();
 
-            var indexNameProvider = new SingleIndexNameProvider("baz");
+            var indexNameProvider = new SingleIndexNameProvider(_testIndexName);
 
             _indexer = new EsIndexer<TestDoc>(_esFxt.Indexer, indexNameProvider);
             _searcher = new EsSearcher<TestDoc>(_esFxt.Searcher, indexNameProvider);
@@ -80,7 +90,7 @@ namespace FuncTests
                     {
                         new IndexOptions
                         {
-                            Id = "baz"
+                            Id = _testIndexName
                         }
                     };
                     opt.MqQueue = _queue.Name;
@@ -99,6 +109,7 @@ namespace FuncTests
                 )
                 .Configure<IndexerDbOptions>(opt => opt.Provider = "sqlite")
                 .AddSingleton(_dbMgr)
+                .AddSingleton(TestTools.CreateResourceProviderWrapper(_testIndexName, "baz"))
             );
         }
 
@@ -108,10 +119,9 @@ namespace FuncTests
             await TryDeleteIndex();
         }
 
-        async Task TryDeleteIndex()
+        Task TryDeleteIndex()
         {
-            var exists = await _esFxt.Tools.Index("baz").ExistsAsync();
-            if (exists) await _esFxt.Tools.Index("baz").DeleteAsync();
+            return TestTools.RemoveTargetFromAliasAsync(_esFxt.Tools, _testIndexName);
         }
     }
 }

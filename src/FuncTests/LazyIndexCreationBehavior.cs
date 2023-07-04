@@ -1,20 +1,25 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Moq;
 using MyLab.ApiClient.Test;
 using MyLab.Log.XUnit;
 using MyLab.Search.EsAdapter;
 using MyLab.Search.EsTest;
 using MyLab.Search.Indexer;
 using MyLab.Search.Indexer.Options;
+using MyLab.Search.Indexer.Services;
 using MyLab.Search.Indexer.Services.ComponentUploading;
 using MyLab.Search.IndexerClient;
+using Nest;
 using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
+using IndexOptions = MyLab.Search.Indexer.Options.IndexOptions;
 
 namespace FuncTests
 {
@@ -66,22 +71,42 @@ namespace FuncTests
             //Arrange
             var indexesOptions = Array.Empty<IndexOptions>();
 
-            var api = _apiFxt.StartWithProxy(srv => srv.Configure<IndexerOptions>(
-                opt =>
+            var indexCreatorMock = new Mock<IIndexCreator>();
+            CreatedIndexDescription justCreatedIndexDesc = null;
+
+            var api = _apiFxt.StartWithProxy(srv => srv
+                .Configure<IndexerOptions>(
+                    opt =>
+                    {
+                        opt.Indexes = indexesOptions;
+                    })
+                .AddSingleton(sp =>
                 {
-                    opt.Indexes = indexesOptions;
+                    var originCreator = ActivatorUtilities.CreateInstance<IndexCreator>(sp);
+                    indexCreatorMock
+                        .Setup(ic => ic.CreateIndexAsync(It.Is<string>(name => name == _esIndexName), It.IsAny<CancellationToken>()))
+                        .Returns<string, CancellationToken>(async (idxId, ct) =>
+                        {
+                            return justCreatedIndexDesc = await originCreator.CreateIndexAsync(idxId, ct);
+                        });
+                    return indexCreatorMock.Object;
                 })
             );
 
             var newDoc = TestDoc.Generate();
+            bool isIndexExists = false;
 
             //Act
             await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
-            var isIndexExists = await _esFxt.Tools.Index(_esIndexName).ExistsAsync();
-
+            if (justCreatedIndexDesc != null)
+            {
+                isIndexExists = await _esFxt.Tools.Index(justCreatedIndexDesc.Name).ExistsAsync();
+            }
+            
             //Assert
+            Assert.NotNull(justCreatedIndexDesc);
             Assert.True(isIndexExists);
         }
 
@@ -89,15 +114,34 @@ namespace FuncTests
         public async Task ShouldSetupMappingMetaWhenCreateIndex()
         {
             //Arrange
-            var api = _apiFxt.StartWithProxy();
+            var indexCreatorMock = new Mock<IIndexCreator>();
+            CreatedIndexDescription justCreatedIndexDesc = null;
+
+            var api = _apiFxt.StartWithProxy(srv => srv
+                .AddSingleton(sp =>
+                {
+                    var originCreator = ActivatorUtilities.CreateInstance<IndexCreator>(sp);
+                    indexCreatorMock
+                        .Setup(ic => ic.CreateIndexAsync(It.Is<string>(name => name == _esIndexName), It.IsAny<CancellationToken>()))
+                        .Returns<string, CancellationToken>(async (idxId, ct) =>
+                        {
+                            return justCreatedIndexDesc = await originCreator.CreateIndexAsync(idxId, ct);
+                        });
+                    return indexCreatorMock.Object;
+                }));
 
             var newDoc = TestDoc.Generate();
+
+            IndexState indexInfo = null;
 
             //Act
             await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
-            var indexInfo= await _esFxt.Tools.Index(_esIndexName).TryGetAsync(CancellationToken.None);
+            if (justCreatedIndexDesc != null)
+            {
+                indexInfo = await _esFxt.Tools.Index(justCreatedIndexDesc.Name).TryGetAsync(CancellationToken.None);
+            }
 
             var metaDict = indexInfo?.Mappings?.Meta;
 
@@ -119,21 +163,39 @@ namespace FuncTests
             //Arrange
             var indexesOptions = Array.Empty<IndexOptions>();
 
+            var indexCreatorMock = new Mock<IIndexCreator>();
+            CreatedIndexDescription justCreatedIndexDesc = null;
+
             var api = _apiFxt.StartWithProxy(srv => srv.Configure<IndexerOptions>(
                 opt =>
                 {
                     opt.DefaultIndex.IsStream = true;
                     opt.Indexes = indexesOptions;
                 })
+                .AddSingleton(sp =>
+                {
+                    var originCreator = ActivatorUtilities.CreateInstance<IndexCreator>(sp);
+                    indexCreatorMock
+                        .Setup(ic => ic.CreateIndexAsync(It.Is<string>(name => name == _esIndexName), It.IsAny<CancellationToken>()))
+                        .Returns<string, CancellationToken>(async (idxId, ct) =>
+                        {
+                            return justCreatedIndexDesc = await originCreator.CreateIndexAsync(idxId, ct);
+                        });
+                    return indexCreatorMock.Object;
+                })
             );
 
             var newDoc = TestDoc.Generate();
+            bool isStreamExists = false;
 
             //Act
             await api.PutAsync(_esIndexName, JObject.FromObject(newDoc));
             await Task.Delay(1000);
 
-            var isStreamExists = await _esFxt.Tools.Stream(_esIndexName).ExistsAsync();
+            if (justCreatedIndexDesc != null)
+            {
+                isStreamExists = await _esFxt.Tools.Stream(justCreatedIndexDesc.Name).ExistsAsync();
+            }
 
             //Assert
             Assert.True(isStreamExists);
@@ -144,13 +206,9 @@ namespace FuncTests
             return Task.CompletedTask;
         }
 
-        public async Task DisposeAsync()
+        public Task DisposeAsync()
         {
-            var indexExists = await _esFxt.Tools.Index(_esIndexName).ExistsAsync();
-            if(indexExists) await _esFxt.Tools.Index(_esIndexName).DeleteAsync();
-
-            var streamExists = await _esFxt.Tools.Stream(_esIndexName).ExistsAsync();
-            if(streamExists) await _esFxt.Tools.Stream(_esIndexName).DeleteAsync();
+            return TestTools.RemoveTargetFromAliasAsync(_esFxt.Tools, _esIndexName);
         }
     }
 }
