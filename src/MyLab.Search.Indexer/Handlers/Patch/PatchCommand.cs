@@ -6,11 +6,7 @@ namespace MyLab.Search.Indexer.Handlers.Patch
 {
     class PatchCommand : IRequest
     {
-        public IReadOnlyList<IndexingObject> PatchList { get; }
-
-        public PatchCommand(IndexingObject[] patchList)
-        {
-            PatchList = new ReadOnlyCollection<IndexingObject>(patchList);
-        }
+        public required LiteralId IndexId { get; init; }
+        public required IndexingObject Document { get; init; }
     }
 }

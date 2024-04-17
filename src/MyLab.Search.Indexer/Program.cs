@@ -1,19 +1,29 @@
 using FluentValidation;
-using Indexer.Domain.Model;
-using Indexer.Domain.Validators;
+using MyLab.Search.Indexer.Handlers;
+using MyLab.Search.Indexer.MqConsuming;
 using MyLab.WebErrors;
-using IndexingObject = MyLab.Search.Indexer.Model.IndexingObject;
-using IndexingObjectValidator = MyLab.Search.Indexer.Validators.IndexingObjectValidator;
-using LiteralId = MyLab.Search.Indexer.Model.LiteralId;
-using LiteralIdValidator = MyLab.Search.Indexer.Validators.LiteralIdValidator;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers(opt => opt.AddExceptionProcessing());
+builder.Services
+    .AddMediatR(c => c.RegisterServicesFromAssemblyContaining<Program>())
+    .AddAutoMapper
+    (
+        c =>
+        {
+            c.AddProfile(new IndexerMqMessageMappingProfile());
+            c.AddProfile(new CqrsCommandMappingProfile());
+        }
+    )
+    .AddValidatorsFromAssemblyContaining<Program>()
+    .AddRabbit()
+    .AddRabbitConsumers<IndexerMqConsumerRegistrar>()
+    .AddControllers(opt => opt.AddExceptionProcessing());
 
-AddControllerParamsValidators();
+builder.Services
+    .ConfigureRabbit(builder.Configuration);
 
 var app = builder.Build();
 
@@ -24,11 +34,3 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
-
-
-void AddControllerParamsValidators()
-{
-    builder.Services
-        .AddScoped<IValidator<LiteralId>, LiteralIdValidator>()
-        .AddScoped<IValidator<IndexingObject>, IndexingObjectValidator>();
-}

@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using LiteralId = MyLab.Search.Indexer.Model.LiteralId;
 
-namespace MyLab.Search.Indexer.Validators
+namespace MyLab.Search.Indexer.Model.Validators
 {
     public class LiteralIdValidator : AbstractValidator<LiteralId?>
     {

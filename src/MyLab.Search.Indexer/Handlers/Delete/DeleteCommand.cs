@@ -6,11 +6,7 @@ namespace MyLab.Search.Indexer.Handlers.Delete
 {
     class DeleteCommand : IRequest
     {
-        public IReadOnlyList<LiteralId> PutList { get; }
-
-        public DeleteCommand(LiteralId[] putList)
-        {
-            PutList = new ReadOnlyCollection<LiteralId>(putList);
-        }
+        public required LiteralId IndexId { get; init; }
+        public required LiteralId DocumentId { get; init; }
     }
 }

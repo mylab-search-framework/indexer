@@ -1,35 +1,41 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 using FluentValidation;
-using Indexer.Domain.Model;
-using Indexer.Domain.Validators;
+using MediatR;
+using MyLab.Search.Indexer.Handlers.Delete;
+using MyLab.Search.Indexer.Handlers.Kick;
+using MyLab.Search.Indexer.Handlers.Patch;
+using MyLab.Search.Indexer.Handlers.Put;
 using MyLab.WebErrors;
 using IndexingObject = MyLab.Search.Indexer.Model.IndexingObject;
-using IndexingObjectValidator = MyLab.Search.Indexer.Validators.IndexingObjectValidator;
-using IndexingRequest = MyLab.Search.Indexer.Model.IndexingRequest;
 using LiteralId = MyLab.Search.Indexer.Model.LiteralId;
+using ValidationException = FluentValidation.ValidationException;
 
 namespace MyLab.Search.Indexer.Controllers
 {
+
     [Route("v2/indexes")]
     [ApiController]
     public class IndexesController : ControllerBase
     {
+        private readonly IMediator _mediator;
+
+        public IndexesController(IMediator mediator)
+        {
+            _mediator = mediator;
+        }
+
         [HttpPut("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Put([FromRoute] LiteralId indexId, [FromBody] IndexingObject indexingObject)
+        public async Task<IActionResult> Put([FromRoute] LiteralId indexId, [FromBody] IndexingObject document)
         {
-            var indexingReq = new IndexingRequest
+            await _mediator.Send(new PutCommand
             {
                 IndexId = indexId,
-                PutList = new[]
-                {
-                    indexingObject
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
+                Document = document
+            });
 
             return Ok();
         }
@@ -37,23 +43,13 @@ namespace MyLab.Search.Indexer.Controllers
         [HttpPatch("{indexId}")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Patch([FromRoute] LiteralId indexId, [FromBody] IndexingObject indexingObject)
+        public async Task<IActionResult> Patch([FromRoute] LiteralId indexId, [FromBody] IndexingObject document)
         {
-            await _indexIdValidator.ValidateAsync(indexId);
-
-            var validator = new IndexingObjectValidator();
-            await validator.ValidateAndThrowAsync(indexingObject);
-
-            var indexingReq = new IndexingRequest
+            await _mediator.Send(new PatchCommand
             {
                 IndexId = indexId,
-                PatchList = new[]
-                {
-                    indexingObject
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
+                Document = document
+            });
 
             return Ok();
         }
@@ -63,16 +59,11 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> Delete([FromRoute] LiteralId indexId, [FromRoute] LiteralId docId)
         {
-            var indexingReq = new IndexingRequest
+            await _mediator.Send(new DeleteCommand
             {
                 IndexId = indexId,
-                DeleteList = new[]
-                {
-                    docId
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
+                DocumentId = docId
+            });
 
             return Ok();
         }
@@ -82,16 +73,11 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> Kick([FromRoute] LiteralId indexId, [FromRoute] string docId)
         {
-            var indexingReq = new InputIndexingRequest
+            await _mediator.Send(new KickCommand
             {
                 IndexId = indexId,
-                KickList = new[]
-                {
-                    docId
-                }
-            };
-
-            await _inputRequestProcessor.IndexAsync(indexingReq);
+                DocumentId = docId
+            });
 
             return Ok();
         }

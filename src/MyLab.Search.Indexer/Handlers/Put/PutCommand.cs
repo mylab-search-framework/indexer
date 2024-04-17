@@ -1,16 +1,11 @@
-﻿using System.Collections.ObjectModel;
-using MediatR;
+﻿using MediatR;
 using MyLab.Search.Indexer.Model;
 
 namespace MyLab.Search.Indexer.Handlers.Put
 {
-    class PutchCommand : IRequest
+    class PutCommand : IRequest
     {
-        public IReadOnlyList<IndexingObject> PutList { get; }
-
-        public PutchCommand(IndexingObject[] putList)
-        {
-            PutList = new ReadOnlyCollection<IndexingObject>(putList);
-        }
+        public required LiteralId IndexId { get; init; }
+        public required IndexingObject Document { get; init; }
     }
 }

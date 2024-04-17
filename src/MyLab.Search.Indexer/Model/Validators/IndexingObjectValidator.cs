@@ -1,7 +1,6 @@
 ﻿using FluentValidation;
-using IndexingObject = MyLab.Search.Indexer.Model.IndexingObject;
 
-namespace MyLab.Search.Indexer.Validators
+namespace MyLab.Search.Indexer.Model.Validators
 {
     public class IndexingObjectValidator : AbstractValidator<IndexingObject>
     {
