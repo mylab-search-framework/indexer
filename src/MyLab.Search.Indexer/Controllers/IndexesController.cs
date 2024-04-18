@@ -1,12 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using FluentValidation;
 using MediatR;
-using MyLab.Search.Indexer.Handlers.Delete;
-using MyLab.Search.Indexer.Handlers.Kick;
-using MyLab.Search.Indexer.Handlers.Patch;
-using MyLab.Search.Indexer.Handlers.Put;
+using MyLab.Search.Indexer.Handlers.IndexingRequest;
 using MyLab.WebErrors;
 using IndexingObject = MyLab.Search.Indexer.Model.IndexingObject;
 using LiteralId = MyLab.Search.Indexer.Model.LiteralId;
@@ -31,10 +26,10 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> Put([FromRoute] LiteralId indexId, [FromBody] IndexingObject document)
         {
-            await _mediator.Send(new PutCommand
+            await _mediator.Send(new IndexingRequestCommand
             {
                 IndexId = indexId,
-                Document = document
+                PutList = new[]{ document }
             });
 
             return Ok();
@@ -45,10 +40,10 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> Patch([FromRoute] LiteralId indexId, [FromBody] IndexingObject document)
         {
-            await _mediator.Send(new PatchCommand
+            await _mediator.Send(new IndexingRequestCommand
             {
                 IndexId = indexId,
-                Document = document
+                PatchList = new[] { document }
             });
 
             return Ok();
@@ -59,10 +54,10 @@ namespace MyLab.Search.Indexer.Controllers
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
         public async Task<IActionResult> Delete([FromRoute] LiteralId indexId, [FromRoute] LiteralId docId)
         {
-            await _mediator.Send(new DeleteCommand
+            await _mediator.Send(new IndexingRequestCommand
             {
                 IndexId = indexId,
-                DocumentId = docId
+                DeleteList = new []{docId}
             });
 
             return Ok();
@@ -71,12 +66,12 @@ namespace MyLab.Search.Indexer.Controllers
         [HttpPost("{indexId}/{docId}/kicker")]
         [ErrorToResponse(typeof(ValidationException), HttpStatusCode.BadRequest)]
         [ErrorToResponse(typeof(IndexOptionsNotFoundException), HttpStatusCode.NotFound)]
-        public async Task<IActionResult> Kick([FromRoute] LiteralId indexId, [FromRoute] string docId)
+        public async Task<IActionResult> Kick([FromRoute] LiteralId indexId, [FromRoute] LiteralId docId)
         {
-            await _mediator.Send(new KickCommand
+            await _mediator.Send(new IndexingRequestCommand
             {
                 IndexId = indexId,
-                DocumentId = docId
+                KickList= new[] { docId }
             });
 
             return Ok();

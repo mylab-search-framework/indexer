@@ -2,7 +2,7 @@
 using MediatR;
 using MyLab.Log.Dsl;
 using MyLab.RabbitClient.Consuming;
-using MyLab.Search.Indexer.Handlers.IndexInstructions;
+using MyLab.Search.Indexer.Handlers.IndexingRequest;
 using Newtonsoft.Json.Linq;
 
 namespace MyLab.Search.Indexer.MqConsuming
@@ -17,7 +17,7 @@ namespace MyLab.Search.Indexer.MqConsuming
                 .AndFactIs("body", JObject.FromObject(consumedMessage.Content))
                 .Write();
 
-            var cmd= mapper.Map<IndexerMqMessage, IndexInstructionsCommand>(consumedMessage.Content);
+            var cmd= mapper.Map<IndexerMqMessage, IndexingRequestCommand>(consumedMessage.Content);
 
             return mediator.Send(cmd);
         }

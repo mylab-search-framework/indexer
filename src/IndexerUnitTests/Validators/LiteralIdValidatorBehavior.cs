@@ -1,7 +1,6 @@
-using Indexer.Domain;
-using Indexer.Domain.Validators;
+using MyLab.Search.Indexer.Model.Validators;
 
-namespace DomainTests
+namespace IndexerUnitTests.Validators
 {
     public class LiteralIdValidatorBehavior
     {

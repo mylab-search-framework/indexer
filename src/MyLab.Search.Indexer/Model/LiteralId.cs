@@ -14,11 +14,11 @@
             return Value;
         }
 
-        public static implicit operator LiteralId(string? value)
+        public static implicit operator LiteralId?(string? value)
         {
-            return new LiteralId(value);
+            return value != null ? new LiteralId(value) : null;
         }
-
+        
         public static implicit operator string?(LiteralId? value)
         {
             return value?.ToString();

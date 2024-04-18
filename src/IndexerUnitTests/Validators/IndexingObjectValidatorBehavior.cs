@@ -1,9 +1,8 @@
 ﻿using System.Text.Json.Nodes;
-using Indexer.Domain.Model;
-using Indexer.Domain.Validators;
-using Newtonsoft.Json.Linq;
+using MyLab.Search.Indexer.Model;
+using MyLab.Search.Indexer.Model.Validators;
 
-namespace DomainTests
+namespace IndexerUnitTests.Validators
 {
     public class IndexingObjectValidatorBehavior
     {

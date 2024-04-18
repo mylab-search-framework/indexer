@@ -1,8 +1,5 @@
 ﻿using AutoMapper;
-using MyLab.Search.Indexer.Handlers.Delete;
-using MyLab.Search.Indexer.Handlers.IndexInstructions;
-using MyLab.Search.Indexer.Handlers.Patch;
-using MyLab.Search.Indexer.Handlers.Put;
+using MyLab.Search.Indexer.Handlers.IndexingRequest;
 
 namespace MyLab.Search.Indexer.Handlers
 {
@@ -10,34 +7,7 @@ namespace MyLab.Search.Indexer.Handlers
     {
         public CqrsCommandMappingProfile()
         {
-            CreateMap<DeleteCommand, Model.IndexInstructions>()
-                .ForMember
-                (
-                    i => i.DeleteList, 
-                    e => e.MapFrom
-                        (
-                            (cmd, _) => new[ ]{ cmd.DocumentId }
-                        )
-                );
-            CreateMap<PutCommand, Model.IndexInstructions>()
-                .ForMember
-                (
-                    i => i.PutList, 
-                    e => e.MapFrom
-                        (
-                            (cmd, _) => new[] { cmd.Document }
-                        )
-                );
-            CreateMap<PatchCommand, Model.IndexInstructions>()
-                .ForMember
-                (
-                    i => i.PatchList, 
-                    e => e.MapFrom
-                        (
-                            (cmd, _) => new[] { cmd.Document }
-                        )
-                );
-            CreateMap<IndexInstructionsCommand, Model.IndexInstructions>();
+            CreateMap<IndexingRequestCommand, Model.IndexInstructions>();
         }
     }
 }

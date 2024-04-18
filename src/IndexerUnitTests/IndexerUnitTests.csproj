@@ -22,4 +22,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\MyLab.Search.Indexer\MyLab.Search.Indexer.csproj" />
+  </ItemGroup>
+
 </Project>
