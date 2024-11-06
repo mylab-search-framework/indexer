@@ -1,0 +1,113 @@
+openapi: 3.0.0
+info:
+  version: '3'
+  title: MyLab.Search.Indexer API
+servers:
+  - url: https://api.example.com/v3
+paths:
+  '/indexes/{idx_id}':
+  
+    parameters: 
+      - $ref: '#/components/parameters/IndexId'
+  
+    post:
+      tags:
+      - Indexing 
+      summary: Index new document without specified identifier
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: The document was indexed successful
+        '400':
+          description: The request is malformed
+        '404':
+          description: Index not found
+  
+  '/indexes/{idx_id}/{doc_id}':
+          
+    parameters:
+      - $ref: '#/components/parameters/IndexId'
+      - $ref: '#/components/parameters/DocId'
+      
+    put:
+      tags:
+      - Indexing 
+      summary: Index new document or reindex if already indexed
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: The document was indexed successful
+        '400':
+          description: The request is malformed
+        '404':
+          description: Index not found
+          
+    patch:
+      tags:
+      - Indexing 
+      summary: Merge specified partial data with indexed document
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Document'
+      responses:
+        '200':
+          description: The data was merged successful
+        '400':
+          description: The request is malformed
+        '404':
+          description: Index or document not found
+          
+    delete:
+      tags:
+      - Indexing 
+      summary: Remove specified document from index
+      responses:
+        '200':
+          description: The docuemnt was removed successful or does not exist
+        '400':
+          description: The request is malformed
+        '404':
+          description: Index not found
+          
+components:
+  parameters:
+    
+    DocId:
+      name: doc_id
+      in: path
+      required: true
+      description: Indexed document identifier
+      schema:
+        type:
+          string
+      example: '123'
+    
+    IndexId:
+      name: idx_id
+      in: path
+      required: true
+      description: Index identifier
+      schema:
+        type:
+          string
+      example: orders
+      
+  schemas:
+    
+    Document:
+      description: Indexed document 
+      type: object
+      additionalProperties: true
+      example:
+        id: 2
+        value: "foo"
