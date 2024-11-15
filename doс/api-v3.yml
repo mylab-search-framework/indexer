@@ -5,28 +5,7 @@ info:
 servers:
   - url: https://api.example.com/v3
 paths:
-  '/indexes/{idx_id}':
-  
-    parameters: 
-      - $ref: '#/components/parameters/IndexId'
-  
-    post:
-      tags:
-      - Indexing 
-      summary: Index new document without specified identifier
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/Document'
-      responses:
-        '200':
-          description: The document was indexed successful
-        '400':
-          description: The request is malformed
-        '404':
-          description: Index not found
-  
+
   '/indexes/{idx_id}/{doc_id}':
           
     parameters:
