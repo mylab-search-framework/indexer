@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using MyLab.Log;
 using MyLab.Log.Dsl;
 using MyLab.Search.EsAdapter.Indexing;
 using MyLab.Search.EsAdapter.Inter;
@@ -12,6 +13,8 @@ using MyLab.Search.Indexer.Options;
 using MyLab.Search.Indexer.Tools;
 using Nest;
 using Newtonsoft.Json.Linq;
+using Org.BouncyCastle.Ocsp;
+using YamlDotNet.Core.Tokens;
 
 namespace MyLab.Search.Indexer.Services
 {
@@ -97,25 +100,48 @@ namespace MyLab.Search.Indexer.Services
             var esIdxName = _indexerOptions.GetEsName(req.IndexId);
 
             try
-            {
-                await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+            { 
+                var bulkResponse = await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+
+                if (HasIndexNotFound(bulkResponse))
+                {
+                    await Retry();
+                }
             }
             catch (EsException e) when (e.Response.HasIndexNotFound)
             {
-                if (_indexerCreator == null)
-                    throw;
+                await Retry();
+            }
 
-                _log?.Warning("A 404 response has been received. Its try to create index.")
-                    .AndFactIs("idx-name", esIdxName)
-                    .Write();
 
-                await _indexerCreator.CreateIndexAsync(req.IndexId, cToken);
-                await Task.Delay(500, cToken);
+            async Task Retry()
+            {
+                await CreateIndexWhenDoesNotExists(esIdxName, req.IndexId, cToken);
 
                 _log?.Action("Try to index docs after index created").Write();
 
-                await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+                var resp = await _esIndexer.BulkAsync<JObject>(esIdxName, bulkReq, cToken);
+
+                if (HasIndexNotFound(resp))
+                    throw new InvalidOperationException("Can't create index")
+                        .AndFactIs("idx-name", esIdxName);
             }
+        }
+
+        bool HasIndexNotFound(BulkResponse response)
+            => !response.IsValid && (response.ServerError?.Error?.Type == "index_not_found_exception" || response.Items.Any(i => i.Error?.Type == "index_not_found_exception"));
+
+        async Task CreateIndexWhenDoesNotExists(string esIdxName, string indexId, CancellationToken cToken)
+        {
+            _log?.Warning("Index not found. Its try to create index.")
+                .AndFactIs("idx-name", esIdxName)
+                .Write();
+
+            if (_indexerCreator == null)
+                throw new InvalidOperationException("Indexer creator not found");
+
+            await _indexerCreator.CreateIndexAsync(indexId, cToken);
+            await Task.Delay(500, cToken);
         }
     }
 }

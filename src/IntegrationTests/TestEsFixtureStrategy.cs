@@ -16,7 +16,7 @@ namespace IntegrationTests
 
         public override ConnectionSettings CreateConnectionSettings(IConnectionPool connection)
         {
-            return new ConnectionSettings(connection, (builtinSerializer, _) => new CombineEsSerializer(builtinSerializer))
+            return new ConnectionSettings(connection, (builtinSerializer, _) => builtinSerializer)
                 .DefaultMappingFor(typeof(JObject), m => m.IdProperty("id"));
         }
     }
