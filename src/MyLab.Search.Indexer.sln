@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApplicationTests", "Applica
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Apps", "Apps", "{76177646-2299-48A7-9E43-3BBF79BABE06}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SyncApi.Tests", "SyncApi.Tests\SyncApi.Tests.csproj", "{20E0FDDC-3737-4E99-BB77-ACC2AD359640}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{F5684226-101D-4418-A346-F4FF00FAB9A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F5684226-101D-4418-A346-F4FF00FAB9A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F5684226-101D-4418-A346-F4FF00FAB9A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20E0FDDC-3737-4E99-BB77-ACC2AD359640}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20E0FDDC-3737-4E99-BB77-ACC2AD359640}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20E0FDDC-3737-4E99-BB77-ACC2AD359640}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20E0FDDC-3737-4E99-BB77-ACC2AD359640}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -55,6 +61,7 @@ Global
 		{1615819E-98BB-4BCE-97B0-81185AB98D71} = {C782F3D2-E505-4C2F-B090-1B331E9BB559}
 		{C53BAD06-4062-43D6-A436-782C0490F23A} = {C782F3D2-E505-4C2F-B090-1B331E9BB559}
 		{F5684226-101D-4418-A346-F4FF00FAB9A2} = {213E9322-288F-4A4C-ABDD-231BEC6F754B}
+		{20E0FDDC-3737-4E99-BB77-ACC2AD359640} = {213E9322-288F-4A4C-ABDD-231BEC6F754B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {8D8B5B12-8CB3-428C-98FE-D4EC8556EAC3}
