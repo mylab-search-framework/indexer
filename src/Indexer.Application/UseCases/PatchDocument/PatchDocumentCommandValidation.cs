@@ -9,7 +9,7 @@ public static class PatchDocumentCommandValidation
     private static readonly InlineValidator<PatchDocumentCommand> Validator = new()
     {
         v => v.RuleFor(c => c.IndexId).Must((_, val, _) => IndexId.Validate(val)),
-        v => v.RuleFor(c => c.Document).NotNull()
+        v => v.RuleFor(c => c.DocumentPart).NotNull()
     };
     public static ValidationResult Validate(this PatchDocumentCommand command)
     {

@@ -11,7 +11,7 @@ namespace Indexer.Application.Tools
 
             var idNode = json["id"] ?? json["Id"] ?? json["ID"];
 
-            if (idNode == null || !DocumentId.TryCreate(idNode.ToString(), out documentId))
+            if (idNode == null || !DocumentId.TryParse(idNode.ToString(), out documentId))
                 return false;
 
             return true;

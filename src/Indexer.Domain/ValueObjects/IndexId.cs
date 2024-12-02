@@ -6,14 +6,14 @@ public class IndexId
 {
     public string Value { get; protected set; }
 
-    private IndexId(string value)
+    public IndexId(string value)
     {
         if (!Validate(value))
             throw new ValidationException();
         Value = value;
     }
 
-    public static bool TryCreate(string id, out IndexId? result)
+    public static bool TryParse(string id, out IndexId? result)
     {
         if (!Validate(id))
         {

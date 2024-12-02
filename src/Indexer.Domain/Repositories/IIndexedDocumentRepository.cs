@@ -5,8 +5,8 @@ namespace Indexer.Domain.Repositories
 {
     public interface IIndexedDocumentRepository
     {
-        Task PutDocumentAsync(IndexId idxId, DocumentId docId, JsonNode docJson, CancellationToken cancellationToken);
-        Task PatchDocumentAsync(IndexId idxId, DocumentId docId, JsonNode docJson, CancellationToken cancellationToken);
-        Task DeleteDocumentAsync(IndexId idxId, DocumentId docId, CancellationToken cancellationToken);
+        Task PutDocumentAsync(string idxName, DocumentId docId, JsonNode docJson, CancellationToken cancellationToken);
+        Task PatchDocumentAsync(string idxName, DocumentId docId, JsonNode docJson, CancellationToken cancellationToken);
+        Task DeleteDocumentAsync(string idxName, DocumentId docId, CancellationToken cancellationToken);
     }
 }

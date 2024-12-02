@@ -6,7 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers(c => c.AddExceptionProcessing());
-builder.Services.AddMediatR(c => c.RegisterServicesFromAssemblyContaining<ApplicationAnchor>());
+builder.Services.AddIndexerApplicationLogic();
+builder.Services.ConfigureIndexerApplicationLogic(builder.Configuration);
 
 var app = builder.Build();
 

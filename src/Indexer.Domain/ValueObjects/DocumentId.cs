@@ -6,14 +6,14 @@ public record DocumentId
 {
     public string Value { get; protected set; }
 
-    private DocumentId(string value)
+    public DocumentId(string value)
     {
         if (!Validate(value))
             throw new ValidationException();
         Value = value;
     }
 
-    public static bool TryCreate(string id, out DocumentId? result)
+    public static bool TryParse(string id, out DocumentId? result)
     {
         if (!Validate(id))
         {

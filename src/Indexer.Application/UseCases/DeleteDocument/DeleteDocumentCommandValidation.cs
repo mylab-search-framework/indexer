@@ -1,6 +1,5 @@
 ﻿using FluentValidation;
 using FluentValidation.Results;
-using Indexer.Application.UseCases.PatchDocument;
 using Indexer.Domain.ValueObjects;
 
 namespace Indexer.Application.UseCases.DeleteDocument;
