@@ -8,6 +8,11 @@
 
   <ItemGroup>
     <PackageReference Include="MediatR" Version="12.4.1" />
+    <PackageReference Include="MyLab.WebErrors" Version="1.1.6" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Indexer.Application\Indexer.Application.csproj" />
   </ItemGroup>
 
 </Project>
